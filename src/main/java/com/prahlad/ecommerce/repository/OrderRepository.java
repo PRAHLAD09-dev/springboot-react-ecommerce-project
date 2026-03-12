@@ -7,12 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.prahlad.ecommerce.entity.Order;
+import com.prahlad.ecommerce.enums.OrderStatus;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> 
 {
 
     List<Order> findByUserId(Long userId);
+    List<Order> findByUserIdAndStatus(Long userId, OrderStatus status);
     
 	@Query("""
 			SELECT DISTINCT o FROM Order o

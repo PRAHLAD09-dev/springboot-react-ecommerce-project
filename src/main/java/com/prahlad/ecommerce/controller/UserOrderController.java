@@ -6,11 +6,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.prahlad.ecommerce.entity.Order;
+import com.prahlad.ecommerce.entity.OrderStatusHistory;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.enums.OrderStatus;
 import com.prahlad.ecommerce.repository.UserRepository;
@@ -24,40 +24,46 @@ import lombok.RequiredArgsConstructor;
 public class UserOrderController 
 {
 
-    private final OrderService orderService;
-    private final UserRepository userRepository;
+	private final OrderService orderService;
+	private final UserRepository userRepository;
 
+	@PostMapping("/place")
+	public Order placeOrder(Authentication authentication) 
+	{
 
-    @PostMapping("/place")
-    public Order placeOrder(Authentication authentication) 
-    {
+		String email = authentication.getName();
 
-        String email = authentication.getName();
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+		return orderService.placeOrder(user);
+	}
 
-        return orderService.placeOrder(user);
-    }
+	@GetMapping("/my-orders")
+	public List<Order> getUserOrders(@RequestParam(required = false) OrderStatus status,
+			Authentication authentication) 
+	{
 
-    @GetMapping("/my-orders")
-    public List<Order> getMyOrders(Authentication authentication) 
-    {
+		String email = authentication.getName();
 
-        String email = authentication.getName();
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+		return orderService.getUserOrders(user, status);
+	}
 
-        return orderService.getUserOrders(user);
-    }
-   
-    @GetMapping("/{orderId}")
-    public Order getOrder(@PathVariable Long orderId) 
-    {
+	@GetMapping("/{orderId}")
+	public Order getOrder(@PathVariable Long orderId) 
+	{
 
-        return orderService.getOrderById(orderId);
-    }
-    
+		return orderService.getOrderById(orderId);
+	}
+
+	@GetMapping("/{orderId}/tracking")
+	public List<OrderStatusHistory> trackOrder(@PathVariable Long orderId, Authentication authentication) 
+	{
+
+		String email = authentication.getName();
+
+		return orderService.getOrderTracking(orderId, email);
+	}
 	
 }

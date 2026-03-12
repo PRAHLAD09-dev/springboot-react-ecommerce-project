@@ -1,5 +1,6 @@
 package com.prahlad.ecommerce.service.Order;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import com.prahlad.ecommerce.entity.Cart;
 import com.prahlad.ecommerce.entity.CartItem;
 import com.prahlad.ecommerce.entity.Order;
 import com.prahlad.ecommerce.entity.OrderItem;
+import com.prahlad.ecommerce.entity.OrderStatusHistory;
 import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.enums.OrderStatus;
@@ -18,6 +20,7 @@ import com.prahlad.ecommerce.enums.Role;
 import com.prahlad.ecommerce.repository.CartItemRepository;
 import com.prahlad.ecommerce.repository.CartRepository;
 import com.prahlad.ecommerce.repository.OrderRepository;
+import com.prahlad.ecommerce.repository.OrderStatusHistoryRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -33,6 +36,7 @@ public class OrderService
 	private final CartItemRepository cartItemRepository;
 	private final OrderRepository orderRepository;
 	private final UserRepository userRepository;
+	private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
 	public Order placeOrder(User user) 
 	{
@@ -76,6 +80,15 @@ public class OrderService
 
 		Order savedOrder = orderRepository.save(order);
 
+		OrderStatusHistory history = new OrderStatusHistory();
+
+		history.setOrder(savedOrder);
+		history.setStatus(OrderStatus.CREATED);
+		history.setUpdatedAt(LocalDateTime.now());
+		history.setUpdatedBy(user.getEmail());
+
+		orderStatusHistoryRepository.save(history);
+		
 		cartItemRepository.deleteAll(cart.getItems());
 		cart.getItems().clear();
 		cartRepository.save(cart);
@@ -83,10 +96,15 @@ public class OrderService
 		return savedOrder;
 	}
 
-	public List<Order> getUserOrders(User user) 
+	public List<Order> getUserOrders(User user, OrderStatus status) 
 	{
 
-		return orderRepository.findByUserId(user.getId());
+		if (status == null) 
+		{
+			return orderRepository.findByUserId(user.getId());
+		}
+
+		return orderRepository.findByUserIdAndStatus(user.getId(), status);
 	}
 
 	public Order getOrderById(Long orderId) 
@@ -135,7 +153,17 @@ public class OrderService
 			order.setStatus(OrderStatus.SHIPPED);
 		}
 
-		return orderRepository.save(order);
+		Order savedOrder = orderRepository.save(order);
+
+	    OrderStatusHistory history = new OrderStatusHistory();
+	    history.setOrder(savedOrder);
+	    history.setStatus(savedOrder.getStatus());
+	    history.setUpdatedAt(LocalDateTime.now());
+	    history.setUpdatedBy(email);
+
+	    orderStatusHistoryRepository.save(history);
+
+	    return savedOrder;
 	}
 	
 	public List<Order> getMerchantOrders(String email) 
@@ -144,5 +172,20 @@ public class OrderService
 		User merchant = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
 		return orderRepository.findOrdersByMerchantId(merchant.getId());
+	}
+	
+	public List<OrderStatusHistory> getOrderTracking(Long orderId, String email) 
+	{
+
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+
+		if (!order.getUser().getId().equals(user.getId())) 
+		{
+			throw new RuntimeException("You cannot access this order");
+		}
+
+		return orderStatusHistoryRepository.findByOrderOrderByUpdatedAtAsc(order);
 	}
 }
