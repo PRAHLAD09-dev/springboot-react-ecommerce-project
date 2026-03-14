@@ -223,6 +223,74 @@ Example Payment Response
   "status": "SUCCESS"
 }
 
+---
+
+### Order tracking & order status filtering
+
+Implemented an order tracking system to monitor the lifecycle of orders and allow users to filter orders by their status.
+
+Features added
+
+- Order tracking API
+- Order status lifecycle management
+- Filter orders by status for users
+- Improved order visibility for customers
+
+Example endpoints
+
+GET /api/orders/track/{orderId}
+
+GET /api/user/orders?status=CONFIRMED
+
+---
+
+### Admin management module
+
+Implemented an admin module that allows administrators to manage merchants and monitor system activity.
+
+Features added
+
+- Approve merchant registrations
+- Block merchants
+- Unblock merchants
+- View all merchants
+- Monitor orders across the platform
+
+Example endpoints
+
+GET  /api/admin/merchants
+PUT  /api/admin/approve/{merchantId}
+PUT  /api/admin/block/{merchantId}
+PUT  /api/admin/unblock/{merchantId}
+GET  /api/admin/orders
+
+---
+
+### User & merchant profile management
+
+Implemented profile management APIs for both users and merchants so they can manage their account information and credentials.
+
+Features added
+
+- View profile
+- Update profile information
+- Change password
+- Delete account
+
+User APIs
+
+GET    /api/user/profile
+PUT    /api/user/profile
+PUT    /api/user/change-password
+DELETE /api/user/account
+
+Merchant APIs
+
+GET    /api/merchant/profile
+PUT    /api/merchant/profile
+PUT    /api/merchant/change-password
+DELETE /api/merchant/account
+
 
 ### Database Tables
 
@@ -236,7 +304,7 @@ order_items
 addresses
 payments
 
----
+ ---
 
 ### Project Architecture
 
@@ -288,6 +356,9 @@ Day 9  — Address module
 Day 10 — Order placement system
 Day 11 — Order status workflow & merchant order management
 Day 12 — Payment system (mock)
+Day 13 — Order tracking & order status filtering
+Day 14 — Admin management module (merchant approval, block/unblock, order monitoring)
+Day 15 — User & merchant profile management APIs
 
 ---
 
