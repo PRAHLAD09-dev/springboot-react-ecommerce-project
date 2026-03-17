@@ -2,8 +2,12 @@ package com.prahlad.ecommerce.service.merchant;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
+import com.prahlad.ecommerce.dto.merchant.MerchantUpdateRequest;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.repository.MerchantRepository;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -11,54 +15,73 @@ import lombok.RequiredArgsConstructor;
 public class MerchantServiceImpl implements MerchantService 
 {
 
-	private final MerchantRepository merchantRepository;
-	private final PasswordEncoder passwordEncoder;
+    private final MerchantRepository merchantRepository;
+    private final PasswordEncoder passwordEncoder;
 
-	@Override
-	public Merchant getProfile(String email) 
-	{
+    @Override
+    public MerchantResponse getProfile(String email) 
+    {
 
-		return merchantRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Merchant not found"));
-	}
+        Merchant merchant = merchantRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
 
-	@Override
-	public Merchant updateProfile(String email, Merchant updatedMerchant) 
-	{
+        return mapToDTO(merchant);
+    }
 
-		Merchant merchant = merchantRepository.findByEmail(email)
-				.orElseThrow(() -> new RuntimeException("Merchant not found"));
+    @Override
+    public MerchantResponse updateProfile(String email, MerchantUpdateRequest request) 
+    {
 
-		merchant.setBusinessName(updatedMerchant.getBusinessName());
+        Merchant merchant = merchantRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
 
-		return merchantRepository.save(merchant);
-	}
+        if (request.businessName() != null) 
+        {
+            merchant.setBusinessName(request.businessName());
+        }
 
-	@Override
-	public String changePassword(String email, String oldPassword, String newPassword) 
-	{
+        merchantRepository.save(merchant);
 
-		Merchant merchant = merchantRepository.findByEmail(email)
-				.orElseThrow(() -> new RuntimeException("Merchant not found"));
+        return mapToDTO(merchant);
+    }
 
-		if (!passwordEncoder.matches(oldPassword, merchant.getPassword())) 
-		{
-			throw new RuntimeException("Old password is incorrect");
-		}
+    @Override
+    public String changePassword(String email, String oldPassword, String newPassword) 
+    {
 
-		merchant.setPassword(passwordEncoder.encode(newPassword));
+        Merchant merchant = merchantRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
 
-		merchantRepository.save(merchant);
+        if (!passwordEncoder.matches(oldPassword, merchant.getPassword())) 
+        {
+            throw new RuntimeException("Old password is incorrect");
+        }
 
-		return "Password changed successfully";
-	}
+        merchant.setPassword(passwordEncoder.encode(newPassword));
 
-	@Override
-	public void deleteAccount(String email) 
-	{
+        merchantRepository.save(merchant);
 
-		Merchant merchant = merchantRepository.findByEmail(email)
-				.orElseThrow(() -> new RuntimeException("Merchant not found"));
+        return "Password changed successfully";
+    }
 
-		merchantRepository.delete(merchant);
-	}
+    @Override
+    public void deleteAccount(String email) 
+    {
+
+        Merchant merchant = merchantRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+
+        merchantRepository.delete(merchant);
+    }
+
+    private MerchantResponse mapToDTO(Merchant merchant) 
+    {
+        return new MerchantResponse(
+                merchant.getId(),
+                merchant.getBusinessName(),
+                merchant.getEmail(),
+                merchant.isApproved(),
+                merchant.isActive()
+        );
+    }
 }

@@ -9,10 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.dto.user.UserResponse;
+import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 import com.prahlad.ecommerce.service.user.UserService;
-
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
@@ -26,13 +25,13 @@ public class UserController
 	private final UserService userService;
 
 	@GetMapping("/profile")
-	public User getProfile(Authentication authentication) 
+	public UserResponse getProfile(Authentication authentication) 
 	{
 		return userService.getProfile(authentication.getName());
 	}
 
 	@PutMapping("/profile")
-	public User updateProfile(Authentication authentication, @RequestBody User user) 
+	public UserResponse updateProfile(Authentication authentication, @RequestBody UserUpdateRequest user) 
 	{
 		return userService.updateProfile(authentication.getName(), user);
 	}

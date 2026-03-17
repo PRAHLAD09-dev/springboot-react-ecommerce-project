@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.prahlad.ecommerce.dto.order.OrderResponse;
 import com.prahlad.ecommerce.entity.Order;
 import com.prahlad.ecommerce.enums.OrderStatus;
 import com.prahlad.ecommerce.service.Order.OrderService;
@@ -24,7 +26,7 @@ public class MerchantOrderController
 	private final OrderService orderService;
 
 	@PutMapping("/{orderId}/status")
-	public Order updateStatus(@PathVariable Long orderId, @RequestParam OrderStatus status, 
+	public OrderResponse updateStatus(@PathVariable Long orderId, @RequestParam OrderStatus status, 
 			Authentication authentication) 
 	{
 
@@ -35,7 +37,7 @@ public class MerchantOrderController
 	}
 	
 	@GetMapping
-	public List<Order> getMerchantOrders(Authentication authentication) 
+	public List<OrderResponse> getMerchantOrders(Authentication authentication) 
 	{
 
 		String email = authentication.getName();

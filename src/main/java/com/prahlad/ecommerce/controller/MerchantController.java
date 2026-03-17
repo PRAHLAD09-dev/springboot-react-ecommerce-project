@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.prahlad.ecommerce.entity.Merchant;
+import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
+import com.prahlad.ecommerce.dto.merchant.MerchantUpdateRequest;
 import com.prahlad.ecommerce.service.merchant.MerchantService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +25,13 @@ public class MerchantController
 	private final MerchantService merchantService;
 
 	@GetMapping("/profile")
-	public Merchant getProfile(Authentication auth) 
+	public MerchantResponse getProfile(Authentication auth) 
 	{
 		return merchantService.getProfile(auth.getName());
 	}
 
 	@PutMapping("/profile")
-	public Merchant updateProfile(Authentication auth, @RequestBody Merchant merchant) 
+	public MerchantResponse updateProfile(Authentication auth, @RequestBody MerchantUpdateRequest merchant) 
 	{
 		return merchantService.updateProfile(auth.getName(), merchant);
 	}

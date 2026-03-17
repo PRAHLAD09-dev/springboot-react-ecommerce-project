@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.service.product.ProductService;
 
@@ -18,38 +19,29 @@ import lombok.RequiredArgsConstructor;
 public class ProductController 
 {
 
-    private final ProductService productService;
+	private final ProductService productService;
 
-    @GetMapping
-    public Page<Product> getAllProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy
-    ) 
-    {
+	@GetMapping
+	public Page<ProductResponse> getAllProducts(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy) 
+	{
 
-        return productService.getAllProducts(page, size, sortBy);
-    }
+		return productService.getAllProducts(page, size, sortBy);
+	}
 
-    @GetMapping("/search")
-    public Page<Product> searchProducts(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) 
-    {
+	@GetMapping("/search")
+	public Page<ProductResponse> searchProducts(@RequestParam String keyword,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) 
+	{
 
-        return productService.searchProducts(keyword, page, size);
-    }
+		return productService.searchProducts(keyword, page, size);
+	}
 
-    @GetMapping("/category/{categoryId}")
-    public Page<Product> getProductsByCategory(
-            @PathVariable Long categoryId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) 
-    {
+	@GetMapping("/category/{categoryId}")
+	public Page<ProductResponse> getProductsByCategory(@PathVariable Long categoryId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) 
+	{
 
-        return productService.getProductsByCategory(categoryId, page, size);
-    }
+		return productService.getProductsByCategory(categoryId, page, size);
+	}
 }

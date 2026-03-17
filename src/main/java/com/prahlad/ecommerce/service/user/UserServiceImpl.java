@@ -3,6 +3,8 @@ package com.prahlad.ecommerce.service.user;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.prahlad.ecommerce.dto.user.UserResponse;
+import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.repository.UserRepository;
 
@@ -17,23 +19,29 @@ public class UserServiceImpl implements UserService
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
-	public User getProfile(String email) 
-	{
-
-		return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-	}
-
-	@Override
-	public User updateProfile(String email, User updatedUser) 
+	public UserResponse getProfile(String email) 
 	{
 
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-		user.setName(updatedUser.getName());
+		return mapToDTO(user);
+	}
+
+	@Override
+	public UserResponse updateProfile(String email, UserUpdateRequest request) 
+	{
+
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+
+		if (request.name() != null) 
+		{
+			user.setName(request.name());
+		}
 
 		userRepository.save(user);
 
-		return user;
+		return mapToDTO(user);
 	}
 
 	@Override
@@ -61,5 +69,11 @@ public class UserServiceImpl implements UserService
 		userRepository.save(user);
 
 		return "Password changed successfully";
+	}
+
+	
+	private UserResponse mapToDTO(User user) 
+	{
+		return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
 	}
 }

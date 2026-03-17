@@ -1,4 +1,4 @@
-package com.prahlad.ecommerce.dto.auth;
+package com.prahlad.ecommerce.dto.product;
 
 import jakarta.validation.constraints.*;
 

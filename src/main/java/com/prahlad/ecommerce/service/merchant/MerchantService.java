@@ -2,15 +2,16 @@ package com.prahlad.ecommerce.service.merchant;
 
 import org.springframework.stereotype.Service;
 
-import com.prahlad.ecommerce.entity.Merchant;
+import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
+import com.prahlad.ecommerce.dto.merchant.MerchantUpdateRequest;
 
 @Service
 public interface MerchantService 
 {
 
-    Merchant getProfile(String email);
+	MerchantResponse getProfile(String email);
 
-    Merchant updateProfile(String email, Merchant updatedMerchant);
+	MerchantResponse updateProfile(String email, MerchantUpdateRequest updatedMerchant);
 
     String changePassword(String email, String oldPassword, String newPassword);
 

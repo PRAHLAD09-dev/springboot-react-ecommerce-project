@@ -3,15 +3,16 @@ package com.prahlad.ecommerce.service.user;
 
 import org.springframework.stereotype.Service;
 
-import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.dto.user.UserResponse;
+import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 
 @Service
 public interface UserService 
 {
 
-    User getProfile(String email);
+	UserResponse getProfile(String email);
 
-    User updateProfile(String email, User updatedUser);
+	UserResponse updateProfile(String email, UserUpdateRequest updatedUser);
 
     void deleteAccount(String email);
 

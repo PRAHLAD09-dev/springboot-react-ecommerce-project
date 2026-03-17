@@ -46,6 +46,7 @@ public class User implements UserDetails
     @Column(unique = true)
     private String email;
 
+    @JsonIgnore
     private String password;
 
     

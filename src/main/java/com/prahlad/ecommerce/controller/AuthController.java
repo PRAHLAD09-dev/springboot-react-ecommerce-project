@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.prahlad.ecommerce.dto.auth.AuthResponse;
 import com.prahlad.ecommerce.dto.auth.LoginRequest;
-import com.prahlad.ecommerce.dto.auth.MerchantRegisterRequest;
-import com.prahlad.ecommerce.dto.auth.UserRegisterRequest;
+import com.prahlad.ecommerce.dto.merchant.MerchantRegisterRequest;
+import com.prahlad.ecommerce.dto.user.UserRegisterRequest;
 import com.prahlad.ecommerce.service.auth.AuthService;
 
 import lombok.RequiredArgsConstructor;

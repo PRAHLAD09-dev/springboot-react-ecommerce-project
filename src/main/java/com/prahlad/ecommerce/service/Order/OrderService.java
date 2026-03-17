@@ -8,6 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.prahlad.ecommerce.dto.order.OrderItemDTO;
+import com.prahlad.ecommerce.dto.order.OrderResponse;
+import com.prahlad.ecommerce.dto.order.OrderStatusHistoryDTO;
 import com.prahlad.ecommerce.entity.Cart;
 import com.prahlad.ecommerce.entity.CartItem;
 import com.prahlad.ecommerce.entity.Order;
@@ -38,8 +41,11 @@ public class OrderService
 	private final UserRepository userRepository;
 	private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
-	public Order placeOrder(User user) 
+	
+	public OrderResponse placeOrder(String email) 
 	{
+
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Cart not found"));
 
@@ -47,19 +53,24 @@ public class OrderService
 		{
 			throw new RuntimeException("Cart is empty");
 		}
-
 		Order order = new Order();
 		order.setUser(user);
 		order.setStatus(OrderStatus.CREATED);
 
 		List<OrderItem> orderItems = new ArrayList<>();
-
 		double totalPrice = 0;
 
 		for (CartItem cartItem : cart.getItems()) 
 		{
 
 			Product product = cartItem.getProduct();
+
+			if (product.getStock() < cartItem.getQuantity()) 
+			{
+				throw new RuntimeException("Insufficient stock for " + product.getName());
+			}
+
+			product.setStock(product.getStock() - cartItem.getQuantity());
 
 			OrderItem orderItem = new OrderItem();
 			orderItem.setProduct(product);
@@ -71,7 +82,6 @@ public class OrderService
 			orderItem.setOrder(order);
 
 			orderItems.add(orderItem);
-
 			totalPrice += itemPrice;
 		}
 
@@ -81,30 +91,31 @@ public class OrderService
 		Order savedOrder = orderRepository.save(order);
 
 		OrderStatusHistory history = new OrderStatusHistory();
-
 		history.setOrder(savedOrder);
 		history.setStatus(OrderStatus.CREATED);
 		history.setUpdatedAt(LocalDateTime.now());
-		history.setUpdatedBy(user.getEmail());
+		history.setUpdatedBy(email);
 
 		orderStatusHistoryRepository.save(history);
-		
+
 		cartItemRepository.deleteAll(cart.getItems());
 		cart.getItems().clear();
 		cartRepository.save(cart);
 
-		return savedOrder;
+		return mapToDTO(savedOrder);
 	}
 
-	public List<Order> getUserOrders(User user, OrderStatus status) 
+	public List<OrderResponse> getUserOrders(String email, OrderStatus status) 
 	{
 
-		if (status == null) 
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+		if (status != null) 
 		{
-			return orderRepository.findByUserId(user.getId());
+			return orderRepository.findByUserIdAndStatus(user.getId(), status).stream().map(this::mapToDTO).toList();
 		}
 
-		return orderRepository.findByUserIdAndStatus(user.getId(), status);
+		return orderRepository.findByUserId(user.getId()).stream().map(this::mapToDTO).toList();
 	}
 
 	public Order getOrderById(Long orderId) 
@@ -113,7 +124,7 @@ public class OrderService
 		return orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
 	}
     
-	public Order updateOrderStatus(Long orderId, OrderStatus status, String email) 
+	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status, String email) 
 	{
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -163,18 +174,18 @@ public class OrderService
 
 	    orderStatusHistoryRepository.save(history);
 
-	    return savedOrder;
+	    return mapToDTO(savedOrder); 
 	}
 	
-	public List<Order> getMerchantOrders(String email) 
+	public List<OrderResponse> getMerchantOrders(String email) 
 	{
 
 		User merchant = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-		return orderRepository.findOrdersByMerchantId(merchant.getId());
+		return orderRepository.findOrdersByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
 	}
 	
-	public List<OrderStatusHistory> getOrderTracking(Long orderId, String email) 
+	public List<OrderStatusHistoryDTO> getOrderTracking(Long orderId, String email) 
 	{
 
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
@@ -186,6 +197,21 @@ public class OrderService
 			throw new RuntimeException("You cannot access this order");
 		}
 
-		return orderStatusHistoryRepository.findByOrderOrderByUpdatedAtAsc(order);
+		return orderStatusHistoryRepository.findByOrderOrderByUpdatedAtAsc(order).stream().map(this::mapHistory)
+				.toList();
+	}
+	
+	private OrderResponse mapToDTO(Order order) 
+	{
+
+		List<OrderItemDTO> items = order.getOrderItems().stream()
+				.map(i -> new OrderItemDTO(i.getProduct().getName(), i.getQuantity(), i.getPrice())).toList();
+
+		return new OrderResponse(order.getId(), order.getStatus(), order.getTotalPrice(), order.isPaid(), items);
+	}
+	
+	private OrderStatusHistoryDTO mapHistory(OrderStatusHistory h) 
+	{
+		return new OrderStatusHistoryDTO(h.getStatus(), h.getUpdatedAt(), h.getUpdatedBy());
 	}
 }

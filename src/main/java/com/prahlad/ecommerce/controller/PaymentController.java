@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.prahlad.ecommerce.dto.payment.PaymentResponse;
 import com.prahlad.ecommerce.entity.Payment;
 import com.prahlad.ecommerce.service.payment.PaymentService;
 
@@ -22,7 +23,7 @@ public class PaymentController
     private final PaymentService paymentService;
 
 	@PostMapping("/pay")
-	public Payment pay(@RequestParam Long orderId, Authentication authentication) 
+	public PaymentResponse pay(@RequestParam Long orderId, Authentication authentication) 
 	{
 
 		String email = authentication.getName();

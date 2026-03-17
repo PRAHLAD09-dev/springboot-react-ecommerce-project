@@ -1,130 +1,134 @@
 package com.prahlad.ecommerce.service.product;
 
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
-import com.prahlad.ecommerce.dto.auth.ProductRequest;
+import com.prahlad.ecommerce.dto.product.ProductRequest;
+import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.entity.Category;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.repository.CategoryRepository;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ProductServiceImpl implements ProductService
+public class ProductServiceImpl implements ProductService 
 {
 
-    private final ProductRepository productRepository;
-    private final MerchantRepository merchantRepository;
-    private final CategoryRepository categoryRepository;
+	private final ProductRepository productRepository;
+	private final MerchantRepository merchantRepository;
+	private final CategoryRepository categoryRepository;
 
-    
-  
-    @Override
-    public Product addProduct(ProductRequest request, String merchantEmail) 
-    {
+	@Override
+	public ProductResponse addProduct(ProductRequest request, String merchantEmail) 
+	{
 
-    	  System.out.println("Category ID = " + request.categoryId());
-        Merchant merchant = merchantRepository.findByEmail(merchantEmail)
-                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
+				.orElseThrow(() -> new RuntimeException("Merchant not found"));
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        System.out.println("Category ID = " + request.categoryId());
-        Product product = new Product();
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setPrice(request.price());
-        product.setStock(request.stock());
-        product.setMerchant(merchant);
-        product.setCategory(category);
-        product.setActive(true);
+		Category category = categoryRepository.findById(request.categoryId())
+				.orElseThrow(() -> new RuntimeException("Category not found"));
 
-        return productRepository.save(product);
-    }
+		Product product = new Product();
+		product.setName(request.name());
+		product.setDescription(request.description());
+		product.setPrice(request.price());
+		product.setStock(request.stock());
+		product.setMerchant(merchant);
+		product.setCategory(category);
+		product.setActive(true);
 
-  
-    @Override
-    public Product updateProduct(Long productId, ProductRequest request, String merchantEmail) 
-    {
+		Product saved = productRepository.save(product);
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+		return mapToDTO(saved);
+	}
 
-        if (!product.getMerchant().getEmail().equals(merchantEmail)) 
-        {
-            throw new RuntimeException("Unauthorized");
-        }
+	@Override
+	public ProductResponse updateProduct(Long productId, ProductRequest request, String merchantEmail) 
+	{
 
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setPrice(request.price());
-        product.setStock(request.stock());
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new RuntimeException("Product not found"));
 
-        return productRepository.save(product);
-    }
+		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
+		{
+			throw new RuntimeException("Unauthorized");
+		}
 
-    
-    @Override
-    public void deleteProduct(Long productId, String merchantEmail) 
-    {
+		product.setName(request.name());
+		product.setDescription(request.description());
+		product.setPrice(request.price());
+		product.setStock(request.stock());
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+		Product updated = productRepository.save(product);
 
-        if (!product.getMerchant().getEmail().equals(merchantEmail)) 
-        {
-            throw new RuntimeException("Unauthorized");
-        }
+		return mapToDTO(updated);
+	}
 
-        productRepository.delete(product);
-    }
 
-    @Override
-    public List<Product> getMyProducts(String merchantEmail) 
-    {
+	@Override
+	public void deleteProduct(Long productId, String merchantEmail) 
+	{
 
-        Merchant merchant = merchantRepository.findByEmail(merchantEmail)
-                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new RuntimeException("Product not found"));
 
-        return productRepository.findByMerchantId(merchant.getId());
-    }
-   
-        @Override
-        public Page<Product> getAllProducts(int page, int size, String sortBy) 
-        {
+		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
+		{
+			throw new RuntimeException("Unauthorized");
+		}
 
-            Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+		productRepository.delete(product);
+	}
 
-            return productRepository.findByActiveTrue(pageable);
-        }
+	@Override
+	public List<ProductResponse> getMyProducts(String merchantEmail) 
+	{
 
-        @Override
-        public Page<Product> searchProducts(String keyword, int page, int size) 
-        {
+		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
+				.orElseThrow(() -> new RuntimeException("Merchant not found"));
 
-            Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
+	}
 
-            return productRepository
-                    .findByNameContainingIgnoreCaseAndActiveTrue(keyword, pageable);
-        }
 
-        @Override
-        public Page<Product> getProductsByCategory(Long categoryId, int page, int size) 
-        {
+	@Override
+	public Page<ProductResponse> getAllProducts(int page, int size, String sortBy) 
+	{
 
-            Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
 
-            return productRepository
-                    .findByCategoryIdAndActiveTrue(categoryId, pageable);
-        }
-    
+		return productRepository.findByActiveTrue(pageable).map(this::mapToDTO);
+	}
+
+
+	@Override
+	public Page<ProductResponse> searchProducts(String keyword, int page, int size) 
+	{
+
+		Pageable pageable = PageRequest.of(page, size);
+		return productRepository.findByNameContainingIgnoreCaseAndActiveTrue(keyword, pageable).map(this::mapToDTO);
+	}
+
+	@Override
+	public Page<ProductResponse> getProductsByCategory(Long categoryId, int page, int size) 
+	{
+
+		Pageable pageable = PageRequest.of(page, size);
+
+		return productRepository.findByCategoryIdAndActiveTrue(categoryId, pageable).map(this::mapToDTO);
+	}
+
+	private ProductResponse mapToDTO(Product product) 
+	{
+		return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(),
+				product.getStock(), product.getCategory().getName(), product.getMerchant().getBusinessName());
+	}
 }

@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.prahlad.ecommerce.dto.order.OrderResponse;
+import com.prahlad.ecommerce.dto.order.OrderStatusHistoryDTO;
 import com.prahlad.ecommerce.entity.Order;
 import com.prahlad.ecommerce.entity.OrderStatusHistory;
 import com.prahlad.ecommerce.entity.User;
@@ -25,29 +28,22 @@ public class UserOrderController
 {
 
 	private final OrderService orderService;
-	private final UserRepository userRepository;
 
-	@PostMapping("/place")
-	public Order placeOrder(Authentication authentication) 
-	{
+    @PostMapping("/place")
+    public OrderResponse placeOrder(Authentication authentication) {
 
-		String email = authentication.getName();
+        String email = authentication.getName();
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        return orderService.placeOrder(email); 
+    }
 
-		return orderService.placeOrder(user);
-	}
-
-	@GetMapping("/my-orders")
-	public List<Order> getUserOrders(@RequestParam(required = false) OrderStatus status,
-			Authentication authentication) 
-	{
+    @GetMapping("/my-orders")
+	public List<OrderResponse> getUserOrders(@RequestParam(required = false) OrderStatus status,
+			Authentication authentication) {
 
 		String email = authentication.getName();
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
-
-		return orderService.getUserOrders(user, status);
+		return orderService.getUserOrders(email, status);
 	}
 
 	@GetMapping("/{orderId}")
@@ -58,7 +54,7 @@ public class UserOrderController
 	}
 
 	@GetMapping("/{orderId}/tracking")
-	public List<OrderStatusHistory> trackOrder(@PathVariable Long orderId, Authentication authentication) 
+	public List<OrderStatusHistoryDTO> trackOrder(@PathVariable Long orderId, Authentication authentication) 
 	{
 
 		String email = authentication.getName();
