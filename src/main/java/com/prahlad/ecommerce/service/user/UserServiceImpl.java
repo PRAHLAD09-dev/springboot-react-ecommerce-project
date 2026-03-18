@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import com.prahlad.ecommerce.dto.user.UserResponse;
 import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.exception.BadRequestException;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
 import com.prahlad.ecommerce.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +24,7 @@ public class UserServiceImpl implements UserService
 	public UserResponse getProfile(String email) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		return mapToDTO(user);
 	}
@@ -31,7 +33,7 @@ public class UserServiceImpl implements UserService
 	public UserResponse updateProfile(String email, UserUpdateRequest request) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 
 		if (request.name() != null) 
@@ -48,7 +50,7 @@ public class UserServiceImpl implements UserService
 	public void deleteAccount(String email) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		userRepository.delete(user);
 	}
@@ -57,11 +59,11 @@ public class UserServiceImpl implements UserService
 	public String changePassword(String email, String oldPassword, String newPassword) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		if (!passwordEncoder.matches(oldPassword, user.getPassword())) 
 		{
-			throw new RuntimeException("Old password is incorrect");
+			throw new BadRequestException("Old password is incorrect");
 		}
 
 		user.setPassword(passwordEncoder.encode(newPassword));

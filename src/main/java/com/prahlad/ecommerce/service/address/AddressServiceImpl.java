@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.prahlad.ecommerce.entity.Address;
 import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
+import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.AddressRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 
@@ -28,7 +30,7 @@ public class AddressServiceImpl implements AddressService
                 .getName();
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
@@ -58,11 +60,11 @@ public class AddressServiceImpl implements AddressService
         User user = getLoggedInUser();
 
         Address existing = addressRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         if (!existing.getUser().getId().equals(user.getId())) 
         {
-            throw new RuntimeException("Unauthorized access");
+            throw new UnauthorizedException("Unauthorized access");
         }
 
         existing.setStreet(address.getStreet());
@@ -80,11 +82,11 @@ public class AddressServiceImpl implements AddressService
         User user = getLoggedInUser();
 
         Address address = addressRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         if (!address.getUser().getId().equals(user.getId())) 
         {
-            throw new RuntimeException("Unauthorized access");
+            throw new UnauthorizedException("Unauthorized access");
         }
 
         addressRepository.delete(address);

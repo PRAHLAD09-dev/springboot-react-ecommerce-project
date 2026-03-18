@@ -12,6 +12,8 @@ import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.entity.Category;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.Product;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
+import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.CategoryRepository;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
@@ -31,10 +33,10 @@ public class ProductServiceImpl implements ProductService
 	{
 
 		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
-				.orElseThrow(() -> new RuntimeException("Merchant not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
 
 		Category category = categoryRepository.findById(request.categoryId())
-				.orElseThrow(() -> new RuntimeException("Category not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
 		Product product = new Product();
 		product.setName(request.name());
@@ -55,11 +57,11 @@ public class ProductServiceImpl implements ProductService
 	{
 
 		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new RuntimeException("Product not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
 		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
 		{
-			throw new RuntimeException("Unauthorized");
+			throw new UnauthorizedException("Unauthorized");
 		}
 
 		product.setName(request.name());
@@ -78,11 +80,11 @@ public class ProductServiceImpl implements ProductService
 	{
 
 		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new RuntimeException("Product not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
 		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
 		{
-			throw new RuntimeException("Unauthorized");
+			throw new UnauthorizedException("Unauthorized");
 		}
 
 		productRepository.delete(product);
@@ -93,7 +95,7 @@ public class ProductServiceImpl implements ProductService
 	{
 
 		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
-				.orElseThrow(() -> new RuntimeException("Merchant not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
 
 		return productRepository.findByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
 	}

@@ -20,6 +20,9 @@ import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.enums.OrderStatus;
 import com.prahlad.ecommerce.enums.Role;
+import com.prahlad.ecommerce.exception.BadRequestException;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
+import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.CartItemRepository;
 import com.prahlad.ecommerce.repository.CartRepository;
 import com.prahlad.ecommerce.repository.OrderRepository;
@@ -45,13 +48,13 @@ public class OrderService
 	public OrderResponse placeOrder(String email) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Cart not found"));
+		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
 		if (cart.getItems().isEmpty()) 
 		{
-			throw new RuntimeException("Cart is empty");
+			throw new BadRequestException("Cart is empty");
 		}
 		Order order = new Order();
 		order.setUser(user);
@@ -67,7 +70,7 @@ public class OrderService
 
 			if (product.getStock() < cartItem.getQuantity()) 
 			{
-				throw new RuntimeException("Insufficient stock for " + product.getName());
+				throw new BadRequestException("Insufficient stock for " + product.getName());
 			}
 
 			product.setStock(product.getStock() - cartItem.getQuantity());
@@ -108,7 +111,7 @@ public class OrderService
 	public List<OrderResponse> getUserOrders(String email, OrderStatus status) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		if (status != null) 
 		{
@@ -121,7 +124,7 @@ public class OrderService
 	public Order getOrderById(Long orderId) 
 	{
 
-		return orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+		return orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 	}
     
 	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status, String email) 
@@ -130,16 +133,16 @@ public class OrderService
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
 		Role role = auth.getAuthorities().stream().map(a -> a.getAuthority().replace("ROLE_", "")).map(Role::valueOf)
-				.findFirst().orElseThrow(() -> new RuntimeException("Role not found"));
+				.findFirst().orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
 		if (role == Role.ADMIN) 
 		{
 
 			if (status != OrderStatus.CONFIRMED && status != OrderStatus.CANCELLED && status != OrderStatus.DELIVERED) 
 			{
-				throw new RuntimeException("Admin can only confirm, cancel or deliver order");
+				throw new UnauthorizedException("Admin can only confirm, cancel or deliver order");
 			}
 
 			order.setStatus(status);
@@ -153,12 +156,12 @@ public class OrderService
 
 			if (!belongsToMerchant) 
 			{
-				throw new RuntimeException("Order does not belong to this merchant");
+				throw new UnauthorizedException("Order does not belong to this merchant");
 			}
 
 			if (status != OrderStatus.SHIPPED) 
 			{
-				throw new RuntimeException("Merchant can only ship order");
+				throw new UnauthorizedException("Merchant can only ship order");
 			}
 
 			order.setStatus(OrderStatus.SHIPPED);
@@ -180,7 +183,7 @@ public class OrderService
 	public List<OrderResponse> getMerchantOrders(String email) 
 	{
 
-		User merchant = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User merchant = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		return orderRepository.findOrdersByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
 	}
@@ -188,13 +191,13 @@ public class OrderService
 	public List<OrderStatusHistoryDTO> getOrderTracking(Long orderId, String email) 
 	{
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
 		if (!order.getUser().getId().equals(user.getId())) 
 		{
-			throw new RuntimeException("You cannot access this order");
+			throw new UnauthorizedException("You cannot access this order");
 		}
 
 		return orderStatusHistoryRepository.findByOrderOrderByUpdatedAtAsc(order).stream().map(this::mapHistory)

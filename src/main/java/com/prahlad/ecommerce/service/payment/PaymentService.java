@@ -6,6 +6,9 @@ import com.prahlad.ecommerce.entity.Order;
 import com.prahlad.ecommerce.entity.Payment;
 import com.prahlad.ecommerce.enums.OrderStatus;
 import com.prahlad.ecommerce.enums.PaymentStatus;
+import com.prahlad.ecommerce.exception.BadRequestException;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
+import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.OrderRepository;
 import com.prahlad.ecommerce.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,21 +24,21 @@ public class PaymentService
 	public PaymentResponse makePayment(Long orderId, String email) 
 	{
 
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
 		if (!order.getUser().getEmail().equals(email)) 
 		{
-			throw new RuntimeException("You cannot pay for this order");
+			throw new UnauthorizedException("You cannot pay for this order");
 		}
 
 		if (paymentRepository.existsByOrder(order)) 
 		{
-			throw new RuntimeException("Payment already completed");
+			throw new BadRequestException("Payment already completed");
 		}
 
 		if (order.getStatus() != OrderStatus.CONFIRMED) 
 		{
-			throw new RuntimeException("Order not confirmed yet");
+			throw new BadRequestException("Order not confirmed yet");
 		}
 
 		Payment payment = new Payment();

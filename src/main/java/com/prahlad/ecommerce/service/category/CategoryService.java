@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.prahlad.ecommerce.entity.Category;
+import com.prahlad.ecommerce.exception.BadRequestException;
 import com.prahlad.ecommerce.repository.CategoryRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
 
@@ -36,7 +37,7 @@ public class CategoryService
     {
     	if(productRepository.existsByCategoryId(id))
     	{
-    	    throw new RuntimeException("Category contains products");
+    	    throw new BadRequestException("Category contains products");
     	}
         categoryRepository.deleteById(id);
     }

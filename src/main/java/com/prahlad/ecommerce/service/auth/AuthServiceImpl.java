@@ -12,6 +12,8 @@ import com.prahlad.ecommerce.dto.user.UserRegisterRequest;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.enums.Role;
+import com.prahlad.ecommerce.exception.BadRequestException;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 import com.prahlad.ecommerce.security.JwtUtil;
@@ -36,7 +38,7 @@ public class AuthServiceImpl implements AuthService
 
         if (userRepository.findByEmail(request.email()).isPresent()) 
         {
-            throw new RuntimeException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
 
         User user = User.builder()
@@ -63,7 +65,7 @@ public class AuthServiceImpl implements AuthService
 
         if (merchantRepository.findByEmail(request.email()).isPresent()) 
         {
-            throw new RuntimeException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
 
         Merchant merchant = Merchant.builder()
@@ -99,7 +101,7 @@ public class AuthServiceImpl implements AuthService
 
             if (!passwordEncoder.matches(request.password(), user.getPassword())) 
             {
-                throw new RuntimeException("Invalid credentials");
+                throw new ResourceNotFoundException("Invalid credentials");
             }
 
             String token = jwtUtil.generateToken(user);
@@ -121,7 +123,7 @@ public class AuthServiceImpl implements AuthService
 
             if (!passwordEncoder.matches(request.password(), merchant.getPassword())) 
             {
-                throw new RuntimeException("Invalid credentials");
+                throw new ResourceNotFoundException("Invalid credentials");
             }
 
             if (!merchant.isApproved()) 
@@ -144,7 +146,7 @@ public class AuthServiceImpl implements AuthService
             );
         }
 
-        throw new RuntimeException("Invalid credentials");
+        throw new ResourceNotFoundException("Invalid credentials");
     }
 
 

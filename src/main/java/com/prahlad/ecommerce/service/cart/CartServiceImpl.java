@@ -8,6 +8,9 @@ import com.prahlad.ecommerce.entity.Cart;
 import com.prahlad.ecommerce.entity.CartItem;
 import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.exception.BadRequestException;
+import com.prahlad.ecommerce.exception.ResourceNotFoundException;
+import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.CartItemRepository;
 import com.prahlad.ecommerce.repository.CartRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
@@ -28,7 +31,7 @@ public class CartServiceImpl implements CartService
 	public Cart addToCart(Long productId, int quantity, String userEmail) 
 	{
 
-		User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
+		User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseGet(() -> 
 		{
@@ -38,16 +41,16 @@ public class CartServiceImpl implements CartService
 		});
 
 		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new RuntimeException("Product not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
 		if (!product.isActive()) 
 		{
-			throw new RuntimeException("Product not available");
+			throw new ResourceNotFoundException("Product not available");
 		}
 
 		if (product.getStock() < quantity) 
 		{
-			throw new RuntimeException("Insufficient stock");
+			throw new BadRequestException("Insufficient stock");
 		}
 
 		Optional<CartItem> existingItem = cart.getItems().stream().filter(i -> i.getProduct().getId().equals(productId))
@@ -61,7 +64,7 @@ public class CartServiceImpl implements CartService
 
 			if (product.getStock() < newQty) 
 			{
-				throw new RuntimeException("Insufficient stock");
+				throw new BadRequestException("Insufficient stock");
 			}
 
 			item.setQuantity(newQty);
@@ -88,18 +91,18 @@ public class CartServiceImpl implements CartService
 	{
 
 		CartItem item = cartItemRepository.findById(cartItemId)
-				.orElseThrow(() -> new RuntimeException("Cart item not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
 		if (!item.getCart().getUser().getEmail().equals(userEmail)) 
 		{
-			throw new RuntimeException("Unauthorized access");
+			throw new UnauthorizedException("Unauthorized access");
 		}
 
 		Product product = item.getProduct();
 
 		if (product.getStock() < quantity) 
 		{
-			throw new RuntimeException("Stock not available");
+			throw new ResourceNotFoundException("Stock not available");
 		}
 
 		item.setQuantity(quantity);
@@ -115,11 +118,11 @@ public class CartServiceImpl implements CartService
 	{
 
 		CartItem item = cartItemRepository.findById(cartItemId)
-				.orElseThrow(() -> new RuntimeException("Cart item not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
 		if (!item.getCart().getUser().getEmail().equals(userEmail)) 
 		{
-			throw new RuntimeException("Unauthorized access");
+			throw new UnauthorizedException("Unauthorized access");
 		}
 
 		Cart cart = item.getCart();
@@ -134,8 +137,7 @@ public class CartServiceImpl implements CartService
 	@Override
 	public Cart getUserCart(String userEmail) 
 	{
-
-		User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
-		return cartRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Cart is empty"));
+		User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		return cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 	}
 }
