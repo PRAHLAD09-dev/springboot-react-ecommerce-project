@@ -2,24 +2,14 @@ package com.prahlad.ecommerce.controller;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.product.ProductRequest;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
-import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.service.product.ProductService;
-
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -32,48 +22,40 @@ public class MerchantProductController
 
 	private final ProductService productService;
 
-	private String getLoggedInMerchantEmail() 
-	{
-		return SecurityContextHolder.getContext().getAuthentication().getName();
-	}
-
 	@GetMapping("/panel")
-	public String merchantPanel() 
+	public ApiResponse<String> merchantPanel(Authentication auth) 
 	{
-		return "Merchant panel accessed";
+		return ApiResponse.success("Merchant panel accessed", auth.getName());
 	}
 
 	@PostMapping("/add")
-	public ResponseEntity<ProductResponse> addProduct(@Valid @RequestBody ProductRequest request )
-    {
+	public ApiResponse<ProductResponse> addProduct(@Valid @RequestBody ProductRequest request, Authentication auth) 
+	{
 
-		return ResponseEntity.ok(productService.addProduct(request, getLoggedInMerchantEmail()));
+		return ApiResponse.success("Product added successfully", productService.addProduct(request, auth.getName()));
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) 
-	{
+	public ApiResponse<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request,
+			Authentication auth) {
 
-		ProductResponse product = productService.updateProduct(id, request, getLoggedInMerchantEmail());
-
-		return ResponseEntity.ok(product);
+		return ApiResponse.success("Product updated successfully",
+				productService.updateProduct(id, request, auth.getName()));
 	}
 
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<String> deleteProduct(@PathVariable Long id) 
+	public ApiResponse<String> deleteProduct(@PathVariable Long id, Authentication auth) 
 	{
 
-		productService.deleteProduct(id, getLoggedInMerchantEmail());
+		productService.deleteProduct(id, auth.getName());
 
-		return ResponseEntity.ok("Product deleted successfully");
+		return ApiResponse.success("Product deleted successfully", null);
 	}
 
 	@GetMapping("/my-products")
-	public ResponseEntity<List<ProductResponse>> getMyProducts() 
+	public ApiResponse<List<ProductResponse>> getMyProducts(Authentication auth) 
 	{
 
-		List<ProductResponse> products = productService.getMyProducts(getLoggedInMerchantEmail());
-
-		return ResponseEntity.ok(products);
+		return ApiResponse.success("Merchant products fetched", productService.getMyProducts(auth.getName()));
 	}
 }

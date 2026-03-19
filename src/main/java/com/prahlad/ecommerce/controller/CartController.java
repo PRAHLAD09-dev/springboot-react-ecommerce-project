@@ -1,18 +1,11 @@
 package com.prahlad.ecommerce.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
-import com.prahlad.ecommerce.entity.Cart;
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
+import com.prahlad.ecommerce.dto.cart.CartResponse;
 import com.prahlad.ecommerce.service.cart.CartService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,59 +17,35 @@ import lombok.RequiredArgsConstructor;
 public class CartController 
 {
 
-    private final CartService cartService;
+	private final CartService cartService;
 
-  
-    private String getLoggedInUserEmail()
-    {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-    }
+	@PostMapping("/add")
+	public ApiResponse<CartResponse> addToCart(@RequestParam Long productId, @RequestParam int quantity,
+			Authentication auth) 
+	{
 
-    @PostMapping("/add")
-    public ResponseEntity<Cart> addToCart(
-            @RequestParam Long productId,
-            @RequestParam int quantity)
-    {
+		return ApiResponse.success("Product added to cart", cartService.addToCart(productId, quantity, auth.getName()));
+	}
 
-        Cart cart = cartService.addToCart(
-                productId,
-                quantity,
-                getLoggedInUserEmail()
-        );
+	@PutMapping("/update/{cartItemId}")
+	public ApiResponse<CartResponse> updateQuantity(@PathVariable Long cartItemId, @RequestParam int quantity,
+			Authentication auth) 
+	{
 
-        return ResponseEntity.ok(cart);
-    }
+		return ApiResponse.success("Cart updated", cartService.updateQuantity(cartItemId, quantity, auth.getName()));
+	}
 
-    @PutMapping("/update/{cartItemId}")
-    public ResponseEntity<Cart> updateQuantity(
-            @PathVariable Long cartItemId,
-            @RequestParam int quantity)
-    {
-        Cart cart = cartService.updateQuantity(
-                cartItemId,
-                quantity,
-                getLoggedInUserEmail()
-        );
+	@DeleteMapping("/remove/{cartItemId}")
+	public ApiResponse<CartResponse> removeItem(@PathVariable Long cartItemId, Authentication auth) 
+	{
 
-        return ResponseEntity.ok(cart);
-    }
+		return ApiResponse.success("Item removed from cart", cartService.removeItem(cartItemId, auth.getName()));
+	}
 
-    @DeleteMapping("/remove/{cartItemId}")
-    public ResponseEntity<Cart> removeItem( @PathVariable Long cartItemId)
-    {
-        Cart cart = cartService.removeItem(
-                cartItemId,
-                getLoggedInUserEmail()
-        );
+	@GetMapping
+	public ApiResponse<CartResponse> viewCart(Authentication auth) 
+	{
 
-        return ResponseEntity.ok(cart);
-    }
-
-    @GetMapping
-    public ResponseEntity<Cart> viewCart()
-    {
-        Cart cart = cartService.getUserCart(getLoggedInUserEmail());
-
-        return ResponseEntity.ok(cart);
-    }
+		return ApiResponse.success("Cart fetched", cartService.getUserCart(auth.getName()));
+	}
 }

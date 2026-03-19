@@ -4,15 +4,11 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.user.UserResponse;
 import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 import com.prahlad.ecommerce.service.user.UserService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,30 +21,39 @@ public class UserController
 	private final UserService userService;
 
 	@GetMapping("/profile")
-	public UserResponse getProfile(Authentication authentication) 
+	public ApiResponse<UserResponse> getProfile(Authentication authentication) 
 	{
-		return userService.getProfile(authentication.getName());
+
+		UserResponse response = userService.getProfile(authentication.getName());
+
+		return ApiResponse.success("Profile fetched successfully", response);
 	}
 
 	@PutMapping("/profile")
-	public UserResponse updateProfile(Authentication authentication, @RequestBody UserUpdateRequest user) 
+	public ApiResponse<UserResponse> updateProfile(Authentication authentication, @RequestBody UserUpdateRequest user) 
 	{
-		return userService.updateProfile(authentication.getName(), user);
+
+		UserResponse response = userService.updateProfile(authentication.getName(), user);
+
+		return ApiResponse.success("Profile updated successfully", response);
 	}
 
 	@PutMapping("/change-password")
-	public String changePassword(Authentication authentication, @RequestBody Map<String, String> request) 
+	public ApiResponse<String> changePassword(Authentication authentication, @RequestBody Map<String, String> request) 
 	{
 
-		String oldPassword = request.get("oldPassword");
-		String newPassword = request.get("newPassword");
+		String result = userService.changePassword(authentication.getName(), request.get("oldPassword"),
+				request.get("newPassword"));
 
-		return userService.changePassword(authentication.getName(), oldPassword, newPassword);
+		return ApiResponse.success(result, null);
 	}
 
 	@DeleteMapping("/account")
-	public String deleteAccount(Authentication authentication) {
+	public ApiResponse<String> deleteAccount(Authentication authentication) 
+	{
+
 		userService.deleteAccount(authentication.getName());
-		return "Account deleted";
+
+		return ApiResponse.success("Account deleted successfully", null);
 	}
 }

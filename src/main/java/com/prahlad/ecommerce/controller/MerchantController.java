@@ -4,15 +4,13 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
 import com.prahlad.ecommerce.dto.merchant.MerchantUpdateRequest;
 import com.prahlad.ecommerce.service.merchant.MerchantService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,28 +23,35 @@ public class MerchantController
 	private final MerchantService merchantService;
 
 	@GetMapping("/profile")
-	public MerchantResponse getProfile(Authentication auth) 
+	public ApiResponse<MerchantResponse> getProfile(Authentication auth) 
 	{
-		return merchantService.getProfile(auth.getName());
+
+		return ApiResponse.success("Merchant profile fetched", merchantService.getProfile(auth.getName()));
 	}
 
 	@PutMapping("/profile")
-	public MerchantResponse updateProfile(Authentication auth, @RequestBody MerchantUpdateRequest merchant) 
+	public ApiResponse<MerchantResponse> updateProfile(Authentication auth,
+			@Valid @RequestBody MerchantUpdateRequest merchant) 
 	{
-		return merchantService.updateProfile(auth.getName(), merchant);
+
+		return ApiResponse.success("Profile updated successfully",
+				merchantService.updateProfile(auth.getName(), merchant));
 	}
 
 	@PutMapping("/change-password")
-	public String changePassword(Authentication auth, @RequestBody Map<String, String> req) 
+	public ApiResponse<String> changePassword(Authentication auth, @RequestBody Map<String, String> req) 
 	{
 
-		return merchantService.changePassword(auth.getName(), req.get("oldPassword"), req.get("newPassword"));
+		return ApiResponse.success(
+				merchantService.changePassword(auth.getName(), req.get("oldPassword"), req.get("newPassword")), null);
 	}
 
 	@DeleteMapping("/account")
-	public String deleteAccount(Authentication auth) 
+	public ApiResponse<String> deleteAccount(Authentication auth) 
 	{
+
 		merchantService.deleteAccount(auth.getName());
-		return "Merchant account deleted";
+
+		return ApiResponse.success("Merchant account deleted successfully", null);
 	}
 }

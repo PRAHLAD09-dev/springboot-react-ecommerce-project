@@ -4,22 +4,23 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.prahlad.ecommerce.entity.Merchant;
-import com.prahlad.ecommerce.entity.Order;
-import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
+import com.prahlad.ecommerce.dto.order.OrderResponse;
+import com.prahlad.ecommerce.dto.user.UserResponse;
 
 @Service
-public interface AdminService {
+public interface AdminService 
+{
 
     String approveMerchant(Long merchantId);
 
-    List<User> getAllUsers();
+    List<UserResponse> getAllUsers();
 
-    List<Merchant> getAllMerchants();
+    List<MerchantResponse> getAllMerchants();
 
     String blockMerchant(Long merchantId);
 
     String unblockMerchant(Long merchantId);
 
-    List<Order> getAllOrders();
+    List<OrderResponse> getAllOrders();
 }

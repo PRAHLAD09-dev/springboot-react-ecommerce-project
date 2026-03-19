@@ -2,9 +2,10 @@ package com.prahlad.ecommerce.service.address;
 
 import java.util.List;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.prahlad.ecommerce.dto.address.AddressRequest;
+import com.prahlad.ecommerce.dto.address.AddressResponse;
 import com.prahlad.ecommerce.entity.Address;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.exception.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import com.prahlad.ecommerce.repository.AddressRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class AddressServiceImpl implements AddressService 
@@ -21,43 +23,47 @@ public class AddressServiceImpl implements AddressService
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
 
-    private User getLoggedInUser() 
-    {
-
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }
-
+    // ================= ADD =================
     @Override
-    public Address addAddress(Address address) 
+    public AddressResponse addAddress(AddressRequest request, String email) 
     {
 
-        User user = getLoggedInUser();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        Address address = new Address();
+        address.setStreet(request.street());
+        address.setCity(request.city());
+        address.setState(request.state());
+        address.setZipCode(request.zipCode());
         address.setUser(user);
 
-        return addressRepository.save(address);
+        Address saved = addressRepository.save(address);
+
+        return mapToDTO(saved);
     }
 
+    // ================= GET =================
     @Override
-    public List<Address> getUserAddresses() 
+    public List<AddressResponse> getUserAddresses(String email) 
     {
 
-        User user = getLoggedInUser();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return addressRepository.findByUserId(user.getId());
+        return addressRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
+    // ================= UPDATE =================
     @Override
-    public Address updateAddress(Long id, Address address) 
+    public AddressResponse updateAddress(Long id, AddressRequest request, String email) 
     {
 
-        User user = getLoggedInUser();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Address existing = addressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
@@ -67,19 +73,23 @@ public class AddressServiceImpl implements AddressService
             throw new UnauthorizedException("Unauthorized access");
         }
 
-        existing.setStreet(address.getStreet());
-        existing.setCity(address.getCity());
-        existing.setState(address.getState());
-        existing.setZipCode(address.getZipCode());
+        existing.setStreet(request.street());
+        existing.setCity(request.city());
+        existing.setState(request.state());
+        existing.setZipCode(request.zipCode());
 
-        return addressRepository.save(existing);
+        Address updated = addressRepository.save(existing);
+
+        return mapToDTO(updated);
     }
 
+    // ================= DELETE =================
     @Override
-    public void deleteAddress(Long id) 
+    public void deleteAddress(Long id, String email) 
     {
 
-        User user = getLoggedInUser();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Address address = addressRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
@@ -90,5 +100,17 @@ public class AddressServiceImpl implements AddressService
         }
 
         addressRepository.delete(address);
+    }
+
+    // ================= MAPPER =================
+    private AddressResponse mapToDTO(Address address) 
+    {
+        return new AddressResponse(
+                address.getId(),
+                address.getStreet(),
+                address.getCity(),
+                address.getState(),
+                address.getZipCode()
+        );
     }
 }

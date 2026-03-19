@@ -1,17 +1,12 @@
 package com.prahlad.ecommerce.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.auth.AuthResponse;
 import com.prahlad.ecommerce.dto.auth.LoginRequest;
 import com.prahlad.ecommerce.dto.merchant.MerchantRegisterRequest;
 import com.prahlad.ecommerce.dto.user.UserRegisterRequest;
 import com.prahlad.ecommerce.service.auth.AuthService;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -20,26 +15,32 @@ import lombok.RequiredArgsConstructor;
 public class AuthController 
 {
 
-    private final AuthService authService;
+	private final AuthService authService;
 
-    @PostMapping("/user/register")
-    public ResponseEntity<AuthResponse> registerUser( @RequestBody UserRegisterRequest request) 
-    {
+	@PostMapping("/user/register")
+	public ApiResponse<AuthResponse> registerUser(@RequestBody UserRegisterRequest request) 
+	{
 
-        return ResponseEntity.ok(authService.registerUser(request));
-    }
+		AuthResponse response = authService.registerUser(request);
 
-    @PostMapping("/merchant/register")
-    public ResponseEntity<AuthResponse> registerMerchant(@RequestBody MerchantRegisterRequest request) 
-    {
+		return ApiResponse.success("User registered successfully", response);
+	}
 
-        return ResponseEntity.ok(authService.registerMerchant(request));
-    }
+	@PostMapping("/merchant/register")
+	public ApiResponse<AuthResponse> registerMerchant(@RequestBody MerchantRegisterRequest request) 
+	{
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login( @RequestBody LoginRequest request) 
-    {
+		AuthResponse response = authService.registerMerchant(request);
 
-        return ResponseEntity.ok(authService.login(request));
-    }
+		return ApiResponse.success("Merchant registered successfully", response);
+	}
+
+	@PostMapping("/login")
+	public ApiResponse<AuthResponse> login(@RequestBody LoginRequest request) 
+	{
+
+		AuthResponse response = authService.login(request);
+
+		return ApiResponse.success("Login successful", response);
+	}
 }

@@ -1,9 +1,10 @@
 package com.prahlad.ecommerce.service.cart;
 
+import java.util.List;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
-
+import com.prahlad.ecommerce.dto.cart.CartItemDTO;
+import com.prahlad.ecommerce.dto.cart.CartResponse;
 import com.prahlad.ecommerce.entity.Cart;
 import com.prahlad.ecommerce.entity.CartItem;
 import com.prahlad.ecommerce.entity.Product;
@@ -22,16 +23,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService 
 {
+
 	private final CartRepository cartRepository;
 	private final CartItemRepository cartItemRepository;
 	private final ProductRepository productRepository;
 	private final UserRepository userRepository;
 
+	// ================= ADD =================
 	@Override
-	public Cart addToCart(Long productId, int quantity, String userEmail) 
+	public CartResponse addToCart(Long productId, int quantity, String userEmail) 
 	{
-
-		User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		User user = userRepository.findByEmail(userEmail)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
 		Cart cart = cartRepository.findByUser(user).orElseGet(() -> 
 		{
@@ -71,9 +74,9 @@ public class CartServiceImpl implements CartService
 			item.setPrice(product.getPrice() * newQty);
 
 		} 
-		else
+		
+		else 
 		{
-
 			CartItem item = new CartItem();
 			item.setCart(cart);
 			item.setProduct(product);
@@ -83,11 +86,13 @@ public class CartServiceImpl implements CartService
 			cart.getItems().add(item);
 		}
 
-		return cartRepository.save(cart);
+		Cart saved = cartRepository.save(cart);
+		return mapToDTO(saved);
 	}
 
+	// ================= UPDATE =================
 	@Override
-	public Cart updateQuantity(Long cartItemId, int quantity, String userEmail) 
+	public CartResponse updateQuantity(Long cartItemId, int quantity, String userEmail) 
 	{
 
 		CartItem item = cartItemRepository.findById(cartItemId)
@@ -102,7 +107,7 @@ public class CartServiceImpl implements CartService
 
 		if (product.getStock() < quantity) 
 		{
-			throw new ResourceNotFoundException("Stock not available");
+			throw new BadRequestException("Insufficient stock");
 		}
 
 		item.setQuantity(quantity);
@@ -110,13 +115,13 @@ public class CartServiceImpl implements CartService
 
 		cartItemRepository.save(item);
 
-		return item.getCart();
+		return mapToDTO(item.getCart());
 	}
 
+	// ================= REMOVE =================
 	@Override
-	public Cart removeItem(Long cartItemId, String userEmail) 
+	public CartResponse removeItem(Long cartItemId, String userEmail) 
 	{
-
 		CartItem item = cartItemRepository.findById(cartItemId)
 				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
@@ -128,16 +133,45 @@ public class CartServiceImpl implements CartService
 		Cart cart = item.getCart();
 
 		cart.getItems().remove(item);
-
 		cartItemRepository.delete(item);
 
-		return cart;
+		return mapToDTO(cart);
 	}
 
+	// ================= GET =================
 	@Override
-	public Cart getUserCart(String userEmail) 
+	public CartResponse getUserCart(String userEmail) 
 	{
-		User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-		return cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+
+		User user = userRepository.findByEmail(userEmail)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+
+		return mapToDTO(cart);
 	}
+
+	// ================= MAPPER =================
+	private CartResponse mapToDTO(Cart cart) 
+	{
+
+        List<CartItemDTO> items = cart.getItems().stream()
+                .map(i -> new CartItemDTO(
+                        i.getProduct().getId(),
+                        i.getProduct().getName(),
+                        i.getQuantity(),
+                        i.getPrice()
+                ))
+                .toList();
+
+        double total = items.stream()
+                .mapToDouble(i -> i.price())
+                .sum();
+
+        return new CartResponse(
+                cart.getId(),
+                items,
+                total
+        );
+    }
 }

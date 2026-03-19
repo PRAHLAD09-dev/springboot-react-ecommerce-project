@@ -2,12 +2,12 @@ package com.prahlad.ecommerce.controller;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import com.prahlad.ecommerce.entity.Address;
+import com.prahlad.ecommerce.dto.address.AddressRequest;
+import com.prahlad.ecommerce.dto.address.AddressResponse;
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.service.address.AddressService;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -16,37 +16,36 @@ import lombok.RequiredArgsConstructor;
 public class AddressController 
 {
 
-    private final AddressService addressService;
+	private final AddressService addressService;
 
-    @PostMapping
-    public ResponseEntity<Address> addAddress(@RequestBody Address address) 
-    {
+	@PostMapping
+	public ApiResponse<AddressResponse> addAddress(@RequestBody AddressRequest request, Authentication auth) 
+	{
 
-        return ResponseEntity.ok(addressService.addAddress(address));
-    }
+		return ApiResponse.success("Address added successfully", addressService.addAddress(request, auth.getName()));
+	}
 
-    @GetMapping
-    public ResponseEntity<List<Address>> getAddresses() 
-    {
+	@GetMapping
+	public ApiResponse<List<AddressResponse>> getAddresses(Authentication auth) 
+	{
 
-        return ResponseEntity.ok(addressService.getUserAddresses());
-    }
+		return ApiResponse.success("Addresses fetched", addressService.getUserAddresses(auth.getName()));
+	}
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Address> updateAddress(
-            @PathVariable Long id,
-            @RequestBody Address address) 
-    {
+	@PutMapping("/{id}")
+	public ApiResponse<AddressResponse> updateAddress(@PathVariable Long id, @RequestBody AddressRequest request,
+			Authentication auth) 
+	{
 
-        return ResponseEntity.ok(addressService.updateAddress(id, address));
-    }
+		return ApiResponse.success("Address updated", addressService.updateAddress(id, request, auth.getName()));
+	}
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Long id) 
-    {
+	@DeleteMapping("/{id}")
+	public ApiResponse<String> deleteAddress(@PathVariable Long id, Authentication auth) 
+	{
 
-        addressService.deleteAddress(id);
+		addressService.deleteAddress(id, auth.getName());
 
-        return ResponseEntity.noContent().build();
-    }
+		return ApiResponse.success("Address deleted successfully", null);
+	}
 }

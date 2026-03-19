@@ -1,19 +1,12 @@
 package com.prahlad.ecommerce.controller;
 
 import java.util.List;
-
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.prahlad.ecommerce.entity.Category;
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
+import com.prahlad.ecommerce.dto.category.CategoryResponse;
 import com.prahlad.ecommerce.service.category.CategoryService;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -23,23 +16,28 @@ import lombok.RequiredArgsConstructor;
 public class CategoryController 
 {
 
-    private final CategoryService categoryService;
+	private final CategoryService categoryService;
 
-    @PostMapping
-    public Category createCategory(@RequestParam String name) 
-    {
-        return categoryService.createCategory(name);
-    }
+	@PostMapping
+	public ApiResponse<CategoryResponse> createCategory(@RequestParam String name) 
+	{
 
-    @GetMapping
-    public List<Category> getAllCategories() 
-    {
-        return categoryService.getAllCategories();
-    }
+		return ApiResponse.success("Category created successfully", categoryService.createCategory(name));
+	}
 
-    @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable Long id) 
-    {
-        categoryService.deleteCategory(id);
-    }
+	@GetMapping
+	public ApiResponse<List<CategoryResponse>> getAllCategories() 
+	{
+
+		return ApiResponse.success("Categories fetched successfully", categoryService.getAllCategories());
+	}
+
+	@DeleteMapping("/{id}")
+	public ApiResponse<String> deleteCategory(@PathVariable Long id) 
+	{
+
+		categoryService.deleteCategory(id);
+
+		return ApiResponse.success("Category deleted successfully", null);
+	}
 }

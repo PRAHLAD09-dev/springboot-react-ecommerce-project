@@ -2,13 +2,10 @@ package com.prahlad.ecommerce.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.payment.PaymentResponse;
-import com.prahlad.ecommerce.entity.Payment;
 import com.prahlad.ecommerce.service.payment.PaymentService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,14 +17,12 @@ import lombok.RequiredArgsConstructor;
 public class PaymentController 
 {
 
-    private final PaymentService paymentService;
+	private final PaymentService paymentService;
 
 	@PostMapping("/pay")
-	public PaymentResponse pay(@RequestParam Long orderId, Authentication authentication) 
+	public ApiResponse<PaymentResponse> pay(@RequestParam Long orderId, Authentication auth) 
 	{
 
-		String email = authentication.getName();
-
-		return paymentService.makePayment(orderId, email);
+		return ApiResponse.success("Payment successful", paymentService.makePayment(orderId, auth.getName()));
 	}
 }

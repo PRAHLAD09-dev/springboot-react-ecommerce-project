@@ -121,10 +121,11 @@ public class OrderService
 		return orderRepository.findByUserId(user.getId()).stream().map(this::mapToDTO).toList();
 	}
 
-	public Order getOrderById(Long orderId) 
+	public OrderResponse getOrderById(Long orderId) 
 	{
 
-		return orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+		return orderRepository.findById(orderId).map(this::mapToDTO)
+				.orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 	}
     
 	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status, String email) 

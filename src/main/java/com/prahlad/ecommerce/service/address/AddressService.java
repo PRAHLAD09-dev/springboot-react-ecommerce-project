@@ -3,19 +3,19 @@ package com.prahlad.ecommerce.service.address;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
-import com.prahlad.ecommerce.entity.Address;
+import com.prahlad.ecommerce.dto.address.AddressRequest;
+import com.prahlad.ecommerce.dto.address.AddressResponse;
 
 @Service
 public interface AddressService 
 {
 
-    Address addAddress(Address address);
+	AddressResponse addAddress(AddressRequest request, String email);
 
-    List<Address> getUserAddresses();
+    List<AddressResponse>  getUserAddresses(String email);
 
-    Address updateAddress(Long id, Address address);
+    AddressResponse updateAddress(Long id, AddressRequest request, String email);
 
-    void deleteAddress(Long id);
+    void deleteAddress(Long id, String email) ;
 
 }

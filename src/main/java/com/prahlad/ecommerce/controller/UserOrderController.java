@@ -1,23 +1,17 @@
 package com.prahlad.ecommerce.controller;
 
 import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.order.OrderResponse;
 import com.prahlad.ecommerce.dto.order.OrderStatusHistoryDTO;
-import com.prahlad.ecommerce.entity.Order;
-import com.prahlad.ecommerce.entity.OrderStatusHistory;
-import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.enums.OrderStatus;
-import com.prahlad.ecommerce.repository.UserRepository;
 import com.prahlad.ecommerce.service.Order.OrderService;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,37 +23,41 @@ public class UserOrderController
 
 	private final OrderService orderService;
 
-    @PostMapping("/place")
-    public OrderResponse placeOrder(Authentication authentication) {
+	@PostMapping("/place")
+	public ApiResponse<OrderResponse> placeOrder(Authentication authentication) 
+	{
 
-        String email = authentication.getName();
+		OrderResponse response = orderService.placeOrder(authentication.getName());
 
-        return orderService.placeOrder(email); 
-    }
+		return ApiResponse.success("Order placed successfully", response);
+	}
 
-    @GetMapping("/my-orders")
-	public List<OrderResponse> getUserOrders(@RequestParam(required = false) OrderStatus status,
-			Authentication authentication) {
+	@GetMapping("/my-orders")
+	public ApiResponse<List<OrderResponse>> getUserOrders(@RequestParam(required = false) OrderStatus status,
+			Authentication authentication) 
+	{
 
-		String email = authentication.getName();
+		List<OrderResponse> response = orderService.getUserOrders(authentication.getName(), status);
 
-		return orderService.getUserOrders(email, status);
+		return ApiResponse.success("Orders fetched successfully", response);
 	}
 
 	@GetMapping("/{orderId}")
-	public Order getOrder(@PathVariable Long orderId) 
+	public ApiResponse<OrderResponse> getOrder(@PathVariable Long orderId) 
 	{
 
-		return orderService.getOrderById(orderId);
+		OrderResponse response = orderService.getOrderById(orderId);
+
+		return ApiResponse.success("Order fetched successfully", response);
 	}
 
 	@GetMapping("/{orderId}/tracking")
-	public List<OrderStatusHistoryDTO> trackOrder(@PathVariable Long orderId, Authentication authentication) 
+	public ApiResponse<List<OrderStatusHistoryDTO>> trackOrder(@PathVariable Long orderId,
+			Authentication authentication) 
 	{
 
-		String email = authentication.getName();
+		List<OrderStatusHistoryDTO> response = orderService.getOrderTracking(orderId, authentication.getName());
 
-		return orderService.getOrderTracking(orderId, email);
+		return ApiResponse.success("Order tracking fetched", response);
 	}
-	
 }
