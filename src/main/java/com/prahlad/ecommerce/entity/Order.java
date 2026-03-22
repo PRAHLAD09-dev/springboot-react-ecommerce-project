@@ -1,8 +1,6 @@
 package com.prahlad.ecommerce.entity;
 
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.prahlad.ecommerce.enums.OrderStatus;
 
 import jakarta.persistence.CascadeType;
@@ -12,7 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -44,19 +41,6 @@ public class Order
     private boolean paid = false;
 
     @ManyToOne
-    @JsonIgnoreProperties({
-        "password",
-        "authorities",
-        "enabled",
-        "accountNonLocked",
-        "accountNonExpired",
-        "credentialsNonExpired",
-        "addresses",
-        "orders",
-        "active",
-        "role",
-        "username"
-    })
     private User user;
     
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

@@ -6,9 +6,6 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.prahlad.ecommerce.enums.Role;
 
 import jakarta.persistence.CascadeType;
@@ -46,7 +43,6 @@ public class User implements UserDetails
     @Column(unique = true)
     private String email;
 
-    @JsonIgnore
     private String password;
 
     
@@ -56,12 +52,10 @@ public class User implements UserDetails
     private boolean active = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<Address> addresses;
     
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonIgnore
     private List<Order> orders;
 
 	

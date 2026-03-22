@@ -39,7 +39,8 @@ public class SecurityConfig
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+		        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/merchant/**").hasRole("MERCHANT")
                 .requestMatchers("/api/user/**").hasRole("USER")
                 .anyRequest().authenticated()

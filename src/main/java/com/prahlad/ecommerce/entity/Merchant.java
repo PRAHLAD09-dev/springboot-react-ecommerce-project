@@ -6,10 +6,6 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.prahlad.ecommerce.enums.Role;
 
 import jakarta.persistence.Column;
@@ -45,7 +41,6 @@ public class Merchant implements UserDetails
     @Column(unique = true)
     private String email;
 
-    @JsonIgnore
     private String password;
 
     private boolean approved = false;
@@ -55,7 +50,6 @@ public class Merchant implements UserDetails
     @Enumerated(EnumType.STRING)
     private Role role = Role.MERCHANT;
 
-    @JsonManagedReference
     @OneToMany(mappedBy = "merchant")
     private List<Product> products;
     
