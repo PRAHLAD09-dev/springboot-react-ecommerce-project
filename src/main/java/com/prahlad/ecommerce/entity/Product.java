@@ -37,6 +37,8 @@ public class Product
     private int stock;
 
     private boolean active = true;
+    
+    private String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "merchant_id")

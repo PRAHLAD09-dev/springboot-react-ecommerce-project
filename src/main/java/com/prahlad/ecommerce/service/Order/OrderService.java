@@ -34,7 +34,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class OrderService 
 {
 
@@ -45,7 +44,8 @@ public class OrderService
 	private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
 	
-	public OrderResponse placeOrder(String email) 
+	@Transactional
+	public OrderResponse placeOrder(String email)
 	{
 
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -121,13 +121,16 @@ public class OrderService
 		return orderRepository.findByUserId(user.getId()).stream().map(this::mapToDTO).toList();
 	}
 
-	public OrderResponse getOrderById(Long orderId) 
+	public OrderResponse getOrderById(Long orderId, String email) 
 	{
 
-		return orderRepository.findById(orderId).map(this::mapToDTO)
-				.orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+		Order order = orderRepository.findByIdAndUserEmail(orderId, email)
+				.orElseThrow(() -> new UnauthorizedException("Order not found or access denied"));
+
+		return mapToDTO(order);
 	}
     
+	@Transactional
 	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status, String email) 
 	{
 

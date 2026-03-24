@@ -1,6 +1,5 @@
 package com.prahlad.ecommerce.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
@@ -14,29 +13,32 @@ public class ProductController
 {
 
 	private final ProductService productService;
+	
+	  @GetMapping
+	    public ApiResponse<?> getProducts(
+	            @RequestParam(defaultValue = "0") int page,
+	            @RequestParam(defaultValue = "10") int size,
+	            @RequestParam(defaultValue = "id") String sortBy,
+	            @RequestParam(required = false) String keyword,
+	            @RequestParam(required = false) Long categoryId,
+	            @RequestParam(required = false) Double minPrice,
+	            @RequestParam(required = false) Double maxPrice
+	    ) 
+	  {
 
-	@GetMapping
-	public ApiResponse<Page<ProductResponse>> getAllProducts(@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy) 
-	{
+	        return ApiResponse.success(
+	                "Products fetched successfully",
+	                productService.getProducts(page, size, sortBy, keyword, categoryId, minPrice, maxPrice)
+	        );
+	    }
 
-		return ApiResponse.success("Products fetched successfully", productService.getAllProducts(page, size, sortBy));
-	}
+	    @GetMapping("/{id}")
+	    public ApiResponse<ProductResponse> getProductById(@PathVariable Long id) 
+	    {
 
-	@GetMapping("/search")
-	public ApiResponse<Page<ProductResponse>> searchProducts(@RequestParam String keyword,
-			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) 
-	{
-
-		return ApiResponse.success("Search results fetched", productService.searchProducts(keyword, page, size));
-	}
-
-	@GetMapping("/category/{categoryId}")
-	public ApiResponse<Page<ProductResponse>> getProductsByCategory(@PathVariable Long categoryId,
-			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) 
-	{
-
-		return ApiResponse.success("Category products fetched",
-				productService.getProductsByCategory(categoryId, page, size));
-	}
+	        return ApiResponse.success(
+	                "Product fetched successfully",
+	                productService.getProductById(id)
+	        );
+	    }
 }

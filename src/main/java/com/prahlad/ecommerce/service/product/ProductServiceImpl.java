@@ -1,10 +1,12 @@
 package com.prahlad.ecommerce.service.product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.prahlad.ecommerce.dto.product.ProductRequest;
@@ -17,6 +19,9 @@ import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.CategoryRepository;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
+
+import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -29,7 +34,8 @@ public class ProductServiceImpl implements ProductService
 	private final CategoryRepository categoryRepository;
 
 	@Override
-	public ProductResponse addProduct(ProductRequest request, String merchantEmail) 
+	@Transactional
+	public ProductResponse addProduct(ProductRequest request, String imageUrl, String merchantEmail) 
 	{
 
 		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
@@ -43,9 +49,12 @@ public class ProductServiceImpl implements ProductService
 		product.setDescription(request.description());
 		product.setPrice(request.price());
 		product.setStock(request.stock());
+		product.setActive(true);
+
 		product.setMerchant(merchant);
 		product.setCategory(category);
-		product.setActive(true);
+
+		product.setImageUrl(imageUrl);
 
 		Product saved = productRepository.save(product);
 
@@ -53,7 +62,9 @@ public class ProductServiceImpl implements ProductService
 	}
 
 	@Override
-	public ProductResponse updateProduct(Long productId, ProductRequest request, String merchantEmail) 
+	@Transactional
+	public ProductResponse updateProduct(Long productId, ProductRequest request, String imageUrl,
+			String merchantEmail) 
 	{
 
 		Product product = productRepository.findById(productId)
@@ -61,21 +72,30 @@ public class ProductServiceImpl implements ProductService
 
 		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
 		{
-			throw new UnauthorizedException("Unauthorized");
+			throw new UnauthorizedException("You are not allowed to update this product");
 		}
+
+		Category category = categoryRepository.findById(request.categoryId())
+				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
 		product.setName(request.name());
 		product.setDescription(request.description());
 		product.setPrice(request.price());
 		product.setStock(request.stock());
+		product.setCategory(category);
+
+		if (imageUrl != null) 
+		{
+			product.setImageUrl(imageUrl);
+		}
 
 		Product updated = productRepository.save(product);
 
 		return mapToDTO(updated);
 	}
 
-
 	@Override
+	@Transactional
 	public void deleteProduct(Long productId, String merchantEmail) 
 	{
 
@@ -100,37 +120,62 @@ public class ProductServiceImpl implements ProductService
 		return productRepository.findByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
 	}
 
-
 	@Override
-	public Page<ProductResponse> getAllProducts(int page, int size, String sortBy) 
+	public Page<ProductResponse> getProducts(int page, int size, String sortBy, String keyword, Long categoryId,
+			Double minPrice, Double maxPrice) 
 	{
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+		Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
 
-		return productRepository.findByActiveTrue(pageable).map(this::mapToDTO);
+		Specification<Product> spec = (root, query, cb) -> 
+		{
+
+			List<Predicate> predicates = new ArrayList<>();
+
+			if (keyword != null && !keyword.isBlank()) 
+			{
+				predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
+			}
+
+			if (categoryId != null) 
+			{
+				predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+			}
+
+			if (minPrice != null && maxPrice != null) 
+			{
+				predicates.add(cb.between(root.get("price"), minPrice, maxPrice));
+			}
+
+			return cb.and(predicates.toArray(new Predicate[0]));
+		};
+
+		Page<Product> products = productRepository.findAll(spec, pageable);
+
+		return products.map(this::mapToDTO);
 	}
-
 
 	@Override
-	public Page<ProductResponse> searchProducts(String keyword, int page, int size) 
+	public ProductResponse getProductById(Long id) 
 	{
 
-		Pageable pageable = PageRequest.of(page, size);
-		return productRepository.findByNameContainingIgnoreCaseAndActiveTrue(keyword, pageable).map(this::mapToDTO);
+		Product product = productRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+		return mapToDTO(product);
 	}
-
-	@Override
-	public Page<ProductResponse> getProductsByCategory(Long categoryId, int page, int size) 
-	{
-
-		Pageable pageable = PageRequest.of(page, size);
-
-		return productRepository.findByCategoryIdAndActiveTrue(categoryId, pageable).map(this::mapToDTO);
-	}
-
+ 
 	private ProductResponse mapToDTO(Product product) 
 	{
-		return new ProductResponse(product.getId(), product.getName(), product.getDescription(), product.getPrice(),
-				product.getStock(), product.getCategory().getName(), product.getMerchant().getBusinessName());
+	    return new ProductResponse(
+	            product.getId(),
+	            product.getName(),
+	            product.getDescription(),
+	            product.getPrice(),
+	            product.getStock(),
+	            product.getImageUrl(),
+	            product.getCategory().getName(),
+	            product.getMerchant().getBusinessName()
+	    );
 	}
 }

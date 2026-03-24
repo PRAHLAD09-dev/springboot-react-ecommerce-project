@@ -43,12 +43,11 @@ public class UserOrderController
 	}
 
 	@GetMapping("/{orderId}")
-	public ApiResponse<OrderResponse> getOrder(@PathVariable Long orderId) 
+	public ApiResponse<OrderResponse> getOrder(@PathVariable Long orderId, Authentication authentication) 
 	{
 
-		OrderResponse response = orderService.getOrderById(orderId);
-
-		return ApiResponse.success("Order fetched successfully", response);
+		return ApiResponse.success("Order fetched successfully",
+				orderService.getOrderById(orderId, authentication.getName()));
 	}
 
 	@GetMapping("/{orderId}/tracking")
