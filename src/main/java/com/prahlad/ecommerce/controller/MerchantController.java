@@ -1,12 +1,11 @@
 package com.prahlad.ecommerce.controller;
 
-import java.util.Map;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
+import com.prahlad.ecommerce.dto.merchant.ChangePasswordRequest;
 import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
 import com.prahlad.ecommerce.dto.merchant.MerchantUpdateRequest;
 import com.prahlad.ecommerce.service.merchant.MerchantService;
@@ -25,25 +24,25 @@ public class MerchantController
 	@GetMapping("/profile")
 	public ApiResponse<MerchantResponse> getProfile(Authentication auth) 
 	{
-
 		return ApiResponse.success("Merchant profile fetched", merchantService.getProfile(auth.getName()));
 	}
 
 	@PutMapping("/profile")
 	public ApiResponse<MerchantResponse> updateProfile(Authentication auth,
-			@Valid @RequestBody MerchantUpdateRequest merchant) 
+			@Valid @RequestBody MerchantUpdateRequest request) 
 	{
 
 		return ApiResponse.success("Profile updated successfully",
-				merchantService.updateProfile(auth.getName(), merchant));
+				merchantService.updateProfile(auth.getName(), request));
 	}
 
 	@PutMapping("/change-password")
-	public ApiResponse<String> changePassword(Authentication auth, @RequestBody Map<String, String> req) 
+	public ApiResponse<String> changePassword(Authentication auth, @RequestBody ChangePasswordRequest request) 
 	{
 
-		return ApiResponse.success(
-				merchantService.changePassword(auth.getName(), req.get("oldPassword"), req.get("newPassword")), null);
+		merchantService.changePassword(auth.getName(), request.oldPassword(), request.newPassword());
+
+		return ApiResponse.success("Password changed successfully", null);
 	}
 
 	@DeleteMapping("/account")

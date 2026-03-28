@@ -2,7 +2,6 @@ package com.prahlad.ecommerce.service.user;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.prahlad.ecommerce.dto.user.UserResponse;
 import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 import com.prahlad.ecommerce.entity.User;
@@ -17,65 +16,163 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService 
 {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-
-	@Override
-	public UserResponse getProfile(String email) 
-	{
-
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-		return mapToDTO(user);
-	}
-
-	@Override
-	public UserResponse updateProfile(String email, UserUpdateRequest request) 
-	{
-
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
-		if (request.name() != null) 
-		{
-			user.setName(request.name());
-		}
+    // =========================
+    // COMMON METHOD
+    // =========================
+    private User getUserByEmail(String email) 
+    {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
 
-		userRepository.save(user);
+    // =========================
+    // GET PROFILE
+    // =========================
+    @Override
+    public UserResponse getProfile(String email) 
+    {
+        return mapToDTO(getUserByEmail(email));
+    }
 
-		return mapToDTO(user);
-	}
+    // =========================
+    // UPDATE PROFILE
+    // =========================
+    @Override
+    public UserResponse updateProfile(String email, UserUpdateRequest request) 
+    {
 
-	@Override
-	public void deleteAccount(String email) 
-	{
+        User user = getUserByEmail(email);
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (request.name() != null && !request.name().isBlank()) 
+        {
+            user.setName(request.name());
+        }
 
-		userRepository.delete(user);
-	}
+        userRepository.save(user);
 
-	@Override
-	public String changePassword(String email, String oldPassword, String newPassword) 
-	{
+        return mapToDTO(user);
+    }
 
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    // =========================
+    // DELETE ACCOUNT
+    // =========================
+    @Override
+    public void deleteAccount(String email) 
+    {
 
-		if (!passwordEncoder.matches(oldPassword, user.getPassword())) 
-		{
-			throw new BadRequestException("Old password is incorrect");
-		}
+        User user = getUserByEmail(email);
 
-		user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.delete(user); 
+    }
 
-		userRepository.save(user);
+    // =========================
+    // CHANGE PASSWORD (NO OTP)
+    // =========================
+    @Override
+    public String changePassword(String email, String oldPassword, String newPassword) 
+    {
 
-		return "Password changed successfully";
-	}
+        User user = getUserByEmail(email);
 
-	
-	private UserResponse mapToDTO(User user) 
-	{
-		return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
-	}
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) 
+        {
+            throw new BadRequestException("Old password is incorrect");
+        }
+
+        if (passwordEncoder.matches(newPassword, user.getPassword())) 
+        {
+            throw new BadRequestException("New password must be different");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return "Password changed successfully";
+    }
+
+   
+    // =========================
+    // DTO MAPPING
+    // =========================
+    private UserResponse mapToDTO(User user) 
+    {
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
+
 }
+//@Service
+//@RequiredArgsConstructor
+//public class UserServiceImpl implements UserService 
+//{
+//
+//	private final UserRepository userRepository;
+//	private final PasswordEncoder passwordEncoder;
+//
+//	@Override
+//	public UserResponse getProfile(String email) 
+//	{
+//
+//		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//
+//		return mapToDTO(user);
+//	}
+//
+//	@Override
+//	public UserResponse updateProfile(String email, UserUpdateRequest request) 
+//	{
+//
+//		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//
+//
+//		if (request.name() != null) 
+//		{
+//			user.setName(request.name());
+//		}
+//
+//		userRepository.save(user);
+//
+//		return mapToDTO(user);
+//	}
+//
+//	@Override
+//	public void deleteAccount(String email) 
+//	{
+//
+//		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//
+//		userRepository.delete(user);
+//	}
+//
+//	@Override
+//	public String changePassword(String email, String oldPassword, String newPassword) 
+//	{
+//
+//		User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+//
+//		if (!passwordEncoder.matches(oldPassword, user.getPassword())) 
+//		{
+//			throw new BadRequestException("Old password is incorrect");
+//		}
+//
+//		user.setPassword(passwordEncoder.encode(newPassword));
+//
+//		userRepository.save(user);
+//
+//		return "Password changed successfully";
+//	}
+//
+//	
+//	private UserResponse mapToDTO(User user) 
+//	{
+//		return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
+//	}
+//}

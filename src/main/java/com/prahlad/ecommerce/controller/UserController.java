@@ -2,6 +2,7 @@ package com.prahlad.ecommerce.controller;
 
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,40 +21,56 @@ public class UserController
 
 	private final UserService userService;
 
+	// ======================
+	// GET PROFILE
+	// ======================
 	@GetMapping("/profile")
-	public ApiResponse<UserResponse> getProfile(Authentication authentication) 
+	public ResponseEntity<ApiResponse<UserResponse>> getProfile(Authentication authentication) 
 	{
 
 		UserResponse response = userService.getProfile(authentication.getName());
 
-		return ApiResponse.success("Profile fetched successfully", response);
+		return ResponseEntity.ok(ApiResponse.success("Profile fetched successfully", response));
 	}
 
+	// ======================
+	// UPDATE PROFILE
+	// ======================
 	@PutMapping("/profile")
-	public ApiResponse<UserResponse> updateProfile(Authentication authentication, @RequestBody UserUpdateRequest user) 
+	public ResponseEntity<ApiResponse<UserResponse>> updateProfile(Authentication authentication,
+			@RequestBody UserUpdateRequest request) 
 	{
 
-		UserResponse response = userService.updateProfile(authentication.getName(), user);
+		UserResponse response = userService.updateProfile(authentication.getName(), request);
 
-		return ApiResponse.success("Profile updated successfully", response);
+		return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", response));
 	}
 
+	// ======================
+	// CHANGE PASSWORD (NO OTP)
+	// ======================
 	@PutMapping("/change-password")
-	public ApiResponse<String> changePassword(Authentication authentication, @RequestBody Map<String, String> request) 
+	public ResponseEntity<ApiResponse<String>> changePassword(Authentication authentication,
+			@RequestBody Map<String, String> request)
 	{
 
-		String result = userService.changePassword(authentication.getName(), request.get("oldPassword"),
-				request.get("newPassword"));
+		String oldPassword = request.get("oldPassword");
+		String newPassword = request.get("newPassword");
 
-		return ApiResponse.success(result, null);
+		String result = userService.changePassword(authentication.getName(), oldPassword, newPassword);
+
+		return ResponseEntity.ok(ApiResponse.success(result, null));
 	}
 
+	// ======================
+	// DELETE ACCOUNT
+	// ======================
 	@DeleteMapping("/account")
-	public ApiResponse<String> deleteAccount(Authentication authentication) 
+	public ResponseEntity<ApiResponse<String>> deleteAccount(Authentication authentication) 
 	{
 
 		userService.deleteAccount(authentication.getName());
 
-		return ApiResponse.success("Account deleted successfully", null);
+		return ResponseEntity.ok(ApiResponse.success("Account deleted successfully", null));
 	}
 }

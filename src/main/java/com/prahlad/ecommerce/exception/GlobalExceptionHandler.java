@@ -60,6 +60,17 @@ public class GlobalExceptionHandler
 				.body(new ApiResponse<>(false, "Validation failed", errors));
 	}
 
+	@ExceptionHandler(EmailException.class)
+	public ResponseEntity<ApiResponse<?>> handleEmail(EmailException ex) 
+	{
+
+	    log.error("Email sending failed: {}", ex.getMessage());
+
+	    return ResponseEntity
+	            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	            .body(ApiResponse.error("Failed to send email. Please try again later."));
+	}
+	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<Object>> handleGlobal(Exception ex) 
 	{

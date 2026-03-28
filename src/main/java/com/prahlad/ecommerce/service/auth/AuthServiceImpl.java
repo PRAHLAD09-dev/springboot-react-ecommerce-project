@@ -7,16 +7,19 @@ import org.springframework.stereotype.Service;
 
 import com.prahlad.ecommerce.dto.auth.AuthResponse;
 import com.prahlad.ecommerce.dto.auth.LoginRequest;
+import com.prahlad.ecommerce.dto.auth.ResetPasswordRequest;
 import com.prahlad.ecommerce.dto.merchant.MerchantRegisterRequest;
 import com.prahlad.ecommerce.dto.user.UserRegisterRequest;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.User;
+import com.prahlad.ecommerce.enums.OTPType;
 import com.prahlad.ecommerce.enums.Role;
 import com.prahlad.ecommerce.exception.BadRequestException;
 import com.prahlad.ecommerce.exception.ResourceNotFoundException;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 import com.prahlad.ecommerce.security.JwtUtil;
+import com.prahlad.ecommerce.service.otp.OtpService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +34,7 @@ public class AuthServiceImpl implements AuthService
     private final MerchantRepository merchantRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final OtpService otpService;
 
     @Override
     public  AuthResponse registerUser(UserRegisterRequest request)
@@ -149,5 +153,49 @@ public class AuthServiceImpl implements AuthService
         throw new ResourceNotFoundException("Invalid credentials");
     }
 
+    @Override
+	public void sendForgotPasswordOtp(String email) 
+	{
 
+		boolean exists = userRepository.existsByEmail(email) || merchantRepository.existsByEmail(email);
+
+		if (exists) 
+		{
+			otpService.generateOtp(email, OTPType.FORGOT_PASSWORD);
+		}
+
+		
+	}
+    
+    // =========================
+    // RESET PASSWORD (OTP REQUIRED)
+    // =========================
+	@Override
+	public void resetPassword(ResetPasswordRequest request) 
+	{
+
+		otpService.verifyOtp(request.email(), request.otp(), OTPType.FORGOT_PASSWORD);
+
+		Optional<User> userOpt = userRepository.findByEmail(request.email());
+
+		if (userOpt.isPresent()) 
+		{
+			User user = userOpt.get();
+			user.setPassword(passwordEncoder.encode(request.newPassword()));
+			userRepository.save(user);
+			return;
+		}
+
+		Optional<Merchant> merchantOpt = merchantRepository.findByEmail(request.email());
+
+		if (merchantOpt.isPresent()) 
+		{
+			Merchant merchant = merchantOpt.get();
+			merchant.setPassword(passwordEncoder.encode(request.newPassword()));
+			merchantRepository.save(merchant);
+			return;
+		}
+
+		throw new ResourceNotFoundException("Invalid credentials");
+	}
 }

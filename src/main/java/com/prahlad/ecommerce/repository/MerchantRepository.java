@@ -12,4 +12,6 @@ import com.prahlad.ecommerce.entity.Merchant;
 public interface MerchantRepository extends JpaRepository<Merchant, Long> 
 {
     Optional<Merchant> findByEmail(String email);
+    
+    boolean existsByEmail(String email);
 }
