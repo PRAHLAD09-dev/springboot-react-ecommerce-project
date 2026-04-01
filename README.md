@@ -1,368 +1,233 @@
-## Spring Boot E-Commerce Backend
+# Spring Boot E-Commerce Backend
 
-A Spring Boot based E-Commerce backend system implementing authentication, product management, cart functionality and complete order flow.
+A production-level E-Commerce backend built using Spring Boot with authentication, role-based workflows, OTP verification, notifications, and complete order lifecycle.
 
-This project is built to simulate a real world backend architecture used in modern e-commerce platforms.
+---
+
+## Live Demo
+
+- Base URL: https://ecommerce-backend-o9vh.onrender.com  
+- Swagger UI: https://ecommerce-backend-o9vh.onrender.com/swagger-ui/index.html  
+- Health Check: https://ecommerce-backend-o9vh.onrender.com/actuator/health  
 
 ---
 
 ## Tech Stack
 
-### Backend
-
-- Java
-- Spring Boot
-- Spring Security
-- JWT Authentication
-- Spring Data JPA
-
-### Database
-
-- MySQL
-
-### Tools
-
-- Maven
-- Postman
-- Git
+- Java  
+- Spring Boot  
+- Spring Security (JWT)  
+- Spring Data JPA  
+- MySQL  
+- Maven  
+- Render  
 
 ---
 
 ## Roles
 
-The system supports three roles:
+### USER
+- Register / Login  
+- Manage profile  
+- Add to cart  
+- Place order  
+- Track order  
+- Delete account (OTP)  
 
-- USER (Customer)
-- MERCHANT (Seller)
-- ADMIN
+### MERCHANT
+- Register (needs admin approval)  
+- Manage profile  
+- View orders  
+- Ship orders  
 
-Each role has different permissions and API access.
-
----
-
-## Core Modules
-
-- Authentication & Security
-- User Management
-- Merchant Management
-- Product Management
-- Cart System
-- Address Management
-- Order Processing
-- Payment System (Mock)
-- Order Tracking
-- Admin Order Management
-- Global Exception Handling
-- Swagger Documentation
+### ADMIN
+- Approves merchants  
+- Blocks / Unblocks merchants  
+- Confirms orders  
 
 ---
 
-## Implemented Features
+## Authentication
 
-### Authentication
-
-- User signup/login
-- Merchant signup/login
-- Password encryption using BCrypt
-- JWT token authentication
-- Role based authorization
+- JWT-based authentication  
+- Role-based authorization  
+- BCrypt password encryption  
+- Stateless session  
 
 ---
 
-### Product Management
+##  OTP System
 
-- Add product
-- Update product
-- Delete product
-- Product category support
+OTP-based verification is implemented to secure sensitive user actions.
 
----
+### Used in:
 
-### Product Search
+- User Registration (email verification ready structure)
+- Account Deletion (User & Merchant)
+- Password Reset (structure ready / extendable)
 
-- Pagination
-- Filtering
-- Sorting
-- Search API
+### Flow
 
----
+- User requests action  
+- OTP is generated and stored  
+- OTP is sent via email  
+- User submits OTP  
+- OTP is verified  
+- Action is executed  
 
-### Cart System
+### Features
 
-- Add product to cart
-- Update quantity
-- Remove item from cart
-- View user cart
-
----
-
-### Address Management
-
-- Add delivery address
-- Fetch saved addresses
-- Multiple addresses per user
+- Expiry-based OTP validation  
+- Type-based OTP (REGISTER, DELETE_ACCOUNT, etc.)  
+- Prevents unauthorized critical actions
 
 ---
 
-### Order Processing
+## Notification System
 
-- Place order from cart
-- Order item generation
-- Automatic cart cleanup after order placement
-- Order history for users
+### Notifications triggered on:
 
----
+- User registration  
+- Merchant registration  
+- Account deletion  
+- Order placed  
+- Order confirmed  
+- Order shipped  
+- Out for delivery  
+- Order delivered  
+- Payment successful  
+- Merchant approval  
 
-### Order Tracking
-
-The system provides a complete order tracking workflow similar to real-world e-commerce platforms.
-
-Each order moves through multiple stages until delivery.
-
-Order Status Lifecycle
-
-CREATED
-↓
-CONFIRMED
-↓
-SHIPPED
-↓
-OUT_FOR_DELIVERY
-↓
-DELIVERED
-
-Cancellation Flow
-
-CREATED
-↓
-CANCELLED
+- All notifications are stored in database  
 
 ---
 
-### Role Based Order Workflow
+## Product Module
 
-USER
-- Place order
-- Track order status
-- View order history
+- Add product  
+- Update product  
+- Delete product  
+- Category support  
 
-ADMIN
-- Confirm orders
-- Cancel orders
-
-MERCHANT
-- View orders related to their products
-- Ship confirmed orders
-
-SYSTEM
-- Update delivery status automatically
+⚠️ Note: Image upload not implemented  
 
 ---
 
-### Order Tracking API
+## Cart Module
 
-Users can track the status of their order using the following endpoint
-
-GET /api/orders/track/{orderId}
-
-This endpoint returns the current order status along with order details.
-
-
-Example Response
-
-{
-  "id": 5,
-  "status": "SHIPPED",
-  "totalPrice": 480000
-}
+- Add to cart  
+- Update quantity  
+- Remove item  
+- View cart  
 
 ---
 
-### Merchant Order Dashboard
+## Order Module
 
-Merchants can view orders that contain their products using
+### Flow
 
-GET /api/orders/merchant
+- User places order  
+- Cart is cleared  
+- Admin confirms order  
+- Merchant ships order  
+- Order delivered  
 
-This allows merchants to manage and ship orders related to their products.
+### Order Status Lifecycle
 
-
----
-
-### Payment System (Mock)
-
-A mock payment module is implemented to simulate real payment processing.
-
-Payment Flow
-
-User places order
-↓
-Payment initiated
-↓
-Payment status stored
-↓
-Order marked as paid
-
-Payment Status Types
-
-PENDING
-SUCCESS
-FAILED
-
-
-Example Payment Endpoint
-
-POST /api/payments/pay
-
-
-Example Payment Response
-
-{
-  "paymentId": 10,
-  "orderId": 5,
-  "status": "SUCCESS"
-}
+CREATED  
+↓  
+CONFIRMED  
+↓  
+SHIPPED  
+↓  
+OUT_FOR_DELIVERY  
+↓  
+DELIVERED  
 
 ---
 
-### Order tracking & order status filtering
+## Payment Module (Mock)
 
-Implemented an order tracking system to monitor the lifecycle of orders and allow users to filter orders by their status.
+- Payment processing simulation  
 
-Features added
+### Status
 
-- Order tracking API
-- Order status lifecycle management
-- Filter orders by status for users
-- Improved order visibility for customers
-
-Example endpoints
-
-GET /api/orders/track/{orderId}
-
-GET /api/user/orders?status=CONFIRMED
+- PENDING  
+- SUCCESS  
+- FAILED  
 
 ---
 
-### Admin management module
+## Role-Based Workflow
 
-Implemented an admin module that allows administrators to manage merchants and monitor system activity.
+### USER FLOW
+- Register → Login → Add to Cart → Place Order → Track Order → Delete Account  
 
-Features added
+### MERCHANT FLOW
+- Register → Wait for Approval → Login → View Orders → Ship Orders  
 
-- Approve merchant registrations
-- Block merchants
-- Unblock merchants
-- View all merchants
-- Monitor orders across the platform
-
-Example endpoints
-
-GET  /api/admin/merchants
-PUT  /api/admin/approve/{merchantId}
-PUT  /api/admin/block/{merchantId}
-PUT  /api/admin/unblock/{merchantId}
-GET  /api/admin/orders
+### ADMIN FLOW
+- Approve Merchant → Manage Orders → Confirm Orders  
 
 ---
 
-### User & merchant profile management
+## Important APIs
 
-Implemented profile management APIs for both users and merchants so they can manage their account information and credentials.
+### Auth
+- POST /api/auth/user/register  
+- POST /api/auth/login  
 
-Features added
+### User
+- GET /api/user/profile  
+- PUT /api/user/profile  
+- POST /api/user/delete/request  
+- DELETE /api/user/delete  
 
-- View profile
-- Update profile information
-- Change password
-- Delete account
+### Merchant
+- GET /api/merchant/profile  
+- PUT /api/merchant/profile  
 
-User APIs
+### Orders
+- POST /api/orders  
+- GET /api/orders/track/{orderId}  
 
-GET    /api/user/profile
-PUT    /api/user/profile
-PUT    /api/user/change-password
-DELETE /api/user/account
-
-Merchant APIs
-
-GET    /api/merchant/profile
-PUT    /api/merchant/profile
-PUT    /api/merchant/change-password
-DELETE /api/merchant/account
-
-
-### Database Tables
-
-users
-products
-categories
-cart
-cart_items
-orders
-order_items
-addresses
-payments
-
- ---
-
-### Project Architecture
-
-Controller
-↓
-Service
-↓
-Repository
-↓
-Database
-
-This layered architecture ensures separation of concerns and maintainable backend design.
+### Payment
+- POST /api/payments/pay  
 
 ---
 
-### Running the Project
+## How to Test
 
-1 Clone the repository
+- Open Swagger UI  
+- Register user  
+- Login and get JWT token  
+- Use token in header  
 
-git clone <repo-link>
+Authorization: Bearer <token>  
 
-2 Configure database in application.properties
-
-spring.datasource.url=jdbc:mysql://localhost:3306/ecommerce_db
-spring.datasource.username=root
-spring.datasource.password=yourpassword
-
-3 Run the application
-
-mvn spring-boot:run
-
-Server will start at
-
-http://localhost:8080
+- Test APIs  
 
 ---
 
-### Development Progress
+## Deployment
 
-Day 1  — Project setup
-Day 2  — Entity modeling
-Day 3  — Authentication APIs
-Day 4  — JWT implementation
-Day 5  — Spring Security configuration
-Day 6  — Product module
-Day 7  — Product search & pagination
-Day 8  — Cart module
-Day 9  — Address module
-Day 10 — Order placement system
-Day 11 — Order status workflow & merchant order management
-Day 12 — Payment system (mock)
-Day 13 — Order tracking & order status filtering
-Day 14 — Admin management module (merchant approval, block/unblock, order monitoring)
-Day 15 — User & merchant profile management APIs
+- Hosted on Render  
+- Cold start may occur  
+- MySQL database used  
 
 ---
 
-### Author
+## Learnings
+
+- Implemented JWT authentication  
+- Designed role-based system  
+- Built OTP verification  
+- Integrated notification system  
+- Handled deployment debugging  
+
+---
+
+## Author
 
 Prahlad Bhakat  
-Java Backend Developer
+Java Backend Developer 
