@@ -46,15 +46,45 @@ public class AuthServiceImpl implements AuthService
     private final NotificationService notificationService;
     private final EmailService emailService;
 
+    
     @Override
-    public  AuthResponse registerUser(UserRegisterRequest request)
+    public AuthResponse registerUser(UserRegisterRequest request) 
     {
 
-        if (userRepository.findByEmail(request.email()).isPresent()) 
+        Optional<User> userOptional = userRepository.findByEmail(request.email());
+
+        if (userOptional.isPresent()) 
         {
-            throw new BadRequestException("Email already exists");
+
+            User existingUser = userOptional.get();
+
+            if (existingUser.isActive()) 
+            {
+                throw new BadRequestException("Email already exists");
+            }
+
+            existingUser.setActive(true);
+            existingUser.setPassword(passwordEncoder.encode(request.password()));
+            existingUser.setName(request.name());
+
+            userRepository.save(existingUser);
+
+            notificationService.sendNotification(
+                    existingUser.getEmail(),
+                    "Account Restored",
+                    "Your account has been successfully re-activated.",
+                    NotificationType.REGISTER_SUCCESS
+            );
+
+            return new AuthResponse(
+                    "Account restored successfully",
+                    existingUser.getEmail(),
+                    existingUser.getRole().name(),
+                    null
+            );
         }
 
+        // ================= NEW USER =================
         User user = User.builder()
                 .name(request.name())
                 .email(request.email())
@@ -63,40 +93,40 @@ public class AuthServiceImpl implements AuthService
                 .active(true)
                 .build();
 
-         userRepository.save(user);
- 
-         String plainMessage = "Your account has been successfully created.";
+        userRepository.save(user);
 
-         String htmlMessage = """
-         <html>
-         <body>
-         <h2>Welcome to Ecommerce App </h2>
-         <p>Your account has been successfully created.</p>
-         <br>
-         <a href="https://ecommerce-backend-o9vh.onrender.com/swagger-ui/index.html#/">
-             <button style="padding:10px;background:green;color:white;border:none;">
-                 Start Shopping
-             </button>
-         </a>
-         <br><br>
-         Thanks,<br>
-         Ecommerce Team
-         </body>
-         </html>
-         """;
+        String plainMessage = "Your account has been successfully created.";
 
-         notificationService.sendNotification(
-                 user.getEmail(),
-                 "Welcome to Ecommerce App",
-                 plainMessage,
-                 NotificationType.REGISTER_SUCCESS
-         );
+        String htmlMessage = """
+        <html>
+        <body>
+        <h2>Welcome to Ecommerce App </h2>
+        <p>Your account has been successfully created.</p>
+        <br>
+        <a href="https://ecommerce-backend-o9vh.onrender.com/swagger-ui/index.html#/">
+            <button style="padding:10px;background:green;color:white;border:none;">
+                Start Shopping
+            </button>
+        </a>
+        <br><br>
+        Thanks,<br>
+        Ecommerce Team
+        </body>
+        </html>
+        """;
 
-         emailService.sendHtmlMail(
-                 user.getEmail(),
-                 "Welcome to Ecommerce App",
-                 htmlMessage
-         );
+        notificationService.sendNotification(
+                user.getEmail(),
+                "Welcome to Ecommerce App",
+                plainMessage,
+                NotificationType.REGISTER_SUCCESS
+        );
+
+        emailService.sendHtmlMail(
+                user.getEmail(),
+                "Welcome to Ecommerce App",
+                htmlMessage
+        );
 
         return new AuthResponse(
                 "User registered successfully",
@@ -105,73 +135,103 @@ public class AuthServiceImpl implements AuthService
                 null
         );
     }
-
+    
     @Override
-    public AuthResponse registerMerchant(MerchantRegisterRequest request)
+    public AuthResponse registerMerchant(MerchantRegisterRequest request) 
     {
 
-        if (merchantRepository.findByEmail(request.email()).isPresent()) 
+        Optional<Merchant> merchantOptional = merchantRepository.findByEmail(request.email());
+
+        if (merchantOptional.isPresent()) 
         {
-            throw new BadRequestException("Email already exists");
+
+            Merchant existingMerchant = merchantOptional.get();
+
+            if (existingMerchant.isActive()) 
+            {
+                throw new BadRequestException("Email already exists");
+            }
+
+            existingMerchant.setActive(true);
+            existingMerchant.setPassword(passwordEncoder.encode(request.password()));
+            existingMerchant.setBusinessName(request.businessName());
+            existingMerchant.setApproved(false); 
+
+            merchantRepository.save(existingMerchant);
+
+            notificationService.sendNotification(
+                    existingMerchant.getEmail(),
+                    "Account Restored",
+                    "Your merchant account has been re-activated. Awaiting admin approval.",
+                    NotificationType.REGISTER_SUCCESS
+            );
+
+            return new AuthResponse(
+                    "Merchant account restored. Awaiting admin approval.",
+                    existingMerchant.getEmail(),
+                    existingMerchant.getRole().name(),
+                    null
+            );
         }
 
+        // ================= NEW MERCHANT =================
         Merchant merchant = Merchant.builder()
                 .businessName(request.businessName())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.MERCHANT)
                 .approved(false)
+                .active(true) 
                 .build();
 
         merchantRepository.save(merchant);
-        
-  
+
         String message = """
-       		 Hi,
+            Hi,
 
-       		 Welcome to Ecommerce App 
+            Welcome to Ecommerce App 
 
-       		 Your account has been successfully created.
+            Your account has been successfully created.
 
-       		 If you did not request this, please ignore this email.
-       		 
-       		 Your merchant account is created. Awaiting admin approval.
+            Your merchant account is created. Awaiting admin approval.
 
-       		 Thanks,
-       		 Ecommerce Team
-       		 """;
+            Thanks,
+            Ecommerce Team
+            """;
 
         notificationService.sendNotification(
                 merchant.getEmail(),
-       		     "Welcome to Ecommerce App ",
-       		     message,
-       		     NotificationType.REGISTER_SUCCESS
-       		 );
+                "Welcome to Ecommerce App",
+                message,
+                NotificationType.REGISTER_SUCCESS
+        );
 
-     return new AuthResponse(
-             "Merchant registered successfully. Awaiting admin approval.",
-             merchant.getEmail(),
-             merchant.getRole().name(),
-             null
-     );
-
+        return new AuthResponse(
+                "Merchant registered successfully. Awaiting admin approval.",
+                merchant.getEmail(),
+                merchant.getRole().name(),
+                null
+        );
     }
 
- 
     @Override
     public AuthResponse login(LoginRequest request) 
     {
 
-      
-        Optional<User> userOptional = userRepository.findByEmail(request.email());
+        // ================= USER LOGIN =================
+        User user = userRepository.findByEmail(request.email()).orElse(null);
 
-        if (userOptional.isPresent()) 
+        if (user != null) 
         {
-            User user = userOptional.get();
+
+            if (!user.isActive()) 
+            {
+                throw new RuntimeException("Account is deleted");
+            }
 
             if (!passwordEncoder.matches(request.password(), user.getPassword())) 
             {
-                throw new ResourceNotFoundException("Invalid credentials");
+                throw new RuntimeException("Invalid credentials");
             }
 
             String token = jwtUtil.generateToken(user);
@@ -184,25 +244,29 @@ public class AuthServiceImpl implements AuthService
             );
         }
 
+        // ================= MERCHANT LOGIN =================
+        Merchant merchant = merchantRepository.findByEmail(request.email()).orElse(null);
 
-        Optional<Merchant> merchantOptional = merchantRepository.findByEmail(request.email());
-
-        if (merchantOptional.isPresent()) 
+        if (merchant != null) 
         {
-            Merchant merchant = merchantOptional.get();
+
+            if (!merchant.isActive()) 
+            {
+                throw new RuntimeException("Account is deleted");
+            }
 
             if (!passwordEncoder.matches(request.password(), merchant.getPassword())) 
             {
-                throw new ResourceNotFoundException("Invalid credentials");
+                throw new RuntimeException("Invalid credentials");
             }
 
             if (!merchant.isApproved()) 
             {
                 return new AuthResponse(
-                    "Merchant not approved yet",
-                    merchant.getEmail(),
-                    merchant.getRole().name(),
-                    null
+                        "Merchant not approved yet",
+                        merchant.getEmail(),
+                        merchant.getRole().name(),
+                        null
                 );
             }
 
@@ -211,13 +275,14 @@ public class AuthServiceImpl implements AuthService
             return new AuthResponse(
                     "Login successful",
                     merchant.getEmail(),
-                   merchant.getRole().name(),
+                    merchant.getRole().name(),
                     token
             );
         }
 
-        throw new ResourceNotFoundException("Invalid credentials");
+        throw new RuntimeException("Invalid credentials");
     }
+    
 
     @Override
     public void sendForgotPasswordOtp(OtpRequest request)
