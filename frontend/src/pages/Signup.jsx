@@ -1,46 +1,33 @@
-import { useState } from "react";
-
 function Signup() {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
-    const handleSignup = (e) => {
-        e.preventDefault();
-        console.log("Signup:", name, email, password);
-    };
-
     return (
-        <div>
-            <h1> Signup</h1>
+        <div className="flex justify-center items-center h-[80vh]">
+            <div className="bg-white shadow-lg rounded-xl p-8 w-80">
 
-            <form onSubmit={handleSignup}>
+                <h1 className="text-2xl font-bold mb-6 text-center">Signup</h1>
+
                 <input
                     type="text"
                     placeholder="Enter Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    className="border p-2 mb-3 w-full rounded"
                 />
-                <br /><br />
 
                 <input
                     type="email"
                     placeholder="Enter Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    className="border p-2 mb-3 w-full rounded"
                 />
-                <br /><br />
 
                 <input
                     type="password"
                     placeholder="Enter Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    className="border p-2 mb-4 w-full rounded"
                 />
-                <br /><br />
 
-                <button type="submit">Signup</button>
-            </form>
+                <button className="bg-green-500 hover:bg-green-600 text-white w-full py-2 rounded">
+                    Signup
+                </button>
+
+            </div>
         </div>
     );
 }
