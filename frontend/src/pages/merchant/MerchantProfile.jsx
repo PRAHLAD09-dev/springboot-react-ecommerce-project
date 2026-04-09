@@ -1,0 +1,12 @@
+function MerchantProfile() {
+    return (
+        <div className="p-6">
+            <h1 className="text-2xl font-bold">Merchant Profile </h1>
+
+            <p className="mt-4">Name: Seller</p>
+            <p>Email: seller@gmail.com</p>
+        </div>
+    );
+}
+
+export default MerchantProfile;
