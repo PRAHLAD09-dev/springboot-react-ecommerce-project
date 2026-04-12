@@ -1,7 +1,7 @@
 function Home() {
     return (
         <h1 className="text-red-500 text-4xl font-bold">
-            Tailwind Working
+            WELCOME TO E-commerce ONLINE SHOPING !
         </h1>
     );
 }

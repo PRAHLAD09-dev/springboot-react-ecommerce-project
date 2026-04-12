@@ -35,6 +35,7 @@ function Navbar() {
                         <Link to="/profile/update">Update</Link>
                         <Link to="/change-password">Change Password</Link>
                         <Link to="/delete-account">Delete</Link>
+                        <Link to="/orders">Orders</Link>
                     </>
                 )}
 

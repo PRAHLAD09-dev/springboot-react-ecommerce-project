@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/admin/Dashboard";
 import Users from "./pages/admin/Users";
 import Products from "./pages/admin/Product";
-import Orders from "./pages/admin/Orders";
+import AdminOrders from "./pages/admin/Orders";
 import Merchants from "./pages/admin/Merchants";
 import Promotions from "./pages/admin/Promotions";
 import Category from "./pages/admin/Category";
@@ -15,6 +15,7 @@ import Profile from "./pages/user/Profile";
 import UpdateProfile from "./pages/user/UpdateProfile";
 import ChangePassword from "./pages/user/ChangePassword";
 import DeleteAccount from "./pages/user/DeleteAccount";
+import UserOrders from "./pages/user/Orders";
 
 import MerchantProfile from "./pages/merchant/MerchantProfile";
 import MerchantUpdate from "./pages/merchant/MerchantUpdate";
@@ -41,7 +42,7 @@ function App() {
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/products" element={<Products />} />
-          <Route path="/admin/orders" element={<Orders />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/merchants" element={<Merchants />} />
           <Route path="/admin/promotions" element={<Promotions />} />
           <Route path="/admin/categories" element={<Category />} />
@@ -50,6 +51,7 @@ function App() {
           <Route path="/profile/update" element={<UpdateProfile />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
+          <Route path="/orders" element={<UserOrders />} />
 
           <Route path="/merchant/profile" element={<MerchantProfile />} />
           <Route path="/merchant/update" element={<MerchantUpdate />} />
