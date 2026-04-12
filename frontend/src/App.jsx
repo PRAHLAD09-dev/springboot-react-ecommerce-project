@@ -9,6 +9,7 @@ import Products from "./pages/admin/Product";
 import Orders from "./pages/admin/Orders";
 import Merchants from "./pages/admin/Merchants";
 import Promotions from "./pages/admin/Promotions";
+import Category from "./pages/admin/Category";
 
 import Profile from "./pages/user/Profile";
 import UpdateProfile from "./pages/user/UpdateProfile";
@@ -19,11 +20,13 @@ import MerchantProfile from "./pages/merchant/MerchantProfile";
 import MerchantUpdate from "./pages/merchant/MerchantUpdate";
 import MerchantChangePassword from "./pages/merchant/MerchantChangePassword";
 import MerchantDelete from "./pages/merchant/MerchantDelete";
+import Product from "./pages/merchant/Product";
 
 import Login from "./pages/Auth/Login";
 import Signup from "./pages/Auth/Signup";
 import ForgetPassword from "./pages/Auth/ForgetPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
+import VerifyOtp from "./pages/Auth/VerifyOtp";
 
 
 function App() {
@@ -41,6 +44,7 @@ function App() {
           <Route path="/admin/orders" element={<Orders />} />
           <Route path="/admin/merchants" element={<Merchants />} />
           <Route path="/admin/promotions" element={<Promotions />} />
+          <Route path="/admin/categories" element={<Category />} />
 
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/update" element={<UpdateProfile />} />
@@ -51,11 +55,13 @@ function App() {
           <Route path="/merchant/update" element={<MerchantUpdate />} />
           <Route path="/merchant/change-password" element={<MerchantChangePassword />} />
           <Route path="/merchant/delete" element={<MerchantDelete />} />
+          <Route path="/merchant/products" element={<Product />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
 
         </Routes>
       </div>
