@@ -7,30 +7,27 @@ function Signup() {
     const [form, setForm] = useState({
         name: "",
         email: "",
-        password: "",
-        confirmPassword: "",
+        role: "user",
     });
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSignup = (e) => {
+    const handleSendOtp = (e) => {
         e.preventDefault();
 
-        if (!form.name || !form.email || !form.password) {
+        if (!form.name || !form.email) {
             alert("All fields required");
             return;
         }
 
-        if (form.password !== form.confirmPassword) {
-            alert("Passwords do not match");
-            return;
-        }
-
-        console.log(form);
-
+        localStorage.setItem("signupName", form.name);
         localStorage.setItem("signupEmail", form.email);
+        localStorage.setItem("signupRole", form.role);
+
+        console.log("Send OTP for:", form.email);
+
 
         navigate("/verify-otp");
     };
@@ -38,10 +35,21 @@ function Signup() {
     return (
         <div className="flex justify-center mt-20">
             <form
-                onSubmit={handleSignup}
+                onSubmit={handleSendOtp}
                 className="w-96 p-6 shadow-lg rounded bg-white"
             >
                 <h2 className="text-xl font-bold mb-4 text-center">Signup</h2>
+
+                {/* ROLE */}
+                <select
+                    name="role"
+                    className="w-full border p-2 mb-3"
+                    value={form.role}
+                    onChange={handleChange}
+                >
+                    <option value="user">User</option>
+                    <option value="merchant">Merchant</option>
+                </select>
 
                 <input
                     type="text"
@@ -55,28 +63,12 @@ function Signup() {
                     type="email"
                     name="email"
                     placeholder="Email"
-                    className="w-full border p-2 mb-3"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Password"
-                    className="w-full border p-2 mb-3"
-                    onChange={handleChange}
-                />
-
-                <input
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="Confirm Password"
                     className="w-full border p-2 mb-4"
                     onChange={handleChange}
                 />
 
-                <button className="w-full bg-green-500 text-white p-2 rounded">
-                    Register
+                <button className="w-full bg-blue-500 text-white p-2 rounded">
+                    Send OTP
                 </button>
             </form>
         </div>
