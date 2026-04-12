@@ -1,23 +1,22 @@
 import { useState } from "react";
 
-export default function UpdateProfile() {
+function UpdateProfile() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log({ name, email });
+    const handleUpdate = () => {
+        alert("Profile Updated (dummy)");
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10">
-            <h1 className="text-2xl font-bold mb-4">Update Profile</h1>
+        <div className="flex justify-center mt-10">
+            <div className="bg-white p-6 shadow rounded w-80">
+                <h2 className="text-xl font-bold mb-4">Update Profile</h2>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input
                     type="text"
                     placeholder="Name"
-                    className="border p-2"
+                    className="border p-2 mb-3 w-full"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
@@ -25,15 +24,20 @@ export default function UpdateProfile() {
                 <input
                     type="email"
                     placeholder="Email"
-                    className="border p-2"
+                    className="border p-2 mb-3 w-full"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
 
-                <button className="bg-blue-500 text-white p-2">
+                <button
+                    onClick={handleUpdate}
+                    className="bg-green-500 text-white w-full py-2 rounded"
+                >
                     Update
                 </button>
-            </form>
+            </div>
         </div>
     );
 }
+
+export default UpdateProfile;
