@@ -36,6 +36,7 @@ function Navbar() {
                         <Link to="/change-password">Change Password</Link>
                         <Link to="/delete-account">Delete</Link>
                         <Link to="/orders">Orders</Link>
+                        <Link to="/cart">Cart</Link>
                     </>
                 )}
 
@@ -47,6 +48,7 @@ function Navbar() {
                         <Link to="/merchant/change-password">M-Password</Link>
                         <Link to="/merchant/delete">M-Delete</Link>
                         <Link to="/merchant/products">M-Products</Link>
+                        <Link to="/merchant/orders">M-Orders</Link>
                     </>
                 )}
 
