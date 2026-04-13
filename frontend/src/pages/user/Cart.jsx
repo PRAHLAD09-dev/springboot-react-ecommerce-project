@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Cart() {
-    const [cart, setCart] = useState({
-        items: [
-            {
-                id: 1,
-                productId: 101,
-                name: "Shoes",
-                price: 1000,
-                quantity: 1,
-            },
-        ],
-    });
+    const navigate = useNavigate();
+
+    const [cart, setCart] = useState({ items: [] });
+
+    useEffect(() => {
+        const data = JSON.parse(localStorage.getItem("cart")) || [];
+        setCart({ items: data });
+    }, []);
+
+    const saveCart = (items) => {
+        setCart({ items });
+        localStorage.setItem("cart", JSON.stringify(items));
+    };
 
     const handleAdd = () => {
         const newItem = {
@@ -22,33 +25,41 @@ function Cart() {
             quantity: 1,
         };
 
-        setCart({
-            items: [...cart.items, newItem],
-        });
-
-        console.log("POST → /api/cart/add");
+        const updated = [...cart.items, newItem];
+        saveCart(updated);
     };
 
     const handleUpdate = (id, qty) => {
         if (qty < 1) return;
 
-        setCart({
-            items: cart.items.map((item) =>
-                item.id === id ? { ...item, quantity: qty } : item
-            ),
-        });
+        const updated = cart.items.map((item) =>
+            item.id === id ? { ...item, quantity: qty } : item
+        );
 
-        console.log(`PUT → /api/cart/update/${id}?quantity=${qty}`);
+        saveCart(updated);
     };
 
     const handleRemove = (id) => {
         if (!window.confirm("Remove item?")) return;
 
-        setCart({
-            items: cart.items.filter((item) => item.id !== id),
-        });
+        const updated = cart.items.filter((item) => item.id !== id);
+        saveCart(updated);
+    };
 
-        console.log(`DELETE → /api/cart/remove/${id}`);
+    const handlePlaceOrder = () => {
+        if (cart.items.length === 0) {
+            alert("Cart is empty");
+            return;
+        }
+
+        localStorage.setItem("orders", JSON.stringify(cart.items));
+
+        localStorage.removeItem("cart");
+        setCart({ items: [] });
+
+        alert("Order placed successfully");
+
+        navigate("/orders");
     };
 
     const total = cart.items.reduce(
@@ -68,7 +79,6 @@ function Cart() {
                 Add Dummy Product
             </button>
 
-            {/* CART ITEMS */}
             <div className="space-y-4">
 
                 {cart.items.length === 0 && (
@@ -80,19 +90,16 @@ function Cart() {
                 {cart.items.map((item) => (
                     <div
                         key={item.id}
-                        className="border p-4 rounded-xl shadow bg-white flex justify-between items-center"
+                        className="border p-4 rounded-xl shadow bg-white flex justify-between"
                     >
                         <div>
                             <h2 className="font-bold">{item.name}</h2>
                             <p>₹ {item.price}</p>
 
-                            {/* QUANTITY */}
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex gap-2 mt-2">
                                 <button
-                                    onClick={() =>
-                                        handleUpdate(item.id, item.quantity - 1)
-                                    }
-                                    className="px-2 bg-gray-300 rounded"
+                                    onClick={() => handleUpdate(item.id, item.quantity - 1)}
+                                    className="px-2 bg-gray-300"
                                 >
                                     -
                                 </button>
@@ -100,24 +107,20 @@ function Cart() {
                                 <span>{item.quantity}</span>
 
                                 <button
-                                    onClick={() =>
-                                        handleUpdate(item.id, item.quantity + 1)
-                                    }
-                                    className="px-2 bg-gray-300 rounded"
+                                    onClick={() => handleUpdate(item.id, item.quantity + 1)}
+                                    className="px-2 bg-gray-300"
                                 >
                                     +
                                 </button>
                             </div>
                         </div>
 
-                        <div className="text-right">
-                            <p className="font-semibold">
-                                ₹ {item.price * item.quantity}
-                            </p>
+                        <div>
+                            <p>₹ {item.price * item.quantity}</p>
 
                             <button
                                 onClick={() => handleRemove(item.id)}
-                                className="bg-red-500 text-white px-3 py-1 rounded mt-2"
+                                className="bg-red-500 text-white px-3 py-1 mt-2"
                             >
                                 Remove
                             </button>
@@ -126,12 +129,16 @@ function Cart() {
                 ))}
             </div>
 
-            {/* TOTAL */}
             {cart.items.length > 0 && (
-                <div className="mt-6 p-4 border rounded-xl bg-gray-100">
-                    <h2 className="font-bold text-lg">
-                        Total: ₹ {total}
-                    </h2>
+                <div className="mt-6 p-4 border bg-gray-100 rounded">
+                    <h2 className="font-bold">Total: ₹ {total}</h2>
+
+                    <button
+                        onClick={handlePlaceOrder}
+                        className="mt-3 bg-blue-500 text-white px-4 py-2 rounded"
+                    >
+                        Place Order
+                    </button>
                 </div>
             )}
         </div>
