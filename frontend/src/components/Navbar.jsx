@@ -37,6 +37,7 @@ function Navbar() {
                         <Link to="/delete-account">Delete</Link>
                         <Link to="/orders">Orders</Link>
                         <Link to="/cart">Cart</Link>
+                        <Link to="/addresses">Address</Link>
                     </>
                 )}
 

@@ -19,6 +19,8 @@ import ChangePassword from "./pages/user/ChangePassword";
 import DeleteAccount from "./pages/user/DeleteAccount";
 import UserOrders from "./pages/user/Orders";
 import Cart from "./pages/user/Cart";
+import Address from "./pages/user/Address";
+import Payment from "./pages/user/Payment";
 
 import MerchantProfile from "./pages/merchant/MerchantProfile";
 import MerchantUpdate from "./pages/merchant/MerchantUpdate";
@@ -58,6 +60,8 @@ function App() {
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/orders" element={<UserOrders />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/addresses" element={<Address />} />
+          <Route path="/payment" element={<Payment />} />
 
           <Route path="/merchant/profile" element={<MerchantProfile />} />
           <Route path="/merchant/update" element={<MerchantUpdate />} />
