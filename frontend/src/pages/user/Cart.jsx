@@ -3,143 +3,140 @@ import { useNavigate } from "react-router-dom";
 
 function Cart() {
     const navigate = useNavigate();
+    const [cart, setCart] = useState([]);
 
-    const [cart, setCart] = useState({ items: [] });
-
+    // 🔥 LOAD CART
     useEffect(() => {
         const data = JSON.parse(localStorage.getItem("cart")) || [];
-        setCart({ items: data });
+        setCart(data);
     }, []);
 
-    const saveCart = (items) => {
-        setCart({ items });
+    // 🔥 SAVE CART
+    const updateCart = (items) => {
+        setCart(items);
         localStorage.setItem("cart", JSON.stringify(items));
     };
 
-    const handleAdd = () => {
-        const newItem = {
-            id: Date.now(),
-            productId: 200,
-            name: "New Product",
-            price: 500,
-            quantity: 1,
-        };
-
-        const updated = [...cart.items, newItem];
-        saveCart(updated);
-    };
-
-    const handleUpdate = (id, qty) => {
-        if (qty < 1) return;
-
-        const updated = cart.items.map((item) =>
-            item.id === id ? { ...item, quantity: qty } : item
+    // 🔥 UPDATE QTY
+    const changeQty = (id, delta) => {
+        const updated = cart.map((item) =>
+            item.id === id
+                ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+                : item
         );
-
-        saveCart(updated);
+        updateCart(updated);
     };
 
-    const handleRemove = (id) => {
-        if (!window.confirm("Remove item?")) return;
-
-        const updated = cart.items.filter((item) => item.id !== id);
-        saveCart(updated);
+    // 🔥 REMOVE
+    const removeItem = (id) => {
+        const updated = cart.filter((item) => item.id !== id);
+        updateCart(updated);
     };
 
-    const handlePlaceOrder = () => {
-        if (cart.items.length === 0) {
-            alert("Cart is empty");
-            return;
-        }
+    // 🔥 PLACE ORDER → PAYMENT FLOW
+    const handleCheckout = () => {
+        if (cart.length === 0) return;
 
-        localStorage.setItem("orders", JSON.stringify(cart.items));
+        const orderId = Date.now();
+
+        localStorage.setItem("currentOrderId", orderId);
+        localStorage.setItem("orders", JSON.stringify(cart));
 
         localStorage.removeItem("cart");
-        setCart({ items: [] });
+        setCart([]);
 
-        alert("Order placed successfully");
-
-        navigate("/orders");
+        navigate("/payment");
     };
 
-    const total = cart.items.reduce(
+    // 🔥 TOTAL
+    const total = cart.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
     );
 
     return (
-        <div className="p-6 max-w-3xl mx-auto">
+        <div className="p-6 max-w-4xl mx-auto">
 
-            <h1 className="text-2xl font-bold mb-4">My Cart</h1>
+            {/* HEADER */}
+            <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
 
-            <button
-                onClick={handleAdd}
-                className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-            >
-                Add Dummy Product
-            </button>
-
-            <div className="space-y-4">
-
-                {cart.items.length === 0 && (
-                    <p className="text-center text-gray-500">
-                        Cart is empty
+            {cart.length === 0 ? (
+                <div className="text-center mt-20">
+                    <p className="text-gray-500 text-lg mb-4">
+                        Your cart is empty 🛒
                     </p>
-                )}
-
-                {cart.items.map((item) => (
-                    <div
-                        key={item.id}
-                        className="border p-4 rounded-xl shadow bg-white flex justify-between"
-                    >
-                        <div>
-                            <h2 className="font-bold">{item.name}</h2>
-                            <p>₹ {item.price}</p>
-
-                            <div className="flex gap-2 mt-2">
-                                <button
-                                    onClick={() => handleUpdate(item.id, item.quantity - 1)}
-                                    className="px-2 bg-gray-300"
-                                >
-                                    -
-                                </button>
-
-                                <span>{item.quantity}</span>
-
-                                <button
-                                    onClick={() => handleUpdate(item.id, item.quantity + 1)}
-                                    className="px-2 bg-gray-300"
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p>₹ {item.price * item.quantity}</p>
-
-                            <button
-                                onClick={() => handleRemove(item.id)}
-                                className="bg-red-500 text-white px-3 py-1 mt-2"
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {cart.items.length > 0 && (
-                <div className="mt-6 p-4 border bg-gray-100 rounded">
-                    <h2 className="font-bold">Total: ₹ {total}</h2>
-
                     <button
-                        onClick={handlePlaceOrder}
-                        className="mt-3 bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={() => navigate("/")}
+                        className="bg-blue-500 text-white px-5 py-2 rounded"
                     >
-                        Place Order
+                        Continue Shopping
                     </button>
                 </div>
+            ) : (
+                <>
+                    {/* CART ITEMS */}
+                    <div className="space-y-4">
+                        {cart.map((item) => (
+                            <div
+                                key={item.id}
+                                className="flex justify-between items-center border rounded-xl p-4 shadow-sm hover:shadow-md transition"
+                            >
+                                {/* LEFT */}
+                                <div>
+                                    <h2 className="font-semibold text-lg">{item.name}</h2>
+                                    <p className="text-gray-500">₹ {item.price}</p>
+
+                                    {/* QTY */}
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <button
+                                            onClick={() => changeQty(item.id, -1)}
+                                            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                        >
+                                            -
+                                        </button>
+
+                                        <span className="px-2">{item.quantity}</span>
+
+                                        <button
+                                            onClick={() => changeQty(item.id, 1)}
+                                            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* RIGHT */}
+                                <div className="text-right">
+                                    <p className="font-bold text-lg">
+                                        ₹ {item.price * item.quantity}
+                                    </p>
+
+                                    <button
+                                        onClick={() => removeItem(item.id)}
+                                        className="mt-2 text-red-500 hover:underline text-sm"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* SUMMARY */}
+                    <div className="mt-8 border-t pt-6 flex justify-between items-center">
+                        <h2 className="text-xl font-semibold">
+                            Total: ₹ {total}
+                        </h2>
+
+                        <button
+                            onClick={handleCheckout}
+                            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium"
+                        >
+                            Proceed to Payment →
+                        </button>
+                    </div>
+                </>
             )}
         </div>
     );
