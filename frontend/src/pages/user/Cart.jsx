@@ -5,19 +5,16 @@ function Cart() {
     const navigate = useNavigate();
     const [cart, setCart] = useState([]);
 
-    // 🔥 LOAD CART
     useEffect(() => {
         const data = JSON.parse(localStorage.getItem("cart")) || [];
         setCart(data);
     }, []);
 
-    // 🔥 SAVE CART
     const updateCart = (items) => {
         setCart(items);
         localStorage.setItem("cart", JSON.stringify(items));
     };
 
-    // 🔥 UPDATE QTY
     const changeQty = (id, delta) => {
         const updated = cart.map((item) =>
             item.id === id
@@ -27,13 +24,11 @@ function Cart() {
         updateCart(updated);
     };
 
-    // 🔥 REMOVE
     const removeItem = (id) => {
         const updated = cart.filter((item) => item.id !== id);
         updateCart(updated);
     };
 
-    // 🔥 PLACE ORDER → PAYMENT FLOW
     const handleCheckout = () => {
         if (cart.length === 0) return;
 
@@ -48,7 +43,6 @@ function Cart() {
         navigate("/payment");
     };
 
-    // 🔥 TOTAL
     const total = cart.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
