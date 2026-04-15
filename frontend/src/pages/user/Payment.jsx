@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Payment() {
     const navigate = useNavigate();
+    const [orderId, setOrderId] = useState(null);
 
-    const [orderId, setOrderId] = useState("");
+    useEffect(() => {
+        const id = localStorage.getItem("currentOrderId");
+        if (id) setOrderId(id);
+    }, []);
 
     const handlePayment = () => {
         if (!orderId) {
-            alert("Enter Order ID");
+            alert("No order found");
             return;
         }
 
@@ -21,19 +25,15 @@ function Payment() {
 
     return (
         <div className="flex justify-center items-center h-screen">
-            <div className="bg-white shadow-lg p-6 rounded w-80">
+            <div className="bg-white shadow-lg p-6 rounded w-80 text-center">
 
-                <h1 className="text-xl font-bold mb-4 text-center">
+                <h1 className="text-xl font-bold mb-4">
                     Payment
                 </h1>
 
-                <input
-                    type="number"
-                    placeholder="Enter Order ID"
-                    className="w-full border p-2 mb-4"
-                    value={orderId}
-                    onChange={(e) => setOrderId(e.target.value)}
-                />
+                <p className="text-gray-500 mb-4">
+                    Order ID: #{orderId}
+                </p>
 
                 <button
                     onClick={handlePayment}
