@@ -21,47 +21,39 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
-public class SecurityConfig 
-{
+public class SecurityConfig {
 
-	private final JwtAuthenticationFilter jwtAuthenticationFilter ;
-	
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
-    public PasswordEncoder passwordEncoder() 
-    {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception 
-    {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-				.requestMatchers("/", "/actuator/health").permitAll()
-		        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/merchant/**").hasRole("MERCHANT")
-                .requestMatchers("/api/user/**").hasRole("USER")
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/", "/actuator/health").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/merchant/**").hasRole("MERCHANT")
+                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-    
+
     @Bean
-    public UserDetailsService userDetailsService() 
-    {
-        return username -> 
-        {
+    public UserDetailsService userDetailsService() {
+        return username -> {
             throw new UsernameNotFoundException("User not found");
         };
     }
-    
+
 }
