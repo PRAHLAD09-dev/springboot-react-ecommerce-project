@@ -1,16 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function ProductList() {
     const navigate = useNavigate();
 
     const [keyword, setKeyword] = useState("");
+    const [products, setProducts] = useState([]);
 
-    const [products] = useState([
-        { id: 1, name: "Shoes", price: 1200 },
-        { id: 2, name: "T-shirt", price: 500 },
-        { id: 3, name: "Watch", price: 2000 },
-    ]);
+    useEffect(() => {
+        axios
+            .get("http://localhost:8080/api/products")
+            .then((res) => {
+                console.log(res.data);
+                setProducts(res.data.data.content);
+            })
+            .catch((err) => console.log(err));
+    }, []);
 
     const filteredProducts = products.filter((p) =>
         p.name.toLowerCase().includes(keyword.toLowerCase())
@@ -19,19 +25,16 @@ function ProductList() {
     return (
         <div className="p-6 max-w-5xl mx-auto">
 
-            {/* HEADER */}
             <h1 className="text-3xl font-bold mb-6">Explore Products</h1>
 
-            {/* SEARCH */}
             <input
                 type="text"
                 placeholder="Search products..."
-                className="border p-3 w-full mb-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="border p-3 w-full mb-6 rounded-lg"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
             />
 
-            {/* GRID */}
             {filteredProducts.length === 0 ? (
                 <p className="text-gray-500 text-center mt-10">
                     No products found
@@ -42,7 +45,8 @@ function ProductList() {
                     {filteredProducts.map((p) => (
                         <div
                             key={p.id}
-                            className="border rounded-xl p-5 shadow-sm hover:shadow-lg transition cursor-pointer bg-white"
+                            className="border rounded-xl p-5 shadow hover:shadow-lg cursor-pointer"
+
                             onClick={() => navigate('/product/${p.id}')}
                         >
                             <h2 className="font-semibold text-lg">{p.name}</h2>

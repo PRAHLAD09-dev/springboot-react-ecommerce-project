@@ -1,71 +1,104 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const [product, setProduct] = useState(null);
 
-    const product = {
-        id: Number(id),
-        name: "Shoes",
-        price: 1200,
-        description: "High quality shoes for daily wear",
-    };
-
-    const handleAddToCart = () => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-        if (!isLoggedIn) {
-            alert("Login first");
-            navigate("/login");
-            return;
-        }
-
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-        const existing = cart.find((item) => item.id === product.id);
-
-        if (existing) {
-            existing.quantity += 1;
-        } else {
-            cart.push({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
+    useEffect(() => {
+        axios
+            .get(`http://localhost:8080/api/products/${id}`)
+            .then((res) => {
+                setProduct(res.data.data);
+            })
+            .catch((err) => {
+                console.log(err);
+                alert("Failed to load product");
             });
-        }
+    }, [id]);
 
-        localStorage.setItem("cart", JSON.stringify(cart));
+    const handleAddToCart = async () => {
+        const token = localStorage.getItem("token");
 
-        alert("Added to cart");
-    };
-
-    const handleBuyNow = () => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-        if (!isLoggedIn) {
+        if (!token) {
             alert("Login first");
             navigate("/login");
             return;
         }
 
-        const order = [
-            {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-            },
-        ];
+        try {
+            await axios.post(
+                "http://localhost:8080/api/cart/add",
+                null,
+                {
+                    params: {
+                        productId: product.id,
+                        quantity: 1,
+                    },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-        const orderId = Date.now();
+            alert("Added to cart");
 
-        localStorage.setItem("currentOrderId", orderId);
-        localStorage.setItem("orders", JSON.stringify(order));
-
-        navigate("/payment");
+        } catch (err) {
+            console.log(err);
+            alert("Failed to add to cart");
+        }
     };
+
+    const handleBuyNow = async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("Login first");
+            navigate("/login");
+            return;
+        }
+
+        try {
+            await axios.post(
+                "http://localhost:8080/api/cart/add",
+                null,
+                {
+                    params: {
+                        productId: product.id,
+                        quantity: 1,
+                    },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const res = await axios.post(
+                "http://localhost:8080/api/user/orders/place",
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const orderId = res.data.data.id;
+
+            navigate(`/payment?orderId=${orderId}`);
+
+        } catch (err) {
+            console.log(err);
+            alert("Buy now failed");
+        }
+    };
+
+    if (!product) {
+        return <p className="text-center mt-10">Loading...</p>;
+    }
 
     return (
         <div className="p-6 max-w-3xl mx-auto">
