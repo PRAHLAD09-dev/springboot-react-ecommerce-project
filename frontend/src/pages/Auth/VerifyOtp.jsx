@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function VerifyOtp() {
     const navigate = useNavigate();
@@ -12,7 +13,7 @@ function VerifyOtp() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         if (!otp || !password || !confirmPassword) {
             alert("All fields required");
             return;
@@ -23,17 +24,27 @@ function VerifyOtp() {
             return;
         }
 
-        console.log("REGISTER:", {
-            name,
-            email,
-            role,
-            otp,
-            password,
-        });
+        try {
+            const url =
+                role === "merchant"
+                    ? "http://localhost:8080/api/auth/merchant/register"
+                    : "http://localhost:8080/api/auth/user/register";
 
-        alert('${ role } registered successfully(dummy)');
+            await axios.post(url, {
+                name,
+                email,
+                otp,
+                password,
+            });
 
-        navigate("/login");
+            alert('${ role } registered successfully');
+
+            navigate("/login");
+
+        } catch (err) {
+            console.log(err);
+            alert("Registration failed");
+        }
     };
 
     return (

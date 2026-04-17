@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Signup() {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ function Signup() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSendOtp = (e) => {
+    const handleSendOtp = async (e) => {
         e.preventDefault();
 
         if (!form.name || !form.email) {
@@ -22,14 +23,28 @@ function Signup() {
             return;
         }
 
-        localStorage.setItem("signupName", form.name);
-        localStorage.setItem("signupEmail", form.email);
-        localStorage.setItem("signupRole", form.role);
+        try {
+            // 🔥 BACKEND CALL
+            await axios.post(
+                "http://localhost:8080/api/auth/send-otp",
+                {
+                    email: form.email,
+                }
+            );
 
-        console.log("Send OTP for:", form.email);
+            // 🔥 SAVE TEMP DATA
+            localStorage.setItem("signupName", form.name);
+            localStorage.setItem("signupEmail", form.email);
+            localStorage.setItem("signupRole", form.role);
 
+            alert("OTP sent successfully");
 
-        navigate("/verify-otp");
+            navigate("/verify-otp");
+
+        } catch (err) {
+            console.log(err);
+            alert("Failed to send OTP");
+        }
     };
 
     return (

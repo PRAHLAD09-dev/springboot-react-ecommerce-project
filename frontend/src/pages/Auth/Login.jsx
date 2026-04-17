@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
     const navigate = useNavigate();
@@ -7,39 +8,41 @@ function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleLogin = () => {
-        console.log("CLICK WORKING");
-
+    const handleLogin = async () => {
         if (!email || !password) {
             alert("Enter email and password");
             return;
         }
 
-        let role = "";
+        try {
+            const res = await axios.post(
+                "http://localhost:8080/api/auth/login",
+                {
+                    email,
+                    password,
+                }
+            );
 
-        if (email === "admin@gmail.com" && password === "admin123") {
-            role = "admin";
+            console.log(res.data);
+
+            // 🔥 TOKEN SAVE
+            const token = res.data.data.token;
+            const role = res.data.data.role;
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", role);
+
+            alert("Login successful");
+
+            // 🔥 ROLE BASED NAVIGATION
+            if (role === "ADMIN") navigate("/admin/dashboard");
+            else if (role === "MERCHANT") navigate("/merchant/profile");
+            else navigate("/profile");
+
+        } catch (err) {
+            console.log(err);
+            alert("Invalid credentials or server error");
         }
-
-        else if (email === "merchant@gmail.com" && password === "merchant123") {
-            role = "merchant";
-        }
-
-        else if (email === "user@gmail.com" && password === "user123") {
-            role = "user";
-        }
-
-        else {
-            alert("Invalid credentials");
-            return;
-        }
-
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("role", role);
-
-        if (role === "admin") navigate("/admin/dashboard");
-        else if (role === "merchant") navigate("/merchant/profile");
-        else navigate("/profile");
     };
 
     return (
@@ -66,7 +69,7 @@ function Login() {
 
                 <button
                     onClick={handleLogin}
-                    className="bg-blue-500 hover:bg-blue-600 text-white w-full py-2 rounded cursor-pointer relative z-50"
+                    className="bg-blue-500 hover:bg-blue-600 text-white w-full py-2 rounded"
                 >
                     Login
                 </button>
@@ -76,12 +79,6 @@ function Login() {
                     className="text-center text-sm mt-3 text-blue-500 cursor-pointer"
                 >
                     Forgot Password?
-                </p>
-
-                <p className="text-xs text-gray-500 mt-3 text-center">
-                    admin@gmail.com / admin123 <br />
-                    merchant@gmail.com / merchant123 <br />
-                    user@gmail.com / user123
                 </p>
 
             </div>

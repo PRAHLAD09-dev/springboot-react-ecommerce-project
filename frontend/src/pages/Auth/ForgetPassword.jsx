@@ -1,14 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function ForgetPassword() {
     const [email, setEmail] = useState("");
     const navigate = useNavigate();
 
-    const handleSendOTP = () => {
+    const handleSendOTP = async () => {
+        if (!email) {
+            alert("Enter email");
+            return;
+        }
 
-        localStorage.setItem("resetEmail", email);
-        navigate("/reset-password");
+        try {
+            await axios.post(
+                "http://localhost:8080/api/auth/forgot-password",
+                { email }
+            );
+
+            localStorage.setItem("resetEmail", email);
+
+            alert("OTP sent (if email exists)");
+
+            navigate("/reset-password");
+
+        } catch (err) {
+            console.log(err);
+            alert("Something went wrong");
+        }
     };
 
     return (
@@ -29,7 +48,7 @@ function ForgetPassword() {
 
                 <button
                     onClick={handleSendOTP}
-                    className="w-full bg-yellow-500 text-white p-2"
+                    className="w-full bg-yellow-500 text-white p-2 rounded"
                 >
                     Send OTP
                 </button>
