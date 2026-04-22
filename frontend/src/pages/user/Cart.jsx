@@ -5,20 +5,26 @@ function Cart() {
     const navigate = useNavigate();
     const [cart, setCart] = useState([]);
 
+    const userId = localStorage.getItem("userId") || "guest";
+
     useEffect(() => {
-        const data = JSON.parse(localStorage.getItem("cart")) || [];
+        const data =
+            JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
         setCart(data);
-    }, []);
+    }, [userId]);
 
     const updateCart = (items) => {
         setCart(items);
-        localStorage.setItem("cart", JSON.stringify(items));
+        localStorage.setItem(`cart_${userId}`, JSON.stringify(items));
     };
 
     const changeQty = (id, delta) => {
         const updated = cart.map((item) =>
             item.id === id
-                ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+                ? {
+                    ...item,
+                    quantity: Math.max(1, item.quantity + delta),
+                }
                 : item
         );
         updateCart(updated);
@@ -34,10 +40,22 @@ function Cart() {
 
         const orderId = Date.now();
 
-        localStorage.setItem("currentOrderId", orderId);
-        localStorage.setItem("orders", JSON.stringify(cart));
+        const existingOrders =
+            JSON.parse(localStorage.getItem(`orders_${userId}`)) || [];
 
-        localStorage.removeItem("cart");
+        const newOrder = {
+            id: orderId,
+            items: cart,
+            total,
+            date: new Date().toISOString(),
+        };
+
+        localStorage.setItem(
+            `orders_${userId}`,
+            JSON.stringify([...existingOrders, newOrder])
+        );
+
+        localStorage.removeItem(`cart_${userId}`);
         setCart([]);
 
         navigate("/payment");
@@ -50,8 +68,6 @@ function Cart() {
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
-
-            {/* HEADER */}
             <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
 
             {cart.length === 0 ? (
@@ -68,47 +84,51 @@ function Cart() {
                 </div>
             ) : (
                 <>
-                    {/* CART ITEMS */}
                     <div className="space-y-4">
                         {cart.map((item) => (
                             <div
                                 key={item.id}
-                                className="flex justify-between items-center border rounded-xl p-4 shadow-sm hover:shadow-md transition"
+                                className="flex justify-between items-center border rounded-xl p-4 shadow"
                             >
-                                {/* LEFT */}
                                 <div>
-                                    <h2 className="font-semibold text-lg">{item.name}</h2>
-                                    <p className="text-gray-500">₹ {item.price}</p>
+                                    <h2 className="font-semibold text-lg">
+                                        {item.name}
+                                    </h2>
+                                    <p className="text-gray-500">
+                                        ₹ {item.price}
+                                    </p>
 
-                                    {/* QTY */}
                                     <div className="flex items-center gap-2 mt-2">
                                         <button
-                                            onClick={() => changeQty(item.id, -1)}
-                                            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                            onClick={() =>
+                                                changeQty(item.id, -1)
+                                            }
+                                            className="px-2 bg-gray-200 rounded"
                                         >
                                             -
                                         </button>
 
-                                        <span className="px-2">{item.quantity}</span>
+                                        <span>{item.quantity}</span>
 
                                         <button
-                                            onClick={() => changeQty(item.id, 1)}
-                                            className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                            onClick={() =>
+                                                changeQty(item.id, 1)
+                                            }
+                                            className="px-2 bg-gray-200 rounded"
                                         >
                                             +
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* RIGHT */}
                                 <div className="text-right">
-                                    <p className="font-bold text-lg">
+                                    <p className="font-bold">
                                         ₹ {item.price * item.quantity}
                                     </p>
 
                                     <button
                                         onClick={() => removeItem(item.id)}
-                                        className="mt-2 text-red-500 hover:underline text-sm"
+                                        className="text-red-500 text-sm mt-2"
                                     >
                                         Remove
                                     </button>
@@ -117,7 +137,6 @@ function Cart() {
                         ))}
                     </div>
 
-                    {/* SUMMARY */}
                     <div className="mt-8 border-t pt-6 flex justify-between items-center">
                         <h2 className="text-xl font-semibold">
                             Total: ₹ {total}
@@ -125,7 +144,7 @@ function Cart() {
 
                         <button
                             onClick={handleCheckout}
-                            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium"
+                            className="bg-green-500 text-white px-6 py-3 rounded"
                         >
                             Proceed to Payment →
                         </button>

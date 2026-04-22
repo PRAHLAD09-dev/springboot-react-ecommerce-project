@@ -1,126 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import API from "../../services/api";
 
 function Orders() {
-    const [orders, setOrders] = useState([
-        {
-            id: 1,
-            status: "PLACED",
-            total: 1200,
-            items: ["Shoes", "T-shirt"],
-            tracking: [
-                { step: "Order Placed", done: true },
-                { step: "Packed", done: false },
-                { step: "Shipped", done: false },
-                { step: "Delivered", done: false },
-            ],
-        },
-    ]);
-
+    const [orders, setOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
 
-    // 🔥 PLACE ORDER
-    const handlePlaceOrder = () => {
-        const newOrder = {
-            id: Date.now(),
-            status: "PLACED",
-            total: 999,
-            items: ["Demo Product"],
-            tracking: [
-                { step: "Order Placed", done: true },
-                { step: "Packed", done: false },
-                { step: "Shipped", done: false },
-                { step: "Delivered", done: false },
-            ],
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const res = await API.get("/api/user/orders/my-orders");
+                setOrders(res.data.data);
+            } catch (err) {
+                console.log(err.response?.data || err);
+            }
         };
 
-        setOrders([newOrder, ...orders]);
-    };
+        fetchOrders();
+    }, []);
 
-    // 🔥 CANCEL
-    const handleCancel = (id) => {
-        if (!window.confirm("Cancel this order?")) return;
+    const handleSelectOrder = async (orderId) => {
+        try {
+            const [orderRes, trackingRes] = await Promise.all([
+                API.get(`/api/user/orders/${orderId}`),
+                API.get(`/api/user/orders/${orderId}/tracking`),
+            ]);
 
-        setOrders(
-            orders.map((o) =>
-                o.id === id
-                    ? {
-                        ...o,
-                        status: "CANCELLED",
-                        tracking: o.tracking.map((t, i) =>
-                            i === 0 ? t : { ...t, done: false }
-                        ),
-                    }
-                    : o
-            )
-        );
-    };
+            setSelectedOrder({
+                ...orderRes.data.data,
+                tracking: trackingRes.data.data,
+            });
 
-    // 🔥 VIEW
-    const handleView = (order) => {
-        setSelectedOrder(order);
+        } catch (err) {
+            console.log(err.response?.data || err);
+            alert("Failed to load order details ❌");
+        }
     };
 
     return (
-        <div className="p-6 max-w-3xl mx-auto">
+        <div className="p-6 max-w-4xl mx-auto">
 
             <h1 className="text-2xl font-bold mb-4">My Orders</h1>
 
-            {/* PLACE ORDER */}
-            <button
-                onClick={handlePlaceOrder}
-                className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-            >
-                Place Dummy Order
-            </button>
-
-            {/* LIST */}
-            <div className="space-y-4">
+            {/* ORDER LIST */}
+            <div className="space-y-3">
                 {orders.length === 0 && (
-                    <p className="text-gray-500 text-center">No orders</p>
+                    <p className="text-gray-500">No orders found</p>
                 )}
 
-                {orders.map((o) => (
+                {orders.map((order) => (
                     <div
-                        key={o.id}
-                        className="border p-4 rounded-xl shadow-md hover:shadow-lg transition bg-white"
+                        key={order.id}
+                        onClick={() => handleSelectOrder(order.id)}
+                        className="border p-4 rounded-xl cursor-pointer hover:bg-gray-50"
                     >
-                        <h2 className="font-bold text-lg">Order #{o.id}</h2>
-
-                        <p className="mt-1">
-                            Status:
-                            <span
-                                className={`ml-2 px-2 py-1 rounded text-white text-sm ${o.status === "CANCELLED"
-                                        ? "bg-red-500"
-                                        : "bg-green-500"
-                                    }`}
-                            >
-                                {o.status}
-                            </span>
-                        </p>
-
-                        <p>Total: ₹ {o.total}</p>
-
-                        <div className="flex gap-4 mt-3">
-
-                            <button
-                                onClick={() => handleView(o)}
-                                className="bg-blue-500 text-white px-3 py-1 rounded"
-                            >
-                                View
-                            </button>
-
-                            <button
-                                onClick={() => handleCancel(o.id)}
-                                disabled={o.status === "CANCELLED"}
-                                className={`px-3 py-1 rounded text-white ${o.status === "CANCELLED"
-                                        ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-red-500"
-                                    }`}
-                            >
-                                Cancel
-                            </button>
-
-                        </div>
+                        <p className="font-semibold">Order #{order.id}</p>
+                        <p>Status: {order.status}</p>
+                        <p>Total: ₹ {order.total}</p>
                     </div>
                 ))}
             </div>
@@ -128,9 +63,8 @@ function Orders() {
             {/* DETAILS + TRACKING */}
             {selectedOrder && (
                 <div className="mt-6 p-4 border rounded-xl bg-gray-100">
-                    <h2 className="font-bold mb-3 text-lg">
-                        Order Details
-                    </h2>
+
+                    <h2 className="font-bold mb-3 text-lg">Order Details</h2>
 
                     <p>ID: {selectedOrder.id}</p>
                     <p>Status: {selectedOrder.status}</p>
@@ -138,33 +72,40 @@ function Orders() {
 
                     <p className="mt-3 font-semibold">Items:</p>
                     <ul className="list-disc ml-5">
-                        {selectedOrder.items.map((item, i) => (
-                            <li key={i}>{item}</li>
+                        {selectedOrder.items?.map((item, i) => (
+                            <li key={i}>
+                                {item.productName} x {item.quantity}
+                            </li>
                         ))}
                     </ul>
 
-                    {/* 🔥 TRACKING */}
+                    {/* TRACKING */}
                     <div className="mt-4">
                         <p className="font-semibold mb-2">Tracking:</p>
 
                         <div className="space-y-2">
-                            {selectedOrder.tracking.map((t, i) => (
+                            {selectedOrder.tracking?.map((t, i) => (
                                 <div key={i} className="flex items-center gap-2">
                                     <div
-                                        className={`w-3 h-3 rounded-full ${t.done ? "bg-green-500" : "bg-gray-400"
+                                        className={`w-3 h-3 rounded-full ${t.completed
+                                            ? "bg-green-500"
+                                            : "bg-gray-400"
                                             }`}
                                     ></div>
+
                                     <span
-                                        className={`${t.done ? "text-green-600" : "text-gray-500"
+                                        className={`${t.completed
+                                            ? "text-green-600"
+                                            : "text-gray-500"
                                             }`}
                                     >
-                                        {t.step}
+                                        {t.status}
                                     </span>
                                 </div>
                             ))}
                         </div>
-
                     </div>
+
                 </div>
             )}
         </div>
