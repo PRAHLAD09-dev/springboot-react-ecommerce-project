@@ -1,30 +1,78 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function Category() {
+
     const [categories, setCategories] = useState([]);
     const [name, setName] = useState("");
 
-    const handleAdd = () => {
+    const token = localStorage.getItem("token");
+
+    const fetchCategories = async () => {
+        try {
+            const res = await axios.get(
+                "http://localhost:8080/api/categories",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setCategories(res.data.data);
+
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const handleAdd = async () => {
         if (!name) {
             alert("Enter category name");
             return;
         }
 
-        const newCategory = {
-            id: Date.now(),
-            name: name,
-        };
+        try {
+            await axios.post(
+                `http://localhost:8080/api/categories?name=${name}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
 
-        setCategories([...categories, newCategory]);
-        setName("");
+            setName("");
+            fetchCategories(); // refresh
 
-        console.log("CREATE API → /api/categories?name=" + name);
+        } catch (err) {
+            console.log(err);
+            alert("Failed to add category");
+        }
     };
 
-    const handleDelete = (id) => {
-        setCategories(categories.filter((c) => c.id !== id));
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(
+                `http://localhost:8080/api/categories/${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
 
-        console.log("DELETE API → /api/categories/" + id);
+            fetchCategories();
+
+        } catch (err) {
+            console.log(err);
+            alert("Failed to delete");
+        }
     };
 
     return (
@@ -32,7 +80,7 @@ function Category() {
 
             <h1 className="text-2xl font-bold mb-4">Category Management</h1>
 
-            {/* ADD CATEGORY */}
+            {/* ADD */}
             <div className="flex gap-2 mb-4">
                 <input
                     type="text"
