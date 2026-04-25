@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/merchant")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('MERCHANT')")
+@PreAuthorize("hasRole('USER')")
 public class MerchantController 
 {
 

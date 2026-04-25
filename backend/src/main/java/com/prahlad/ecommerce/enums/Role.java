@@ -3,6 +3,6 @@ package com.prahlad.ecommerce.enums;
 public enum Role 
 {
     USER,
-    MERCHANT,
+//    MERCHANT,
     ADMIN
 }

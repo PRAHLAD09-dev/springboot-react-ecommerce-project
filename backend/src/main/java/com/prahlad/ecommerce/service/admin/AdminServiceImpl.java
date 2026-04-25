@@ -162,8 +162,12 @@ public class AdminServiceImpl implements AdminService
 
 	private MerchantResponse mapMerchantToDTO(Merchant merchant) 
 	{
-		return new MerchantResponse(merchant.getId(), merchant.getBusinessName(),
-				merchant.isApproved(), merchant.isActive());
+		return new MerchantResponse(
+				merchant.getId(), 
+				merchant.getBusinessName(),
+				merchant.getUser().getEmail(),
+				merchant.isApproved(),
+				merchant.isActive());
 	}
 
 	private OrderResponse mapOrderToDTO(Order order) 

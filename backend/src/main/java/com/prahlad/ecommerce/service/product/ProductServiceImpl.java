@@ -42,13 +42,26 @@ public class ProductServiceImpl implements ProductService
     // =========================
     private Merchant getCurrentMerchant() 
     {
+
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return merchantRepository.findByUser(user)
-                .orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+        Merchant merchant = merchantRepository.findByUser(user)
+                .orElseThrow(() -> new UnauthorizedException("Not a merchant"));
+
+        if (!merchant.isApproved()) 
+        {
+            throw new UnauthorizedException("Merchant not approved");
+        }
+
+        if (!merchant.isActive()) 
+        {
+            throw new UnauthorizedException("Merchant blocked");
+        }
+
+        return merchant;
     }
 
     // =========================

@@ -15,6 +15,7 @@ import com.prahlad.ecommerce.dto.order.OrderResponse;
 import com.prahlad.ecommerce.dto.order.OrderStatusHistoryDTO;
 import com.prahlad.ecommerce.entity.Cart;
 import com.prahlad.ecommerce.entity.CartItem;
+import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.Order;
 import com.prahlad.ecommerce.entity.OrderItem;
 import com.prahlad.ecommerce.entity.OrderStatusHistory;
@@ -22,12 +23,12 @@ import com.prahlad.ecommerce.entity.Product;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.enums.NotificationType;
 import com.prahlad.ecommerce.enums.OrderStatus;
-import com.prahlad.ecommerce.enums.Role;
 import com.prahlad.ecommerce.exception.BadRequestException;
 import com.prahlad.ecommerce.exception.ResourceNotFoundException;
 import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.CartItemRepository;
 import com.prahlad.ecommerce.repository.CartRepository;
+import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.OrderRepository;
 import com.prahlad.ecommerce.repository.OrderStatusHistoryRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
@@ -47,6 +48,7 @@ public class OrderService
 	private final UserRepository userRepository;
 	private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 	private final NotificationService notificationService;
+	private final MerchantRepository merchantRepository;
 
 	
 	@Transactional
@@ -192,84 +194,55 @@ public class OrderService
 	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) 
 	{
 
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    String email = auth.getName();
 
-		String email = auth.getName();
+	    boolean isAdmin = auth.getAuthorities().stream()
+	            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-		Role role = auth.getAuthorities().stream()
-		    .map(a -> a.getAuthority().replace("ROLE_", ""))
-		    .map(Role::valueOf)
-		    .findFirst()
-		    .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+	    Order order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+	    
+	    if (isAdmin) 
+	    {
 
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+	        if (status != OrderStatus.CONFIRMED &&
+	            status != OrderStatus.CANCELLED &&
+	            status != OrderStatus.DELIVERED) 
+	        {
 
-		if (role == Role.ADMIN) 
-		{
+	            throw new UnauthorizedException("Admin can only confirm, cancel or deliver order");
+	        }
 
-			if (status != OrderStatus.CONFIRMED && status != OrderStatus.CANCELLED && status != OrderStatus.DELIVERED) 
-			{
-				throw new UnauthorizedException("Admin can only confirm, cancel or deliver order");
-			}
+	        order.setStatus(status);
+	    }
 
-			order.setStatus(status);
-		}
+	    else 
+	    {
 
-		else if (role == Role.MERCHANT) 
-		{
+	        boolean isMerchant = order.getOrderItems().stream()
+	                .anyMatch(i -> {
+	                    var m = i.getProduct().getMerchant();
+	                    return m != null &&
+	                           m.isApproved() &&
+	                           m.isActive() &&
+	                           m.getUser().getEmail().equals(email);
+	                });
 
-			boolean belongsToMerchant = order.getOrderItems().stream()
-				    .anyMatch(i -> 
-				        i.getProduct().getMerchant().getUser().getEmail().equals(email)
-				    );
+	        if (!isMerchant) {
+	            throw new UnauthorizedException("You are not allowed to update this order");
+	        }
 
-			if (!belongsToMerchant) 
-			{
-				throw new UnauthorizedException("Order does not belong to this merchant");
-			}
+	        if (status != OrderStatus.SHIPPED) {
+	            throw new UnauthorizedException("Merchant can only ship order");
+	        }
 
-			if (status != OrderStatus.SHIPPED) 
-			{
-				throw new UnauthorizedException("Merchant can only ship order");
-			}
+	        order.setStatus(OrderStatus.SHIPPED);
+	    }
 
-			order.setStatus(OrderStatus.SHIPPED);
-		}
+	    Order savedOrder = orderRepository.save(order);
 
-		Order savedOrder = orderRepository.save(order);
-
-		if (status == OrderStatus.CONFIRMED) 
-		{
-			Set<String> merchantEmails = savedOrder.getOrderItems().stream()
-				    .map(item -> item.getProduct().getMerchant().getUser().getEmail())
-				    .collect(Collectors.toSet());
-
-			for (String merchantEmail : merchantEmails) 
-			{
-				notificationService.sendNotification(merchantEmail, "New Order Confirmed",
-						"You received a confirmed order #" + savedOrder.getId(), NotificationType.ORDER_CONFIRMED);
-			}
-
-			notificationService.sendNotification(savedOrder.getUser().getEmail(), "Order Confirmed",
-					"Your order #" + savedOrder.getId() + " has been confirmed.", NotificationType.ORDER_CONFIRMED);
-		}
-
-		else if (status == OrderStatus.SHIPPED) 
-		{
-			notificationService.sendNotification(savedOrder.getUser().getEmail(), "Order Shipped ",
-					"Your order #" + savedOrder.getId() + " is on the way.", NotificationType.ORDER_SHIPPED);
-		}
-
-		else if (status == OrderStatus.DELIVERED) 
-		
-			notificationService.sendNotification(savedOrder.getUser().getEmail(), "Order Delivered ",
-					"Your order #" + savedOrder.getId() + " has been delivered.", NotificationType.ORDER_DELIVERED);
-
-		else if (status == OrderStatus.CANCELLED) 
-		{
-			notificationService.sendNotification(savedOrder.getUser().getEmail(), "Order Cancelled",
-					"Your order #" + savedOrder.getId() + " has been cancelled.", NotificationType.ORDER_CANCELLED);
-		}
+	    sendNotifications(savedOrder, status);
 
 	    OrderStatusHistory history = new OrderStatusHistory();
 	    history.setOrder(savedOrder);
@@ -279,15 +252,87 @@ public class OrderService
 
 	    orderStatusHistoryRepository.save(history);
 
-	    return mapToDTO(savedOrder); 
- }
+	    return mapToDTO(savedOrder);
+	}
 	
 	public List<OrderResponse> getMerchantOrders(String email) 
 	{
 
-		User merchant = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		return orderRepository.findOrdersByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
+	    Merchant merchant = merchantRepository.findByUser(user)
+	            .orElseThrow(() -> new UnauthorizedException("Not a merchant"));
+
+	    if (!merchant.isApproved() || !merchant.isActive()) {
+	        throw new UnauthorizedException("Merchant not allowed");
+	    }
+
+	    return orderRepository.findOrdersByMerchantId(user.getId())
+	            .stream()
+	            .map(this::mapToDTO)
+	            .toList();
+	}
+	
+	private void sendNotifications(Order order, OrderStatus status) 
+	{
+
+	    String orderId = String.valueOf(order.getId());
+	    String userEmail = order.getUser().getEmail();
+
+	    switch (status) 
+	    {
+
+	        case CONFIRMED -> 
+	        {
+
+	            Set<String> merchantEmails = order.getOrderItems().stream()
+	                .map(i -> i.getProduct().getMerchant())
+	                .filter(m -> m != null && m.isApproved() && m.isActive())
+	                .map(m -> m.getUser().getEmail())
+	                .collect(Collectors.toSet());
+
+	            for (String email : merchantEmails) 
+	            {
+	                notificationService.sendNotification(
+	                    email,
+	                    "New Order Confirmed",
+	                    "You received order #" + orderId,
+	                    NotificationType.ORDER_CONFIRMED
+	                );
+	            }
+
+	            notificationService.sendNotification(
+	                userEmail,
+	                "Order Confirmed",
+	                "Your order #" + orderId + " has been confirmed",
+	                NotificationType.ORDER_CONFIRMED
+	            );
+	        }
+
+	        case SHIPPED -> notificationService.sendNotification(
+	            userEmail,
+	            "Order Shipped",
+	            "Your order #" + orderId + " is on the way",
+	            NotificationType.ORDER_SHIPPED
+	        );
+
+	        case DELIVERED -> notificationService.sendNotification(
+	            userEmail,
+	            "Order Delivered",
+	            "Your order #" + orderId + " has been delivered",
+	            NotificationType.ORDER_DELIVERED
+	        );
+
+	        case CANCELLED -> notificationService.sendNotification(
+	            userEmail,
+	            "Order Cancelled",
+	            "Your order #" + orderId + " has been cancelled",
+	            NotificationType.ORDER_CANCELLED
+	        );
+
+	        default -> {}
+	    }
 	}
 	
 	public List<OrderStatusHistoryDTO> getOrderTracking(Long orderId, String email) 

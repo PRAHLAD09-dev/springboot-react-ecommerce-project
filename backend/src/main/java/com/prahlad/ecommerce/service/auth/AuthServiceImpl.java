@@ -145,14 +145,13 @@ public class AuthServiceImpl implements AuthService
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getRole() == Role.MERCHANT) 
-        {
+        Merchant existingMerchant = merchantRepository.findByUser(user).orElse(null);
 
-            Merchant existingMerchant = merchantRepository.findByUser(user)
-                    .orElseThrow(() -> new ResourceNotFoundException("Merchant profile not found"));
+        // ================= RESTORE CASE =================
+        if (existingMerchant != null) {
 
             if (existingMerchant.isActive()) {
-                throw new BadRequestException("Already registered as merchant");
+                throw new BadRequestException("Already a merchant");
             }
 
             existingMerchant.setActive(true);
@@ -176,11 +175,7 @@ public class AuthServiceImpl implements AuthService
             );
         }
 
-        if (merchantRepository.existsByUser(user)) 
-        {
-            throw new BadRequestException("Merchant already exists");
-        }
-
+        // ================= NEW MERCHANT =================
         Merchant merchant = Merchant.builder()
                 .businessName(request.businessName())
                 .approved(false)
@@ -190,13 +185,10 @@ public class AuthServiceImpl implements AuthService
 
         merchantRepository.save(merchant);
 
-        user.setRole(Role.MERCHANT);
-        userRepository.save(user);
-
         String message = """
             Hi,
 
-            Welcome to Ecommerce App 
+            Welcome to Ecommerce App
 
             Your merchant account has been created.
             Awaiting admin approval.
@@ -213,57 +205,38 @@ public class AuthServiceImpl implements AuthService
         );
 
         return new AuthResponse(
-                "Merchant registered successfully. Awaiting admin approval.",
+                "Merchant request sent. Awaiting admin approval.",
                 user.getEmail(),
-                user.getRole().name(),
+                user.getRole().name(), 
                 null
         );
     }
-
     @Override
     public AuthResponse login(LoginRequest request) 
     {
 
-    	User user = userRepository.findByEmail(request.email())
-    	        .orElseThrow(() -> new ResourceNotFoundException("Invalid credentials"));
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid credentials"));
 
-    	if (!user.isActive()) 
-    	{
-    	    throw new BadRequestException("Account is deleted");
-    	}
+        if (!user.isActive()) 
+        {
+            throw new BadRequestException("Account is deleted");
+        }
 
-    	if (!passwordEncoder.matches(request.password(), user.getPassword())) 
-    	{
-    	    throw new ResourceNotFoundException("Invalid credentials");
-    	}
-    	
-    	if (user.getRole() == Role.MERCHANT) 
-    	{
-    	    Merchant merchant = merchantRepository.findByUser(user)
-    	            .orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) 
+        {
+            throw new ResourceNotFoundException("Invalid credentials");
+        }
 
-    	    if (!merchant.isApproved()) 
-    	    {
-    	        return new AuthResponse(
-    	                "Merchant not approved yet",
-    	                user.getEmail(),
-    	                user.getRole().name(),
-    	                null
-    	        );
-    	    }
-    	}
+        String token = jwtUtil.generateToken(user);
 
-
-    	String token = jwtUtil.generateToken(user);
-
-    	return new AuthResponse(
-    	        "Login successful",
-    	        user.getEmail(),
-    	        user.getRole().name(),
-    	        token
-    	);
+        return new AuthResponse(
+                "Login successful",
+                user.getEmail(),
+                user.getRole().name(),
+                token
+        );
     }
-    
 
     @Override
     public void sendForgotPasswordOtp(OtpRequest request)

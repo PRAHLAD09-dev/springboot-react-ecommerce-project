@@ -120,6 +120,7 @@ public class MerchantServiceImpl implements MerchantService
         return new MerchantResponse(
                 merchant.getId(),
                 merchant.getBusinessName(),
+            	merchant.getUser().getEmail(),
                 merchant.isApproved(),
                 merchant.isActive()
         );
