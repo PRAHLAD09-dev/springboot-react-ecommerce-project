@@ -60,7 +60,7 @@ public class AuthController
 
 		otpService.verifyOtp(request.email(), request.otp(), OTPType.REGISTER);
 
-		AuthResponse response = authService.registerMerchant(request);
+		AuthResponse response = authService.becomeMerchant(request);
 
 		return ResponseEntity.ok(ApiResponse.success("Merchant registered successfully", response));
 	}

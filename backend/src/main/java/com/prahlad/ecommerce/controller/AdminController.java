@@ -1,6 +1,7 @@
 package com.prahlad.ecommerce.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,9 +27,9 @@ public class AdminController
 	private final PromotionService promotionService;
 
 	@GetMapping("/dashboard")
-	public ApiResponse<String> adminDashboard() 
+	public ApiResponse<Map<String, Long>> dashboard() 
 	{
-		return ApiResponse.success("Admin access granted", "OK");
+		return ApiResponse.success("Dashboard data", adminService.getDashboardStats());
 	}
 
 	@PostMapping("/promotion")

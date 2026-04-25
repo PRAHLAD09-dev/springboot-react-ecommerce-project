@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.prahlad.ecommerce.enums.Role;
 
 import jakarta.persistence.CascadeType;
@@ -13,6 +15,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,9 +43,10 @@ public class User implements UserDetails
 
     private String name;
 
-    @Column(unique = true)
+    @Column(unique = true , nullable = false)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
     
@@ -51,11 +55,12 @@ public class User implements UserDetails
 
     private boolean active = true;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL , fetch = FetchType.LAZY)
     private List<Address> addresses;
     
-    
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL ,  fetch = FetchType.LAZY)
     private List<Order> orders;
 
 	

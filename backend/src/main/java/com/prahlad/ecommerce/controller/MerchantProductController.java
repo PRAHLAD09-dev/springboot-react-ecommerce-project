@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -18,69 +19,90 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/merchant/product")
+@RequestMapping("/api/merchant/products")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('MERCHANT')")
 public class MerchantProductController 
 {
 
-	private final ProductService productService;
-	private final ImageService imageService;
+    private final ProductService productService;
+    private final ImageService imageService;
 
-	@GetMapping("/panel")
-	public ApiResponse<String> merchantPanel(Authentication auth) 
-	{
-		return ApiResponse.success("Merchant panel accessed", auth.getName());
-	}
+    // ================= ADD PRODUCT =================
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ProductResponse>> addProduct(
+            @RequestPart("data") @Valid ProductRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            Authentication auth
+    ) throws IOException 
+    {
 
-	@PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponse<ProductResponse> addProduct(@RequestPart("data") @Valid ProductRequest request,
-			@RequestPart(value = "file", required = false) MultipartFile file, Authentication auth) throws IOException 
-	{
+        String imageUrl = uploadImageIfPresent(file);
 
-		String imageUrl = null;
+        ProductResponse response =
+                productService.addProduct(request, imageUrl);
 
-		if (file != null && !file.isEmpty()) 
-		{
-			imageUrl = imageService.uploadImage(file);
-		}
+        return ResponseEntity.ok(
+                ApiResponse.success("Product added successfully", response)
+        );
+    }
 
-		ProductResponse response = productService.addProduct(request, imageUrl, auth.getName());
+    // ================= UPDATE PRODUCT =================
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
+            @PathVariable Long id,
+            @RequestPart("data") @Valid ProductRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            Authentication auth
+    ) throws IOException 
+    {
 
-		return ApiResponse.success("Product added successfully", response);
-	}
+        String imageUrl = uploadImageIfPresent(file);
 
-	@PutMapping(value = "/update/{id}" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponse<ProductResponse> updateProduct(@PathVariable Long id,
-			@RequestPart("data") @Valid ProductRequest request,
-			@RequestPart(value = "file", required = false) MultipartFile file, Authentication auth) throws IOException 
-	{
+        ProductResponse response =
+                productService.updateProduct(id, request, imageUrl);
 
-		String imageUrl = null;
+        return ResponseEntity.ok(
+                ApiResponse.success("Product updated successfully", response)
+        );
+    }
 
-		if (file != null && !file.isEmpty()) 
-		{
-			imageUrl = imageService.uploadImage(file);
-		}
+    // ================= DELETE PRODUCT =================
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteProduct(
+            @PathVariable Long id,
+            Authentication auth
+    ) 
+    {
 
-		ProductResponse response = productService.updateProduct(id, request, imageUrl, auth.getName());
+        productService.deleteProduct(id);
 
-		return ApiResponse.success("Product updated successfully", response);
-	}
+        return ResponseEntity.ok(
+                ApiResponse.success("Product deleted successfully", null)
+        );
+    }
 
-	@DeleteMapping("/delete/{id}")
-	public ApiResponse<String> deleteProduct(@PathVariable Long id, Authentication auth) 
-	{
+    // ================= GET MY PRODUCTS =================
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getMyProducts(
+            Authentication auth
+    ) 
+    {
 
-		productService.deleteProduct(id, auth.getName());
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Merchant products fetched",
+                        productService.getMyProducts()
+                )
+        );
+    }
 
-		return ApiResponse.success("Product deleted successfully", null);
-	}
-
-	@GetMapping("/my-products")
-	public ApiResponse<List<ProductResponse>> getMyProducts(Authentication auth) 
-	{
-
-		return ApiResponse.success("Merchant products fetched", productService.getMyProducts(auth.getName()));
-	}
+    // ================= HELPER =================
+    private String uploadImageIfPresent(MultipartFile file) throws IOException 
+    {
+        if (file != null && !file.isEmpty()) {
+            return imageService.uploadImage(file);
+        }
+        return null;
+    }
 }

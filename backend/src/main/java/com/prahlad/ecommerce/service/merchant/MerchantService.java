@@ -11,10 +11,8 @@ public interface MerchantService
 
 	MerchantResponse getProfile(String email);
 
-	MerchantResponse updateProfile(String email, MerchantUpdateRequest updatedMerchant);
+	MerchantResponse updateProfile(String email, MerchantUpdateRequest request);
 
-    String changePassword(String email, String oldPassword, String newPassword);
-    
     public void requestDeleteAccount(String email);
 
     void deleteAccount(String email , String otp);

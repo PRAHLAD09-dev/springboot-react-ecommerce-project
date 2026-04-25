@@ -189,13 +189,18 @@ public class OrderService
 	}
     
 	@Transactional
-	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status, String email) 
+	public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) 
 	{
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-		Role role = auth.getAuthorities().stream().map(a -> a.getAuthority().replace("ROLE_", "")).map(Role::valueOf)
-				.findFirst().orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+		String email = auth.getName();
+
+		Role role = auth.getAuthorities().stream()
+		    .map(a -> a.getAuthority().replace("ROLE_", ""))
+		    .map(Role::valueOf)
+		    .findFirst()
+		    .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
 		Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -214,7 +219,9 @@ public class OrderService
 		{
 
 			boolean belongsToMerchant = order.getOrderItems().stream()
-					.anyMatch(i -> i.getProduct().getMerchant().getEmail().equals(email));
+				    .anyMatch(i -> 
+				        i.getProduct().getMerchant().getUser().getEmail().equals(email)
+				    );
 
 			if (!belongsToMerchant) 
 			{
@@ -234,7 +241,8 @@ public class OrderService
 		if (status == OrderStatus.CONFIRMED) 
 		{
 			Set<String> merchantEmails = savedOrder.getOrderItems().stream()
-					.map(item -> item.getProduct().getMerchant().getEmail()).collect(Collectors.toSet());
+				    .map(item -> item.getProduct().getMerchant().getUser().getEmail())
+				    .collect(Collectors.toSet());
 
 			for (String merchantEmail : merchantEmails) 
 			{

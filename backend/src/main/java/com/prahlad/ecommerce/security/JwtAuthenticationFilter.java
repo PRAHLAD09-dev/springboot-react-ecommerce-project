@@ -1,10 +1,7 @@
 package com.prahlad.ecommerce.security;
 
-
-import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.exception.ResourceNotFoundException;
-import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
@@ -29,7 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final MerchantRepository merchantRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -51,48 +47,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) 
         {
 
-        	User user = userRepository.findByEmail(email).orElse(null);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        	if (user == null) {
-        	    Merchant merchant = merchantRepository.findByEmail(email).orElse(null);
+            if (jwtUtil.isTokenValid(token)) 
+            {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                user.getUsername(),
+                                null,
+                                user.getAuthorities()
+                        );
 
-        	    if(merchant == null)
-        	    {
-        	    	throw new ResourceNotFoundException("User Not Found");
-        	    }
-        	    if (merchant != null && jwtUtil.isTokenValid(token)) 
-        	    {
-        	        UsernamePasswordAuthenticationToken authToken =
-        	                new UsernamePasswordAuthenticationToken(
-        	                        merchant.getEmail(),
-        	                        null,
-        	                        merchant.getAuthorities()
-        	                );
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
 
-        	        authToken.setDetails(
-        	                new WebAuthenticationDetailsSource().buildDetails(request)
-        	        );
-
-        	        SecurityContextHolder.getContext().setAuthentication(authToken);
-        	    }
-
-        	} 
-        	else if (jwtUtil.isTokenValid(token)) 
-        	{
-
-        	    UsernamePasswordAuthenticationToken authToken =
-        	            new UsernamePasswordAuthenticationToken(
-        	                    user.getEmail(),
-        	                    null,
-        	                    user.getAuthorities()
-        	            );
-
-        	    authToken.setDetails(
-        	            new WebAuthenticationDetailsSource().buildDetails(request)
-        	    );
-
-        	    SecurityContextHolder.getContext().setAuthentication(authToken);
-        	}
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
         }
 
         filterChain.doFilter(request, response);

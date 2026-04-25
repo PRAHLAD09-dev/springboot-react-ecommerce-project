@@ -28,6 +28,7 @@ import com.prahlad.ecommerce.service.notification.NotificationService;
 import com.prahlad.ecommerce.service.otp.EmailService;
 import com.prahlad.ecommerce.service.otp.OtpService;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 
@@ -136,31 +137,32 @@ public class AuthServiceImpl implements AuthService
         );
     }
     
+    @Transactional
     @Override
-    public AuthResponse registerMerchant(MerchantRegisterRequest request) 
+    public AuthResponse becomeMerchant(MerchantRegisterRequest request) 
     {
 
-        Optional<Merchant> merchantOptional = merchantRepository.findByEmail(request.email());
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (merchantOptional.isPresent()) 
+        if (user.getRole() == Role.MERCHANT) 
         {
 
-            Merchant existingMerchant = merchantOptional.get();
+            Merchant existingMerchant = merchantRepository.findByUser(user)
+                    .orElseThrow(() -> new ResourceNotFoundException("Merchant profile not found"));
 
-            if (existingMerchant.isActive()) 
-            {
-                throw new BadRequestException("Email already exists");
+            if (existingMerchant.isActive()) {
+                throw new BadRequestException("Already registered as merchant");
             }
 
             existingMerchant.setActive(true);
-            existingMerchant.setPassword(passwordEncoder.encode(request.password()));
+            existingMerchant.setApproved(false);
             existingMerchant.setBusinessName(request.businessName());
-            existingMerchant.setApproved(false); 
 
             merchantRepository.save(existingMerchant);
 
             notificationService.sendNotification(
-                    existingMerchant.getEmail(),
+                    user.getEmail(),
                     "Account Restored",
                     "Your merchant account has been re-activated. Awaiting admin approval.",
                     NotificationType.REGISTER_SUCCESS
@@ -168,39 +170,43 @@ public class AuthServiceImpl implements AuthService
 
             return new AuthResponse(
                     "Merchant account restored. Awaiting admin approval.",
-                    existingMerchant.getEmail(),
-                    existingMerchant.getRole().name(),
+                    user.getEmail(),
+                    user.getRole().name(),
                     null
             );
         }
 
-        // ================= NEW MERCHANT =================
+        if (merchantRepository.existsByUser(user)) 
+        {
+            throw new BadRequestException("Merchant already exists");
+        }
+
         Merchant merchant = Merchant.builder()
                 .businessName(request.businessName())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(Role.MERCHANT)
                 .approved(false)
-                .active(true) 
+                .active(true)
+                .user(user)
                 .build();
 
         merchantRepository.save(merchant);
+
+        user.setRole(Role.MERCHANT);
+        userRepository.save(user);
 
         String message = """
             Hi,
 
             Welcome to Ecommerce App 
 
-            Your account has been successfully created.
-
-            Your merchant account is created. Awaiting admin approval.
+            Your merchant account has been created.
+            Awaiting admin approval.
 
             Thanks,
             Ecommerce Team
             """;
 
         notificationService.sendNotification(
-                merchant.getEmail(),
+                user.getEmail(),
                 "Welcome to Ecommerce App",
                 message,
                 NotificationType.REGISTER_SUCCESS
@@ -208,8 +214,8 @@ public class AuthServiceImpl implements AuthService
 
         return new AuthResponse(
                 "Merchant registered successfully. Awaiting admin approval.",
-                merchant.getEmail(),
-                merchant.getRole().name(),
+                user.getEmail(),
+                user.getRole().name(),
                 null
         );
     }
@@ -218,69 +224,44 @@ public class AuthServiceImpl implements AuthService
     public AuthResponse login(LoginRequest request) 
     {
 
-        // ================= USER LOGIN =================
-        User user = userRepository.findByEmail(request.email()).orElse(null);
+    	User user = userRepository.findByEmail(request.email())
+    	        .orElseThrow(() -> new ResourceNotFoundException("Invalid credentials"));
 
-        if (user != null) 
-        {
+    	if (!user.isActive()) 
+    	{
+    	    throw new BadRequestException("Account is deleted");
+    	}
 
-            if (!user.isActive()) 
-            {
-                throw new BadRequestException("Account is deleted");
-            }
+    	if (!passwordEncoder.matches(request.password(), user.getPassword())) 
+    	{
+    	    throw new ResourceNotFoundException("Invalid credentials");
+    	}
+    	
+    	if (user.getRole() == Role.MERCHANT) 
+    	{
+    	    Merchant merchant = merchantRepository.findByUser(user)
+    	            .orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
 
-            if (!passwordEncoder.matches(request.password(), user.getPassword())) 
-            {
-                throw new ResourceNotFoundException("Invalid credentials");
-            }
+    	    if (!merchant.isApproved()) 
+    	    {
+    	        return new AuthResponse(
+    	                "Merchant not approved yet",
+    	                user.getEmail(),
+    	                user.getRole().name(),
+    	                null
+    	        );
+    	    }
+    	}
 
-            String token = jwtUtil.generateToken(user);
 
-            return new AuthResponse(
-                    "Login successful",
-                    user.getEmail(),
-                    user.getRole().name(),
-                    token
-            );
-        }
+    	String token = jwtUtil.generateToken(user);
 
-        // ================= MERCHANT LOGIN =================
-        Merchant merchant = merchantRepository.findByEmail(request.email()).orElse(null);
-
-        if (merchant != null) 
-        {
-
-            if (!merchant.isActive()) 
-            {
-                throw new BadRequestException("Account is deleted");
-            }
-
-            if (!passwordEncoder.matches(request.password(), merchant.getPassword())) 
-            {
-                throw new ResourceNotFoundException("Invalid credentials");
-            }
-
-            if (!merchant.isApproved()) 
-            {
-                return new AuthResponse(
-                        "Merchant not approved yet",
-                        merchant.getEmail(),
-                        merchant.getRole().name(),
-                        null
-                );
-            }
-
-            String token = jwtUtil.generateToken(merchant);
-
-            return new AuthResponse(
-                    "Login successful",
-                    merchant.getEmail(),
-                    merchant.getRole().name(),
-                    token
-            );
-        }
-
-        throw new ResourceNotFoundException("Invalid credentials");
+    	return new AuthResponse(
+    	        "Login successful",
+    	        user.getEmail(),
+    	        user.getRole().name(),
+    	        token
+    	);
     }
     
 
@@ -289,7 +270,7 @@ public class AuthServiceImpl implements AuthService
     {
         String email = request.email();
 
-		boolean exists = userRepository.existsByEmail(email) || merchantRepository.existsByEmail(email);
+		boolean exists = userRepository.existsByEmail(email);
 
         if (!exists) 
         {
@@ -322,32 +303,15 @@ public class AuthServiceImpl implements AuthService
         otpService.generateOtp(email, OTPType.FORGOT_PASSWORD);
     }
     
-	@Override
-	public void resetPassword(ResetPasswordRequest request) 
-	{
+    @Override
+    public void resetPassword(ResetPasswordRequest request) 
+    {
+        otpService.verifyOtp(request.email(), request.otp(), OTPType.FORGOT_PASSWORD);
 
-		otpService.verifyOtp(request.email(), request.otp(), OTPType.FORGOT_PASSWORD);
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid credentials"));
 
-		Optional<User> userOpt = userRepository.findByEmail(request.email());
-
-		if (userOpt.isPresent()) 
-		{
-			User user = userOpt.get();
-			user.setPassword(passwordEncoder.encode(request.newPassword()));
-			userRepository.save(user);
-			return;
-		}
-
-		Optional<Merchant> merchantOpt = merchantRepository.findByEmail(request.email());
-
-		if (merchantOpt.isPresent()) 
-		{
-			Merchant merchant = merchantOpt.get();
-			merchant.setPassword(passwordEncoder.encode(request.newPassword()));
-			merchantRepository.save(merchant);
-			return;
-		}
-
-		throw new ResourceNotFoundException("Invalid credentials");
-	}
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
 }

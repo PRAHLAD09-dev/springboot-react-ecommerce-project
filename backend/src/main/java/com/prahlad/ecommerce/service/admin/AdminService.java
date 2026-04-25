@@ -1,6 +1,7 @@
 package com.prahlad.ecommerce.service.admin;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,8 @@ import com.prahlad.ecommerce.dto.user.UserResponse;
 public interface AdminService 
 {
 
+	Map<String, Long> getDashboardStats();
+	
     String approveMerchant(Long merchantId);
 
     List<UserResponse> getAllUsers();

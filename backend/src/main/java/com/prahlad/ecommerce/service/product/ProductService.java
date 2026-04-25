@@ -12,23 +12,23 @@ import com.prahlad.ecommerce.dto.product.ProductResponse;
 public interface ProductService 
 {
 
-	ProductResponse addProduct(ProductRequest request, String imageUrl, String merchantEmail);
+	 public ProductResponse addProduct(ProductRequest request, String imageUrl);
 
-	ProductResponse updateProduct(Long productId, ProductRequest request, String imageUrl, String merchantEmail);
+	 public ProductResponse updateProduct(Long productId, ProductRequest request, String imageUrl);
 
-	 void deleteProduct(Long productId, String merchantEmail);
+	 public void deleteProduct(Long productId);
 
-     List<ProductResponse> getMyProducts(String merchantEmail);
+	 public List<ProductResponse> getMyProducts() ;
        
-     Page<ProductResponse> getProducts(
-               int page,
-               int size,
-               String sortBy,
-               String keyword,
-               Long categoryId,
-               Double minPrice,
-               Double maxPrice
-       );
+	 public Page<ProductResponse> getProducts(
+	            int page,
+	            int size,
+	            String sortBy,
+	            String keyword,
+	            Long categoryId,
+	            Double minPrice,
+	            Double maxPrice
+	    );
 
      ProductResponse getProductById(Long id);
 	

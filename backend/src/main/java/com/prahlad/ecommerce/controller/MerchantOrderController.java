@@ -28,7 +28,7 @@ public class MerchantOrderController
 	{
 
 		return ApiResponse.success("Order status updated",
-				orderService.updateOrderStatus(orderId, status, auth.getName()));
+				orderService.updateOrderStatus(orderId, status));
 	}
 
 	@GetMapping

@@ -1,5 +1,6 @@
 package com.prahlad.ecommerce.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,17 +18,21 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/admin/orders")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminOrderController 
-{
-	 private final OrderService orderService;
+public class AdminOrderController {
 
-		@PutMapping("/{orderId}/status")
-		public ApiResponse<OrderResponse> updateStatus(@PathVariable Long orderId, @RequestParam OrderStatus status,
-				Authentication auth) 
-		{
+    private final OrderService orderService;
 
-			return ApiResponse.success("Order status updated",
-					orderService.updateOrderStatus(orderId, status, auth.getName()));
-		}
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status,
+            Authentication auth
+    ) {
 
-	}
+        OrderResponse response = orderService.updateOrderStatus(orderId, status);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Order status updated", response)
+        );
+    }
+}

@@ -1,6 +1,8 @@
 package com.prahlad.ecommerce.service.admin;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -31,40 +33,54 @@ public class AdminServiceImpl implements AdminService
 	private final NotificationService notificationService;
 
 
+	// ================= DASHBOARD =================
+	@Override
+	public Map<String, Long> getDashboardStats() 
+	{
+
+	    Map<String, Long> stats = new HashMap<>();
+
+	    stats.put("users", userRepository.count());
+	    stats.put("orders", orderRepository.count());
+	    stats.put("merchants", merchantRepository.count());
+
+	    return stats;
+	}
+	
 	// ================= APPROVE =================
 	@Override
 	public String approveMerchant(Long merchantId) 
-	
 	{
+	    Merchant merchant = merchantRepository.findById(merchantId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
 
-		Merchant merchant = merchantRepository.findById(merchantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+	    String email = merchant.getUser().getEmail(); 
 
-		if (merchant.isApproved())
-		{
-		    notificationService.sendNotification(
-		        merchant.getEmail(),
-		        "Already Approved",
-		        "Your merchant account is already approved.",
-		        NotificationType.MERCHANT_APPROVED
-		    );
+	    if (merchant.isApproved())
+	    {
+	        notificationService.sendNotification(
+	                email,
+	                "Already Approved",
+	                "Your merchant account is already approved.",
+	                NotificationType.MERCHANT_APPROVED
+	        );
 
-		    return "Merchant already approved";
-		}
+	        return "Merchant already approved";
+	    }
 
-		merchant.setApproved(true);
-		merchant.setActive(true);
+	    merchant.setApproved(true);
+	    merchant.setActive(true);
 
-		merchantRepository.save(merchant);
-		
-		notificationService.sendNotification(
-			    merchant.getEmail(),
-			    "Account Approved ",
-			    "Your merchant account has been approved. You can now start selling ",
-			    NotificationType.MERCHANT_APPROVED
-			);
+	    merchantRepository.save(merchant);
 
-		return "Merchant approved successfully";
+	    notificationService.sendNotification(
+	            email,
+	            "Account Approved",
+	            "Your merchant account has been approved. You can now start selling",
+	            NotificationType.MERCHANT_APPROVED
+	    );
+
+	    return "Merchant approved successfully";
 	}
 
 	// ================= USERS =================
@@ -90,12 +106,14 @@ public class AdminServiceImpl implements AdminService
 
 		Merchant merchant = merchantRepository.findById(merchantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+		
+		 String email = merchant.getUser().getEmail(); 
 
 		merchant.setActive(false);
 		merchantRepository.save(merchant);
 		
 		notificationService.sendNotification(
-				merchant.getEmail(),
+				email,
 		    "Account Blocked ",
 		    "Your account has been blocked by admin.",
 		    NotificationType.ACCOUNT_BLOCKED
@@ -111,12 +129,14 @@ public class AdminServiceImpl implements AdminService
 
 		Merchant merchant = merchantRepository.findById(merchantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+		
+		 String email = merchant.getUser().getEmail(); 
 
 		merchant.setActive(true);
 		merchantRepository.save(merchant);
 		
 		notificationService.sendNotification(
-				merchant.getEmail(),
+				email,
 			    "Account Activated ",
 			    "Your account is now active again.",
 			    NotificationType.ACCOUNT_UNBLOCKED
@@ -142,7 +162,7 @@ public class AdminServiceImpl implements AdminService
 
 	private MerchantResponse mapMerchantToDTO(Merchant merchant) 
 	{
-		return new MerchantResponse(merchant.getId(), merchant.getBusinessName(), merchant.getEmail(),
+		return new MerchantResponse(merchant.getId(), merchant.getBusinessName(),
 				merchant.isApproved(), merchant.isActive());
 	}
 

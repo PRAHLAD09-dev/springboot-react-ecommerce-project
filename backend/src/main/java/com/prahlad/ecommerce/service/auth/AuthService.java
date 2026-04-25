@@ -15,7 +15,7 @@ public interface AuthService
 
     AuthResponse registerUser(UserRegisterRequest request);
 
-    AuthResponse registerMerchant(MerchantRegisterRequest request);
+    AuthResponse becomeMerchant(MerchantRegisterRequest request);
 
     AuthResponse login(LoginRequest request);
     

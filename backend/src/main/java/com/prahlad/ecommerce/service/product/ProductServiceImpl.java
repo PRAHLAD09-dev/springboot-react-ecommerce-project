@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.prahlad.ecommerce.dto.product.ProductRequest;
@@ -14,11 +15,13 @@ import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.entity.Category;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.Product;
+import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.exception.ResourceNotFoundException;
 import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.CategoryRepository;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
+import com.prahlad.ecommerce.repository.UserRepository;
 
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -29,153 +32,225 @@ import lombok.RequiredArgsConstructor;
 public class ProductServiceImpl implements ProductService 
 {
 
-	private final ProductRepository productRepository;
-	private final MerchantRepository merchantRepository;
-	private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+    private final MerchantRepository merchantRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
-	@Override
-	@Transactional
-	public ProductResponse addProduct(ProductRequest request, String imageUrl, String merchantEmail) 
-	{
+    // =========================
+    // GET LOGGED IN MERCHANT
+    // =========================
+    private Merchant getCurrentMerchant() 
+    {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
-				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		Category category = categoryRepository.findById(request.categoryId())
-				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        return merchantRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+    }
 
-		Product product = new Product();
-		product.setName(request.name());
-		product.setDescription(request.description());
-		product.setPrice(request.price());
-		product.setStock(request.stock());
-		product.setActive(true);
+    // =========================
+    // ADD PRODUCT
+    // =========================
+    @Override
+    @Transactional
+    public ProductResponse addProduct(ProductRequest request, String imageUrl) 
+    {
 
-		product.setMerchant(merchant);
-		product.setCategory(category);
+        Merchant merchant = getCurrentMerchant();
 
-		product.setImageUrl(imageUrl);
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-		Product saved = productRepository.save(product);
+        Product product = new Product();
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setPrice(request.price());
+        product.setStock(request.stock());
+        product.setActive(true);
+        product.setMerchant(merchant);
+        product.setCategory(category);
+        product.setImageUrl(imageUrl);
 
-		return mapToDTO(saved);
-	}
+        return mapToDTO(productRepository.save(product));
+    }
 
-	@Override
-	@Transactional
-	public ProductResponse updateProduct(Long productId, ProductRequest request, String imageUrl,
-			String merchantEmail) 
-	{
+    // =========================
+    // UPDATE PRODUCT
+    // =========================
+    @Override
+    @Transactional
+    public ProductResponse updateProduct(Long productId, ProductRequest request, String imageUrl) 
+    {
 
-		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Merchant merchant = getCurrentMerchant();
 
-		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
-		{
-			throw new UnauthorizedException("You are not allowed to update this product");
-		}
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-		Category category = categoryRepository.findById(request.categoryId())
-				.orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        if (!product.getMerchant().getId().equals(merchant.getId())) {
+            throw new UnauthorizedException("Not your product");
+        }
 
-		product.setName(request.name());
-		product.setDescription(request.description());
-		product.setPrice(request.price());
-		product.setStock(request.stock());
-		product.setCategory(category);
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-		if (imageUrl != null) 
-		{
-			product.setImageUrl(imageUrl);
-		}
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setPrice(request.price());
+        product.setStock(request.stock());
+        product.setCategory(category);
 
-		Product updated = productRepository.save(product);
+        if (imageUrl != null) {
+            product.setImageUrl(imageUrl);
+        }
 
-		return mapToDTO(updated);
-	}
+        return mapToDTO(productRepository.save(product));
+    }
 
-	@Override
-	@Transactional
-	public void deleteProduct(Long productId, String merchantEmail) 
-	{
+    // =========================
+    // DELETE PRODUCT
+    // =========================
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId) 
+    {
 
-		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Merchant merchant = getCurrentMerchant();
 
-		if (!product.getMerchant().getEmail().equals(merchantEmail)) 
-		{
-			throw new UnauthorizedException("Unauthorized");
-		}
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-		productRepository.delete(product);
-	}
+        if (!product.getMerchant().getId().equals(merchant.getId())) {
+            throw new UnauthorizedException("Unauthorized");
+        }
 
-	@Override
-	public List<ProductResponse> getMyProducts(String merchantEmail) 
-	{
+        productRepository.delete(product);
+    }
 
-		Merchant merchant = merchantRepository.findByEmail(merchantEmail)
-				.orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+    // =========================
+    // GET MY PRODUCTS
+    // =========================
+    @Override
+    public List<ProductResponse> getMyProducts() 
+    {
 
-		return productRepository.findByMerchantId(merchant.getId()).stream().map(this::mapToDTO).toList();
-	}
+        Merchant merchant = getCurrentMerchant();
 
-	@Override
-	public Page<ProductResponse> getProducts(int page, int size, String sortBy, String keyword, Long categoryId,
-			Double minPrice, Double maxPrice) 
-	{
+        return productRepository.findByMerchantId(merchant.getId())
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
+    // =========================
+    // GET ALL PRODUCTS (FILTER)
+    // =========================
+    @Override
+    public Page<ProductResponse> getProducts(
+            int page,
+            int size,
+            String sortBy,
+            String keyword,
+            Long categoryId,
+            Double minPrice,
+            Double maxPrice
+    ) 
+    {
+    	Sort sort = Sort.by("id");
+        if (sortBy != null && !sortBy.isBlank()) 
+        {
+            sort = Sort.by(sortBy).ascending();
+        }
 
-		Specification<Product> spec = (root, query, cb) -> 
-		{
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-			List<Predicate> predicates = new ArrayList<>();
+        Specification<Product> spec = (root, query, cb) -> 
+        {
 
-			if (keyword != null && !keyword.isBlank()) 
-			{
-				predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
-			}
+            List<Predicate> predicates = new ArrayList<>();
 
-			if (categoryId != null) 
-			{
-				predicates.add(cb.equal(root.get("category").get("id"), categoryId));
-			}
+            if (keyword != null && !keyword.isBlank()) 
+            {
+                predicates.add(
+                        cb.like(
+                                cb.lower(root.get("name")),
+                                "%" + keyword.toLowerCase() + "%"
+                        )
+                );
+            }
 
-			if (minPrice != null && maxPrice != null) 
-			{
-				predicates.add(cb.between(root.get("price"), minPrice, maxPrice));
-			}
+            if (categoryId != null) 
+            {
+                predicates.add(
+                        cb.equal(root.get("category").get("id"), categoryId)
+                );
+            }
 
-			return cb.and(predicates.toArray(new Predicate[0]));
-		};
+            if (minPrice != null) 
+            {
+                predicates.add(
+                        cb.greaterThanOrEqualTo(root.get("price"), minPrice)
+                );
+            }
 
-		Page<Product> products = productRepository.findAll(spec, pageable);
+            if (maxPrice != null) 
+            {
+                predicates.add(
+                        cb.lessThanOrEqualTo(root.get("price"), maxPrice)
+                );
+            }
 
-		return products.map(this::mapToDTO);
-	}
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
 
-	@Override
-	public ProductResponse getProductById(Long id) 
-	{
+        return productRepository.findAll(spec, pageable)
+                .map(this::mapToDTO);
+    }
 
-		Product product = productRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    // =========================
+    // GET BY ID
+    // =========================
+    @Override
+    public ProductResponse getProductById(Long id) 
+    {
 
-		return mapToDTO(product);
-	}
- 
-	private ProductResponse mapToDTO(Product product) 
-	{
-	    return new ProductResponse(
-	            product.getId(),
-	            product.getName(),
-	            product.getDescription(),
-	            product.getPrice(),
-	            product.getStock(),
-	            product.getImageUrl(),
-	            product.getCategory().getName(),
-	            product.getMerchant().getBusinessName()
-	    );
-	}
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return mapToDTO(product);
+    }
+
+    // =========================
+    // DTO MAPPING
+    // =========================
+    private ProductResponse mapToDTO(Product product) 
+    {
+        String merchantName = null;
+
+        if (product.getMerchant() != null) 
+        {
+            merchantName = product.getMerchant().getBusinessName();
+        }
+
+        String categoryName = null;
+
+        if (product.getCategory() != null)
+        {
+            categoryName = product.getCategory().getName();
+        }
+
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getStock(),
+                product.getImageUrl(),
+                categoryName,
+                merchantName
+        );
+    }
 }

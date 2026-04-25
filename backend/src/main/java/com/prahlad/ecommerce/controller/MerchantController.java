@@ -5,7 +5,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
-import com.prahlad.ecommerce.dto.merchant.ChangePasswordRequest;
 import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
 import com.prahlad.ecommerce.dto.merchant.MerchantUpdateRequest;
 import com.prahlad.ecommerce.service.merchant.MerchantService;
@@ -34,15 +33,6 @@ public class MerchantController
 
 		return ApiResponse.success("Profile updated successfully",
 				merchantService.updateProfile(auth.getName(), request));
-	}
-
-	@PutMapping("/change-password")
-	public ApiResponse<String> changePassword(Authentication auth, @RequestBody ChangePasswordRequest request) 
-	{
-
-		merchantService.changePassword(auth.getName(), request.oldPassword(), request.newPassword());
-
-		return ApiResponse.success("Password changed successfully", null);
 	}
 
 	@PostMapping("/delete/request")
