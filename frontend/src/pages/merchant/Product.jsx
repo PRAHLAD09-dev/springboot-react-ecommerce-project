@@ -1,77 +1,128 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import API from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 function Product() {
-    const [products, setProducts] = useState([]);
 
+    const navigate = useNavigate();
+
+    const [products, setProducts] = useState([]);
     const [form, setForm] = useState({
         name: "",
         price: "",
-        category: "",
+        categoryId: "",
         description: "",
+        stock: 1
     });
 
     const [file, setFile] = useState(null);
     const [editId, setEditId] = useState(null);
 
-    // 🔥 INPUT HANDLE
+    // =========================
+    // 🔥 LOAD MY PRODUCTS
+    // =========================
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        try {
+            const res = await API.get("/api/merchant/products");
+            setProducts(res.data.data);
+        } catch (err) {
+            console.log(err);
+
+            if (err.response?.status === 403) {
+                alert("You are not a merchant");
+                navigate("/profile");
+            }
+        }
+    };
+
+    // =========================
+    // INPUT
+    // =========================
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    // 🔥 ADD / UPDATE
-    const handleSubmit = () => {
+    // =========================
+    // ADD / UPDATE
+    // =========================
+    const handleSubmit = async () => {
+
         if (!form.name || !form.price) {
-            alert("Name and Price required");
+            alert("Name & price required");
             return;
         }
 
-        if (editId) {
-            // UPDATE
-            setProducts(
-                products.map((p) =>
-                    p.id === editId ? { ...p, ...form, file } : p
-                )
-            );
-            console.log("PUT → /api/merchant/product/update/" + editId);
+        try {
+            const formData = new FormData();
+            formData.append("name", form.name);
+            formData.append("price", form.price);
+            formData.append("categoryId", form.categoryId);
+            formData.append("description", form.description);
+            formData.append("stock", form.stock);
+
+            if (file) {
+                formData.append("image", file);
+            }
+
+            if (editId) {
+                await API.put(`/api/merchant/product/${editId}`, formData);
+                alert("Product updated");
+            } else {
+                await API.post("/api/merchant/product", formData);
+                alert("Product added");
+            }
+
+            fetchProducts();
+
+            setForm({
+                name: "",
+                price: "",
+                categoryId: "",
+                description: "",
+                stock: 1
+            });
+
+            setFile(null);
             setEditId(null);
-        } else {
-            // ADD
-            const newProduct = {
-                id: Date.now(),
-                ...form,
-                file,
-            };
 
-            setProducts([...products, newProduct]);
-            console.log("POST → /api/merchant/product/add");
+        } catch (err) {
+            console.log(err);
+            alert("Error saving product");
         }
-
-        // RESET
-        setForm({
-            name: "",
-            price: "",
-            category: "",
-            description: "",
-        });
-        setFile(null);
     };
 
-    // 🔥 DELETE
-    const handleDelete = (id) => {
+    // =========================
+    // DELETE
+    // =========================
+    const handleDelete = async (id) => {
+
         if (!window.confirm("Delete product?")) return;
 
-        setProducts(products.filter((p) => p.id !== id));
-        console.log("DELETE → /api/merchant/product/delete/" + id);
+        try {
+            await API.delete(`/api/merchant/product/${id}`);
+            fetchProducts();
+        } catch (err) {
+            console.log(err);
+            alert("Delete failed");
+        }
     };
 
-    // 🔥 EDIT
+    // =========================
+    // EDIT
+    // =========================
     const handleEdit = (p) => {
         setForm({
             name: p.name,
             price: p.price,
-            category: p.category,
+            categoryId: p.categoryId || "",
             description: p.description,
+            stock: p.stock || 1
         });
+
         setEditId(p.id);
     };
 
@@ -79,7 +130,7 @@ function Product() {
         <div className="p-6 max-w-2xl mx-auto">
 
             <h1 className="text-2xl font-bold mb-4">
-                Merchant Product Management
+                Merchant Product Dashboard
             </h1>
 
             {/* FORM */}
@@ -89,41 +140,41 @@ function Product() {
                     type="text"
                     name="name"
                     placeholder="Product Name"
-                    className="border p-2 w-full rounded"
                     value={form.name}
                     onChange={handleChange}
+                    className="border p-2 w-full rounded"
                 />
 
                 <input
                     type="number"
                     name="price"
                     placeholder="Price"
-                    className="border p-2 w-full rounded"
                     value={form.price}
                     onChange={handleChange}
+                    className="border p-2 w-full rounded"
                 />
 
                 <input
-                    type="text"
-                    name="category"
-                    placeholder="Category"
-                    className="border p-2 w-full rounded"
-                    value={form.category}
+                    type="number"
+                    name="categoryId"
+                    placeholder="Category ID"
+                    value={form.categoryId}
                     onChange={handleChange}
+                    className="border p-2 w-full rounded"
                 />
 
                 <textarea
                     name="description"
                     placeholder="Description"
-                    className="border p-2 w-full rounded"
                     value={form.description}
                     onChange={handleChange}
+                    className="border p-2 w-full rounded"
                 />
 
                 <input
                     type="file"
-                    className="border p-2 w-full rounded"
                     onChange={(e) => setFile(e.target.files[0])}
+                    className="border p-2 w-full rounded"
                 />
 
                 <button
@@ -135,30 +186,24 @@ function Product() {
                 </button>
             </div>
 
-            {/* PRODUCT LIST */}
+            {/* LIST */}
             <div className="space-y-3">
 
                 {products.length === 0 && (
-                    <p className="text-gray-500 text-center">
+                    <p className="text-center text-gray-500">
                         No products yet
                     </p>
                 )}
 
                 {products.map((p) => (
-                    <div
-                        key={p.id}
-                        className="border p-4 rounded shadow-sm bg-white"
-                    >
-                        <h2 className="font-bold text-lg">{p.name}</h2>
-                        <p className="text-green-600 font-semibold">
-                            ₹ {p.price}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            Category: {p.category}
-                        </p>
-                        <p className="text-sm">{p.description}</p>
+                    <div key={p.id} className="border p-4 rounded shadow">
 
-                        <div className="flex gap-3 mt-3">
+                        <h2 className="font-bold">{p.name}</h2>
+                        <p>₹ {p.price}</p>
+                        <p>{p.description}</p>
+
+                        <div className="flex gap-2 mt-2">
+
                             <button
                                 onClick={() => handleEdit(p)}
                                 className="bg-blue-500 text-white px-3 py-1 rounded"
@@ -172,11 +217,11 @@ function Product() {
                             >
                                 Delete
                             </button>
+
                         </div>
                     </div>
                 ))}
             </div>
-
         </div>
     );
 }

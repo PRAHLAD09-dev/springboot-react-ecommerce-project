@@ -9,13 +9,28 @@ function ProductList() {
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
-        axios
-            .get("http://localhost:8080/api/products")
-            .then((res) => {
-                console.log(res.data);
-                setProducts(res.data.data.content);
-            })
-            .catch((err) => console.log(err));
+        const fetchProducts = async () => {
+            try {
+                const res = await axios.get(
+                    "http://localhost:8080/api/products"
+                );
+
+                console.log("API RESPONSE ", res.data);
+
+                const data = res.data.data;
+
+                if (Array.isArray(data)) {
+                    setProducts(data);
+                } else {
+                    setProducts(data.content || []);
+                }
+
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        fetchProducts();
     }, []);
 
     const filteredProducts = products.filter((p) =>
@@ -45,10 +60,19 @@ function ProductList() {
                     {filteredProducts.map((p) => (
                         <div
                             key={p.id}
-                            className="border rounded-xl p-5 shadow hover:shadow-lg cursor-pointer"
-
-                            onClick={() => navigate('/product/${p.id}')}
+                            className="border rounded-xl p-4 shadow hover:shadow-lg cursor-pointer"
+                            onClick={() => navigate(`/product/${p.id}`)}
                         >
+                            {/* IMAGE */}
+                            <img
+                                src={p.imageUrl}
+                                alt={p.name}
+                                className="w-full h-40 object-cover rounded-lg mb-3"
+                                onError={(e) => {
+                                    e.target.src = "https://via.placeholder.com/200";
+                                }}
+                            />
+
                             <h2 className="font-semibold text-lg">{p.name}</h2>
 
                             <p className="text-green-600 font-bold mt-2">

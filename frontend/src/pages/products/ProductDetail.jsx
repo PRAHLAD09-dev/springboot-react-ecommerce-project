@@ -10,7 +10,7 @@ function ProductDetail() {
 
     useEffect(() => {
         axios
-            .get(`http://localhost:8080/api/products/${id}`)
+            .get(`http://localhost:8080/api/products/${id}`) // ✅ FIX
             .then((res) => {
                 setProduct(res.data.data);
             })
@@ -39,7 +39,7 @@ function ProductDetail() {
                         quantity: 1,
                     },
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`, // ✅ FIX
                     },
                 }
             );
@@ -71,7 +71,7 @@ function ProductDetail() {
                         quantity: 1,
                     },
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`, // ✅ FIX
                     },
                 }
             );
@@ -81,14 +81,14 @@ function ProductDetail() {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`, // ✅ FIX
                     },
                 }
             );
 
             const orderId = res.data.data.id;
 
-            navigate(`/payment?orderId=${orderId}`);
+            navigate(`/payment?orderId=${orderId}`); // ✅ FIX
 
         } catch (err) {
             console.log(err);
@@ -111,6 +111,12 @@ function ProductDetail() {
             </button>
 
             <div className="border rounded-xl shadow-md p-6 bg-white">
+
+                <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-64 object-cover rounded-xl mb-4"
+                />
 
                 <h1 className="text-3xl font-bold">{product.name}</h1>
 

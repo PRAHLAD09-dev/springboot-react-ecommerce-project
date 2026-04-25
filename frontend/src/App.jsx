@@ -7,7 +7,6 @@ import ProductDetail from "./pages/products/ProductDetail";
 
 import Dashboard from "./pages/admin/Dashboard";
 import Users from "./pages/admin/Users";
-import Products from "./pages/admin/Product";
 import AdminOrders from "./pages/admin/Orders";
 import Merchants from "./pages/admin/Merchants";
 import Promotions from "./pages/admin/Promotions";
@@ -23,9 +22,8 @@ import Address from "./pages/user/Address";
 import Payment from "./pages/user/Payment";
 
 import MerchantProfile from "./pages/merchant/MerchantProfile";
-import MerchantUpdate from "./pages/merchant/MerchantUpdate";
-import MerchantChangePassword from "./pages/merchant/MerchantChangePassword";
-import MerchantDelete from "./pages/merchant/MerchantDelete";
+// import MerchantUpdate from "./pages/merchant/MerchantUpdate";
+// import MerchantDelete from "./pages/merchant/MerchantDelete";
 import Product from "./pages/merchant/Product";
 import MerchantOrders from "./pages/merchant/Orders";
 
@@ -48,7 +46,6 @@ function App() {
 
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/products" element={<Products />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/merchants" element={<Merchants />} />
           <Route path="/admin/promotions" element={<Promotions />} />
@@ -64,9 +61,8 @@ function App() {
           <Route path="/payment" element={<Payment />} />
 
           <Route path="/merchant/profile" element={<MerchantProfile />} />
-          <Route path="/merchant/update" element={<MerchantUpdate />} />
-          <Route path="/merchant/change-password" element={<MerchantChangePassword />} />
-          <Route path="/merchant/delete" element={<MerchantDelete />} />
+          {/* <Route path="/merchant/update" element={<MerchantUpdate />} />
+          <Route path="/merchant/delete" element={<MerchantDelete />} /> */}
           <Route path="/merchant/products" element={<Product />} />
           <Route path="/merchant/orders" element={<MerchantOrders />} />
 

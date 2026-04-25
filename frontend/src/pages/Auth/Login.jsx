@@ -17,34 +17,31 @@ function Login() {
         try {
             const res = await axios.post(
                 "http://localhost:8080/api/auth/login",
-                {
-                    email,
-                    password,
-                }
+                { email, password }
             );
 
             console.log(res.data);
 
-            // 🔥 TOKEN SAVE
             const token = res.data.data.token;
-            const role = res.data.data.role;
+            const role = res.data.data.role.toLowerCase();
 
             localStorage.setItem("token", token);
             localStorage.setItem("role", role);
+            localStorage.setItem("isLoggedIn", "true");
 
             alert("Login successful");
 
-            // 🔥 ROLE BASED NAVIGATION
-            if (role === "ADMIN") navigate("/admin/dashboard");
-            else if (role === "MERCHANT") navigate("/merchant/profile");
-            else navigate("/profile");
+            if (role === "admin") {
+                navigate("/admin/dashboard");
+            } else {
+                navigate("/profile");
+            }
 
         } catch (err) {
             console.log(err);
             alert("Invalid credentials or server error");
         }
     };
-
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="bg-white shadow-lg rounded-xl p-8 w-80">

@@ -7,7 +7,7 @@ function VerifyOtp() {
 
     const name = localStorage.getItem("signupName");
     const email = localStorage.getItem("signupEmail");
-    const role = localStorage.getItem("signupRole");
+    const role = localStorage.getItem("signupRole"); // USER / MERCHANT
 
     const [otp, setOtp] = useState("");
     const [password, setPassword] = useState("");
@@ -26,24 +26,34 @@ function VerifyOtp() {
 
         try {
             const url =
-                role === "merchant"
+                role === "MERCHANT"
                     ? "http://localhost:8080/api/auth/merchant/register"
                     : "http://localhost:8080/api/auth/user/register";
 
-            await axios.post(url, {
-                name,
-                email,
-                otp,
-                password,
-            });
+            const payload =
+                role === "MERCHANT"
+                    ? {
+                        businessName: name,
+                        email,
+                        otp,
+                        password,
+                    }
+                    : {
+                        name,
+                        email,
+                        otp,
+                        password,
+                    };
 
-            alert('${ role } registered successfully');
+            await axios.post(url, payload);
+
+            alert(`${role} registered successfully`);
 
             navigate("/login");
 
         } catch (err) {
             console.log(err);
-            alert("Registration failed");
+            alert("Registration failed ");
         }
     };
 
@@ -51,7 +61,9 @@ function VerifyOtp() {
         <div className="flex justify-center mt-20">
             <div className="w-96 p-6 shadow-lg rounded bg-white">
 
-                <h2 className="text-xl font-bold mb-4 text-center">Verify OTP</h2>
+                <h2 className="text-xl font-bold mb-4 text-center">
+                    Verify OTP
+                </h2>
 
                 <p className="text-sm mb-3 text-center">{email}</p>
 

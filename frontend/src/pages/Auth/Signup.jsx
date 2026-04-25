@@ -8,7 +8,6 @@ function Signup() {
     const [form, setForm] = useState({
         name: "",
         email: "",
-        role: "user",
     });
 
     const handleChange = (e) => {
@@ -24,7 +23,6 @@ function Signup() {
         }
 
         try {
-            // 🔥 BACKEND CALL
             await axios.post(
                 "http://localhost:8080/api/auth/send-otp",
                 {
@@ -32,17 +30,15 @@ function Signup() {
                 }
             );
 
-            // 🔥 SAVE TEMP DATA
             localStorage.setItem("signupName", form.name);
             localStorage.setItem("signupEmail", form.email);
-            localStorage.setItem("signupRole", form.role);
 
             alert("OTP sent successfully");
 
             navigate("/verify-otp");
 
         } catch (err) {
-            console.log(err);
+            console.log(err.response?.data || err);
             alert("Failed to send OTP");
         }
     };
@@ -53,19 +49,11 @@ function Signup() {
                 onSubmit={handleSendOtp}
                 className="w-96 p-6 shadow-lg rounded bg-white"
             >
-                <h2 className="text-xl font-bold mb-4 text-center">Signup</h2>
+                <h2 className="text-xl font-bold mb-4 text-center">
+                    Signup
+                </h2>
 
-                {/* ROLE */}
-                <select
-                    name="role"
-                    className="w-full border p-2 mb-3"
-                    value={form.role}
-                    onChange={handleChange}
-                >
-                    <option value="user">User</option>
-                    <option value="merchant">Merchant</option>
-                </select>
-
+                {/* NAME */}
                 <input
                     type="text"
                     name="name"
@@ -74,6 +62,7 @@ function Signup() {
                     onChange={handleChange}
                 />
 
+                {/* EMAIL */}
                 <input
                     type="email"
                     name="email"
