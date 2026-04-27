@@ -58,16 +58,16 @@ function Navbar() {
                     </>
                 )}
 
-                {isLoggedIn && (
+                {isLoggedIn && role === "user" && (
                     <>
                         {/* USER (always visible if logged in) */}
                         <Link to="/profile">Profile</Link>
-                        <Link to="/profile/update">Update</Link>
+                        {/* <Link to="/profile/update">Update</Link>
                         <Link to="/change-password">Change Password</Link>
                         <Link to="/delete-account">Delete</Link>
-                        <Link to="/orders">Orders</Link>
+                        <Link to="/orders">Orders</Link> */}
                         <Link to="/cart">Cart</Link>
-                        <Link to="/addresses">Address</Link>
+                        {/* <Link to="/address">Address</Link> */}
 
                         {/* MERCHANT (extra) */}
                         {isMerchant && (
@@ -80,7 +80,7 @@ function Navbar() {
                 )}
 
                 {/* ADMIN */}
-                {isLoggedIn && role === "ADMIN" && (
+                {isLoggedIn && role === "admin" && (
                     <>
                         <Link to="/admin/dashboard">Dashboard</Link>
                         <Link to="/admin/users">Users</Link>
@@ -89,16 +89,6 @@ function Navbar() {
                         <Link to="/admin/promotions">Promotions</Link>
                         <Link to="/admin/categories">Category</Link>
                     </>
-                )}
-
-                {/* LOGOUT */}
-                {isLoggedIn && (
-                    <button
-                        onClick={handleLogout}
-                        className="bg-red-500 px-3 py-1 rounded"
-                    >
-                        Logout
-                    </button>
                 )}
 
             </div>
