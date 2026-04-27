@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../services/api";
 
 function Profile() {
@@ -7,18 +8,29 @@ function Profile() {
     const [merchant, setMerchant] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // =========================
-    // LOAD USER + MERCHANT
-    // =========================
-    useEffect(() => {
+    const navigate = useNavigate();
+    const location = useLocation();
 
+    const active = location.pathname;
+
+    const handleLogout = async () => {
+        try {
+
+        } catch (err) {
+            console.log("Logout API failed (ignore)");
+        } finally {
+            localStorage.clear();
+            navigate("/login");
+        }
+    };
+
+    // ================= FETCH =================
+    useEffect(() => {
         const fetchData = async () => {
             try {
-                // USER
-                const userRes = await API.get("/api/user/profile");
-                setUser(userRes.data.data);
+                const res = await API.get("/api/user/profile");
+                setUser(res.data.data);
 
-                // MERCHANT (optional)
                 try {
                     const mRes = await API.get("/api/merchant/profile");
                     setMerchant(mRes.data.data);
@@ -27,14 +39,9 @@ function Profile() {
                 }
 
             } catch (err) {
-                console.log(err.response?.data || err);
-
                 if (err.response?.status === 401) {
-                    alert("Session expired, login again");
                     localStorage.clear();
-                    window.location.href = "/login";
-                } else {
-                    alert("Profile load failed");
+                    navigate("/login");
                 }
             } finally {
                 setLoading(false);
@@ -42,95 +49,122 @@ function Profile() {
         };
 
         fetchData();
+    }, [navigate]);
 
-    }, []);
-
-    // =========================
-    // BECOME MERCHANT
-    // =========================
-    const handleBecomeMerchant = async () => {
-
-        const businessName = prompt("Enter your business name");
-        if (!businessName) return;
-
-        try {
-            await API.post("/api/auth/send-otp", {
-                email: user.email
-            });
-
-            const otp = prompt("Enter OTP");
-            if (!otp) return;
-
-            const res = await API.post("/api/auth/merchant/register", {
-                email: user.email,
-                businessName,
-                otp
-            });
-
-            alert(res.data.message || "Request sent");
-
-            // 🔥 reload to show merchant section
-            window.location.reload();
-
-        } catch (err) {
-            console.log(err.response?.data || err);
-            alert(err.response?.data?.message || "Failed to become merchant");
-        }
-    };
-
-    // =========================
-    // UI
-    // =========================
     if (loading) {
         return <p className="text-center mt-10">Loading...</p>;
     }
 
-    if (!user) {
-        return <p className="text-center mt-10">No user data</p>;
-    }
-
     return (
-        <div className="p-6 max-w-md mx-auto bg-white shadow rounded">
+        <div className="min-h-screen bg-gray-100 flex">
 
-            <h1 className="text-2xl font-bold mb-4 text-center">
-                My Profile
-            </h1>
+            {/* ================= SIDEBAR ================= */}
+            <div className="w-64 bg-white shadow-lg p-5 flex flex-col justify-between">
 
-            {/* USER INFO */}
-            <div className="space-y-2">
-                <p><b>Name:</b> {user.name}</p>
-                <p><b>Email:</b> {user.email}</p>
-                <p><b>Role:</b> {user.role}</p>
+                {/* TOP MENU */}
+                <div>
+                    <h2 className="text-xl font-bold mb-6">Account</h2>
+
+                    {[
+                        { label: "Profile", path: "/profile" },
+                        { label: "Update Profile", path: "/profile/update" },
+                        { label: "Change Password", path: "/change-password" },
+                        { label: "Addresses", path: "/address" },
+                        { label: "Delete Account", path: "/delete-account" }
+                    ].map(item => (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className={`block w-full text-left px-4 py-2 mb-2 rounded-lg
+                ${active === item.path
+                                    ? "bg-blue-600 text-white"
+                                    : "hover:bg-gray-100"}`}
+                        >
+                            {item.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* LOGOUT */}
+                <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                >
+                    Logout
+                </button>
+
             </div>
 
-            {/* MERCHANT SECTION */}
-            {merchant ? (
-                <div className="mt-6 border-t pt-4">
+            {/* ================= MAIN ================= */}
+            <div className="flex-1 p-8">
 
-                    <h2 className="text-xl font-bold mb-2">
-                        Merchant Info
-                    </h2>
+                <h1 className="text-3xl font-bold mb-6">
+                    My Profile
+                </h1>
 
-                    <p>
-                        <b>Business Name:</b> {merchant.businessName}
-                    </p>
+                <div className="grid md:grid-cols-2 gap-6">
 
-                    <p>
-                        <b>Status:</b>{" "}
-                        {merchant.approved ? "Approved" : "Pending"}
-                    </p>
+                    {/* USER CARD */}
+                    <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+
+                        <h2 className="text-lg font-semibold mb-4">
+                            User Information
+                        </h2>
+
+                        <p className="mb-2">
+                            <b>Name:</b> {user.name}
+                        </p>
+
+                        <p className="mb-2">
+                            <b>Email:</b> {user.email}
+                        </p>
+
+                        <p>
+                            <b>Role:</b>{" "}
+                            <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-sm">
+                                {user.role}
+                            </span>
+                        </p>
+
+                    </div>
+
+                    {/* MERCHANT CARD */}
+                    <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+
+                        <h2 className="text-lg font-semibold mb-4">
+                            Merchant
+                        </h2>
+
+                        {merchant ? (
+                            <>
+                                <p className="mb-2 font-medium">
+                                    {merchant.businessName}
+                                </p>
+
+                                <span className={`px-3 py-1 rounded text-sm font-medium
+                                    ${merchant.approved
+                                        ? "bg-green-100 text-green-600"
+                                        : "bg-yellow-100 text-yellow-600"}`}
+                                >
+                                    {merchant.approved ? "Approved" : "Pending"}
+                                </span>
+                            </>
+                        ) : (
+                            <button
+                                onClick={() => navigate("/become-merchant")}
+                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                            >
+                                Become Merchant
+                            </button>
+                        )}
+
+                    </div>
 
                 </div>
-            ) : (
-                <button
-                    onClick={handleBecomeMerchant}
-                    className="mt-4 w-full bg-green-600 text-white p-2 rounded"
-                >
-                    Become Merchant
-                </button>
-            )}
 
-        </div>
+            </div>
+
+        </div >
     );
 }
 

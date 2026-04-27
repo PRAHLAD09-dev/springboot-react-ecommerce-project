@@ -1,113 +1,188 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 
 function Orders() {
+
     const [orders, setOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
 
+    const navigate = useNavigate();
+
+    // ================= FETCH =================
     useEffect(() => {
         const fetchOrders = async () => {
             try {
                 const res = await API.get("/api/user/orders/my-orders");
-                setOrders(res.data.data);
+                setOrders(res.data.data || []);
             } catch (err) {
-                console.log(err.response?.data || err);
+                console.log(err);
             }
         };
-
         fetchOrders();
     }, []);
 
+    // ================= SELECT =================
     const handleSelectOrder = async (orderId) => {
         try {
             const [orderRes, trackingRes] = await Promise.all([
                 API.get(`/api/user/orders/${orderId}`),
-                API.get(`/api/user/orders/${orderId}/tracking`),
+                API.get(`/api/user/orders/${orderId}/tracking`)
             ]);
 
             setSelectedOrder({
                 ...orderRes.data.data,
-                tracking: trackingRes.data.data,
+                tracking: trackingRes.data.data
             });
 
         } catch (err) {
-            console.log(err.response?.data || err);
-            alert("Failed to load order details ❌");
+            console.log(err);
+        }
+    };
+
+    // ================= STATUS COLOR =================
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "CREATED": return "bg-gray-400";
+            case "CONFIRMED": return "bg-blue-500";
+            case "SHIPPED": return "bg-yellow-500";
+            case "OUT_FOR_DELIVERY": return "bg-orange-500";
+            case "DELIVERED": return "bg-green-500";
+            case "CANCELLED": return "bg-red-500";
+            default: return "bg-gray-400";
         }
     };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
+        <div className="p-6 bg-gray-50 min-h-screen">
 
-            <h1 className="text-2xl font-bold mb-4">My Orders</h1>
+            <div className="flex items-center justify-between mb-6">
 
-            {/* ORDER LIST */}
-            <div className="space-y-3">
-                {orders.length === 0 && (
-                    <p className="text-gray-500">No orders found</p>
-                )}
+                <button
+                    onClick={() => navigate(-1)}
+                    className="text-blue-600 hover:underline"
+                >
+                    ← Back
+                </button>
 
-                {orders.map((order) => (
-                    <div
-                        key={order.id}
-                        onClick={() => handleSelectOrder(order.id)}
-                        className="border p-4 rounded-xl cursor-pointer hover:bg-gray-50"
-                    >
-                        <p className="font-semibold">Order #{order.id}</p>
-                        <p>Status: {order.status}</p>
-                        <p>Total: ₹ {order.total}</p>
-                    </div>
-                ))}
+                <h1 className="text-3xl font-bold">
+                    My Orders
+                </h1>
+
             </div>
 
-            {/* DETAILS + TRACKING */}
-            {selectedOrder && (
-                <div className="mt-6 p-4 border rounded-xl bg-gray-100">
+            <div className="grid md:grid-cols-2 gap-6">
 
-                    <h2 className="font-bold mb-3 text-lg">Order Details</h2>
+                {/* ================= LEFT: LIST ================= */}
+                <div className="space-y-4">
 
-                    <p>ID: {selectedOrder.id}</p>
-                    <p>Status: {selectedOrder.status}</p>
-                    <p>Total: ₹ {selectedOrder.total}</p>
+                    {orders.map(order => (
+                        <div
+                            key={order.orderId}
+                            onClick={() => handleSelectOrder(order.orderId)}
+                            className="bg-white shadow-md rounded-xl p-4 cursor-pointer hover:shadow-lg transition"
+                        >
+                            <div className="flex justify-between">
+                                <p className="font-bold">Order #{order.orderId}</p>
 
-                    <p className="mt-3 font-semibold">Items:</p>
-                    <ul className="list-disc ml-5">
-                        {selectedOrder.items?.map((item, i) => (
-                            <li key={i}>
-                                {item.productName} x {item.quantity}
-                            </li>
-                        ))}
-                    </ul>
+                                <span className={`text-white px-2 py-1 rounded text-sm ${getStatusColor(order.status)}`}>
+                                    {order.status.replaceAll("_", " ")}
+                                </span>
+                            </div>
 
-                    {/* TRACKING */}
-                    <div className="mt-4">
-                        <p className="font-semibold mb-2">Tracking:</p>
-
-                        <div className="space-y-2">
-                            {selectedOrder.tracking?.map((t, i) => (
-                                <div key={i} className="flex items-center gap-2">
-                                    <div
-                                        className={`w-3 h-3 rounded-full ${t.completed
-                                            ? "bg-green-500"
-                                            : "bg-gray-400"
-                                            }`}
-                                    ></div>
-
-                                    <span
-                                        className={`${t.completed
-                                            ? "text-green-600"
-                                            : "text-gray-500"
-                                            }`}
-                                    >
-                                        {t.status}
-                                    </span>
-                                </div>
-                            ))}
+                            <p className="text-gray-600 mt-2">
+                                ₹ {order.totalPrice}
+                            </p>
                         </div>
-                    </div>
+                    ))}
 
                 </div>
-            )}
+
+                {/* ================= RIGHT: DETAILS ================= */}
+                <div>
+
+                    {!selectedOrder && (
+                        <div className="bg-white p-6 rounded-xl shadow text-center text-gray-500">
+                            Select an order to view details
+                        </div>
+                    )}
+
+                    {selectedOrder && (
+                        <div className="bg-white p-6 rounded-xl shadow space-y-4">
+
+                            {/* HEADER */}
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-xl font-bold">
+                                    Order #{selectedOrder.orderId}
+                                </h2>
+
+                                <span className={`text-white px-3 py-1 rounded ${getStatusColor(selectedOrder.status)}`}>
+                                    {selectedOrder.status}
+                                </span>
+                            </div>
+
+                            {/* PRICE */}
+                            <p className="text-lg font-semibold">
+                                Total: ₹ {selectedOrder.totalPrice}
+                            </p>
+
+                            {/* ITEMS */}
+                            <div>
+                                <p className="font-semibold mb-2">Items</p>
+                                <ul className="list-disc ml-5 text-gray-700">
+                                    {selectedOrder.items?.map((item, i) => (
+                                        <li key={i}>
+                                            {item.productName} × {item.quantity}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* ================= TIMELINE ================= */}
+                            <div>
+                                <p className="font-semibold mb-4 text-lg">Tracking</p>
+
+                                <div className="relative">
+
+                                    {selectedOrder.tracking?.map((t, i) => {
+
+                                        const isLast = i === selectedOrder.tracking.length - 1;
+
+                                        return (
+                                            <div key={i} className="flex items-start gap-4 mb-6">
+
+                                                {/* LINE */}
+                                                {!isLast && (
+                                                    <div className="absolute left-[10px] top-6 w-[2px] h-full bg-gray-300"></div>
+                                                )}
+
+                                                {/* DOT */}
+                                                <div className="w-5 h-5 rounded-full bg-green-500 z-10"></div>
+
+                                                {/* TEXT */}
+                                                <div>
+                                                    <p className="font-semibold capitalize text-green-600">
+                                                        {t.status.replaceAll("_", " ").toLowerCase()}
+                                                    </p>
+
+                                                    <p className="text-sm text-gray-500">
+                                                        {new Date(t.updatedAt).toLocaleString()}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+                                        );
+                                    })}
+
+                                </div>
+                            </div>
+
+                        </div>
+                    )}
+
+                </div>
+
+            </div>
         </div>
     );
 }

@@ -1,65 +1,115 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 
 function UpdateProfile() {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
 
+    const [form, setForm] = useState({
+        name: "",
+        email: ""
+    });
+
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    // ================= FETCH USER =================
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchUser = async () => {
             try {
                 const res = await API.get("/api/user/profile");
-                setName(res.data.data.name);
-                setEmail(res.data.data.email);
+                setForm({
+                    name: res.data.data.name || "",
+                    email: res.data.data.email || ""
+                });
             } catch (err) {
-                console.log(err);
-                alert("Profile load failed");
+                console.log(err.response?.data || err);
+                alert("Failed to load profile");
             }
         };
 
-        fetchProfile();
+        fetchUser();
     }, []);
 
+    // ================= INPUT =================
+    const handleChange = (e) => {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    // ================= UPDATE =================
     const handleUpdate = async () => {
-        if (!name || !email) {
-            alert("All fields required");
+
+        if (!form.name.trim()) {
+            alert("Name is required");
             return;
         }
 
         try {
-            await API.put("/api/user/profile", { name, email });
+            setLoading(true);
+
+            await API.put("/api/user/profile", {
+                name: form.name
+            });
+
             alert("Profile updated successfully");
+
+            navigate("/profile");
+
         } catch (err) {
-            console.log(err);
-            alert("Update failed");
+            console.log(err.response?.data || err);
+            alert(err.response?.data?.message || "Update failed");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center mt-10">
-            <div className="bg-white p-6 shadow rounded w-80">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
-                <h2 className="text-xl font-bold mb-4">Update Profile</h2>
+            <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md relative">
 
+                {/*BACK BUTTON */}
+                <button
+                    onClick={() => navigate("/profile")}
+                    className="absolute top-4 left-4 text-blue-600 hover:underline"
+                >
+                    ← Back
+                </button>
+
+                <h1 className="text-2xl font-bold mb-6 text-center">
+                    Update Profile
+                </h1>
+
+                {/* NAME */}
                 <input
                     type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="border p-2 mb-3 w-full"
+                    name="name"
+                    placeholder="Enter name"
+                    value={form.name}
+                    onChange={handleChange}
+                    className="border p-2 mb-4 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
 
+                {/* EMAIL (READ ONLY) */}
                 <input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="border p-2 mb-3 w-full"
+                    value={form.email}
+                    disabled
+                    className="border p-2 mb-4 w-full rounded bg-gray-100 cursor-not-allowed"
                 />
 
+                {/* BUTTON */}
                 <button
                     onClick={handleUpdate}
-                    className="bg-green-500 text-white w-full py-2"
+                    disabled={loading}
+                    className={`w-full py-2 rounded text-white transition
+                        ${loading
+                            ? "bg-gray-400"
+                            : "bg-green-600 hover:bg-green-700"}`}
                 >
-                    Update
+                    {loading ? "Updating..." : "Update Profile"}
                 </button>
 
             </div>

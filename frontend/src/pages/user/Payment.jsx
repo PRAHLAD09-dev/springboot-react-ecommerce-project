@@ -1,68 +1,148 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import API from "../../services/api";
 
 function Payment() {
     const navigate = useNavigate();
-    const [order, setOrder] = useState(null);
+    const { orderId } = useParams();
 
-    const userId = localStorage.getItem("userId") || "guest";
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [paymentSuccess, setPaymentSuccess] = useState(null);
 
     useEffect(() => {
-        const orders =
-            JSON.parse(localStorage.getItem(`orders_${userId}`)) || [];
+        fetchOrder();
+    }, []);
 
-        if (orders.length === 0) {
-            alert("No order found ");
-            navigate("/");
-            return;
-        }
-
-        const lastOrder = orders[orders.length - 1];
-        setOrder(lastOrder);
-
-    }, [navigate, userId]);
-
-    const handlePayment = async () => {
-        if (!order) return;
-
+    // ================= FETCH ORDER =================
+    const fetchOrder = async () => {
         try {
-            await API.post("/api/payments/pay", null, {
-                params: { orderId: order.id }
-            });
-
-            alert("Payment Successful ");
-
-            navigate("/orders");
-
+            const res = await API.get(`/api/user/orders/${orderId}`);
+            setOrder(res.data.data);
         } catch (err) {
             console.log(err.response?.data || err);
-            alert("Payment failed ");
+            alert("Order not found");
+            navigate("/");
+        } finally {
+            setLoading(false);
         }
     };
+
+    // ================= PAYMENT =================
+    const handlePayment = async () => {
+        try {
+            const res = await API.post("/api/payments/pay", null, {
+                params: { orderId }
+            });
+
+            const payment = res.data.data;
+
+            setPaymentSuccess({
+                transactionId: payment.transactionId,
+                time: new Date().toLocaleString()
+            });
+
+            setTimeout(() => {
+                navigate("/orders");
+            }, 2500);
+
+        } catch (err) {
+            console.log(err);
+            alert("Payment failed");
+        }
+    };
+
+    if (loading) {
+        return <p className="text-center mt-10">Loading...</p>;
+    }
 
     if (!order) return null;
 
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="bg-white shadow-lg p-6 rounded w-80 text-center">
+        <div className="min-h-screen bg-gray-100 p-6">
 
-                <h1 className="text-xl font-bold mb-4">Payment</h1>
+            <div className="max-w-3xl mx-auto">
 
-                <p className="text-gray-500 mb-2">
-                    Order ID: #{order.id}
-                </p>
+                {/* HEADER */}
+                <div className="flex items-center gap-4 mb-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="text-blue-600 hover:underline"
+                    >
+                        ← Back
+                    </button>
 
-                <p className="font-semibold mb-4">
-                    Amount: ₹ {order.total}
-                </p>
+                    <h1 className="text-3xl font-bold">
+                        Payment
+                    </h1>
+                </div>
 
-                <button
-                    onClick={handlePayment}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded"
-                >
-                    Pay Now
-                </button>
+                {/* CARD */}
+                <div className="bg-white p-6 rounded-xl shadow space-y-4">
+
+                    {/* ORDER INFO */}
+                    <div>
+                        <p className="text-gray-500">
+                            Order ID: <b>#{order.id}</b>
+                        </p>
+
+                        <p className="text-xl font-semibold">
+                            Amount: ₹ {order.totalPrice}
+                        </p>
+                    </div>
+
+                    {/* ADDRESS */}
+                    <div className="bg-gray-50 p-4 rounded">
+                        <p className="font-semibold mb-2">
+                            Delivery Address
+                        </p>
+
+                        {order.address ? (
+                            <>
+                                <p>{order.address.street}</p>
+                                <p>
+                                    {order.address.city}, {order.address.state}
+                                </p>
+                                <p>{order.address.zipCode}</p>
+                            </>
+                        ) : (
+                            <p className="text-red-500">
+                                No address found
+                            </p>
+                        )}
+                    </div>
+
+                    {/* PAYMENT BUTTON */}
+                    {!paymentSuccess && (
+                        <button
+                            onClick={handlePayment}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-semibold"
+                        >
+                            Pay Now
+                        </button>
+                    )}
+
+                    {/* SUCCESS */}
+                    {paymentSuccess && (
+                        <div className="bg-green-100 p-4 rounded mt-4">
+
+                            <p className="text-green-700 font-bold text-lg">
+                                Payment Successful ✅
+                            </p>
+
+                            <p className="text-sm mt-1">
+                                Transaction ID:{" "}
+                                <b>{paymentSuccess.transactionId}</b>
+                            </p>
+
+                            <p className="text-sm">
+                                Time: {paymentSuccess.time}
+                            </p>
+
+                        </div>
+                    )}
+
+                </div>
 
             </div>
         </div>

@@ -1,100 +1,221 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 
 function Address() {
+
+    const navigate = useNavigate();
+
     const [addresses, setAddresses] = useState([]);
+
     const [form, setForm] = useState({
+        fullName: "",
+        phoneNumber: "",
         street: "",
         city: "",
         state: "",
-        zip: ""
+        country: "",
+        zipCode: ""
     });
 
-    const [editId, setEditId] = useState(null);
+    const [editingId, setEditingId] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        fetchAddresses();
-    }, []);
-
+    // ================= FETCH =================
     const fetchAddresses = async () => {
-        const res = await API.get("/api/addresses");
-        setAddresses(res.data.data);
-    };
-
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async () => {
-        if (!form.street || !form.city || !form.state || !form.zip) {
-            alert("All fields required");
-            return;
-        }
-
         try {
-            if (editId) {
-                // UPDATE
-                await API.put(`/api/addresses/${editId}`, form);
-                alert("Updated ");
-            } else {
-                // ADD
-                await API.post("/api/addresses", form);
-                alert("Added ");
-            }
-
-            setForm({ street: "", city: "", state: "", zip: "" });
-            setEditId(null);
-            fetchAddresses();
-
+            const res = await API.get("/api/user/address");
+            setAddresses(res.data.data || []);
         } catch (err) {
             console.log(err);
         }
     };
 
-    const handleEdit = (addr) => {
-        setForm(addr);
-        setEditId(addr.id);
+    useEffect(() => {
+        fetchAddresses();
+    }, []);
+
+    // ================= INPUT =================
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    // ================= SUBMIT =================
+    const handleSubmit = async () => {
+
+        if (!form.fullName || !form.phoneNumber || !form.street) {
+            alert("Please fill required fields");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            if (editingId) {
+                await API.put(`/api/user/address/${editingId}`, form);
+            } else {
+                await API.post("/api/user/address", form);
+            }
+
+            setForm({
+                fullName: "",
+                phoneNumber: "",
+                street: "",
+                city: "",
+                state: "",
+                country: "",
+                zipCode: ""
+            });
+
+            setEditingId(null);
+            fetchAddresses();
+
+        } catch (err) {
+            console.log(err);
+            alert("Failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ================= DELETE =================
     const handleDelete = async (id) => {
-        await API.delete(`/api/addresses/${id}`);
+        if (!window.confirm("Delete this address?")) return;
+
+        await API.delete(`/api/user/address/${id}`);
         fetchAddresses();
     };
 
+    // ================= EDIT =================
+    const handleEdit = (addr) => {
+        setForm({
+            fullName: addr.fullName || "",
+            phoneNumber: addr.phoneNumber || "",
+            street: addr.street || "",
+            city: addr.city || "",
+            state: addr.state || "",
+            country: addr.country || "",
+            zipCode: addr.zipCode || ""
+        });
+
+        setEditingId(addr.id);
+    };
+
     return (
-        <div className="p-6 max-w-3xl mx-auto">
+        <div className="min-h-screen bg-gray-100 p-6">
 
-            <h1 className="text-2xl font-bold mb-4">My Addresses</h1>
+            <div className="max-w-6xl mx-auto">
 
-            {/*  FORM */}
-            <div className="bg-white p-4 shadow mb-6 rounded">
-                <input name="street" placeholder="Street" value={form.street} onChange={handleChange} className="border p-2 mb-2 w-full" />
-                <input name="city" placeholder="City" value={form.city} onChange={handleChange} className="border p-2 mb-2 w-full" />
-                <input name="state" placeholder="State" value={form.state} onChange={handleChange} className="border p-2 mb-2 w-full" />
-                <input name="zip" placeholder="Zip" value={form.zip} onChange={handleChange} className="border p-2 mb-3 w-full" />
+                {/*  HEADER */}
+                <div className="flex items-center justify-between mb-6">
 
-                <button
-                    onClick={handleSubmit}
-                    className="bg-blue-500 text-white w-full py-2 rounded"
-                >
-                    {editId ? "Update Address" : "Add Address"}
-                </button>
-            </div>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="text-blue-600 hover:underline"
+                    >
+                        ← Back
+                    </button>
 
-            {/*  LIST */}
-            {addresses.map((addr) => (
-                <div key={addr.id} className="border p-3 mb-2 rounded flex justify-between">
-                    <div>
-                        {addr.street}, {addr.city}
-                    </div>
+                    <h1 className="text-3xl font-bold">
+                        My Address
+                    </h1>
 
-                    <div className="flex gap-2">
-                        <button onClick={() => handleEdit(addr)} className="bg-yellow-500 px-2 text-white">Edit</button>
-                        <button onClick={() => handleDelete(addr.id)} className="bg-red-500 px-2 text-white">Delete</button>
-                    </div>
+                    <span className="text-sm text-gray-500">
+                        {addresses.length} saved
+                    </span>
                 </div>
-            ))}
-        </div>
+
+                {/* ================= FORM ================= */}
+                <div className="bg-white p-6 rounded-2xl shadow mb-8">
+
+                    <h2 className="font-semibold mb-4 text-lg">
+                        {editingId ? "Update Address" : "Add New Address"}
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+
+                        <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full Name" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                        <input name="phoneNumber" value={form.phoneNumber} onChange={handleChange} placeholder="Phone Number" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                        <input name="street" value={form.street} onChange={handleChange} placeholder="Street" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                        <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                        <input name="state" value={form.state} onChange={handleChange} placeholder="State" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                        <input name="country" value={form.country} onChange={handleChange} placeholder="Country" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                        <input name="zipCode" value={form.zipCode} onChange={handleChange} placeholder="Zip Code" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+
+                    </div>
+
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className={`mt-4 w-full py-2 rounded text-white 
+                        ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                    >
+                        {loading ? "Saving..." : editingId ? "Update Address" : "Add Address"}
+                    </button>
+
+                </div>
+
+                {/* ================= LIST ================= */}
+                <div className="grid md:grid-cols-2 gap-4">
+
+                    {addresses.length === 0 && (
+                        <p className="text-gray-500">No address added</p>
+                    )}
+
+                    {addresses.map(addr => (
+                        <div
+                            key={addr.id}
+                            className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition"
+                        >
+
+                            <p className="font-semibold text-lg">
+                                {addr.fullName}
+                            </p>
+
+                            <p className="text-gray-600">
+                                {addr.street}, {addr.city}, {addr.state}
+                            </p>
+
+                            <p className="text-gray-500 text-sm">
+                                {addr.country} - {addr.zipCode}
+                            </p>
+
+                            <p className="text-gray-400 text-sm mt-1">
+                                📞 {addr.phoneNumber}
+                            </p>
+
+                            {/* ACTIONS */}
+                            <div className="flex gap-2 mt-4">
+
+                                <button
+                                    onClick={() => handleEdit(addr)}
+                                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-1 rounded"
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    onClick={() => handleDelete(addr.id)}
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-1 rounded"
+                                >
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </div>
+                    ))}
+
+                </div>
+
+            </div>
+        </div >
     );
 }
 
