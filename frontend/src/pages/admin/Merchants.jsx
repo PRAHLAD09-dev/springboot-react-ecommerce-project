@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Merchants() {
 
     const [merchants, setMerchants] = useState([]);
-
+    const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
+    // ================= FETCH =================
     const fetchMerchants = async () => {
         try {
             const res = await axios.get(
@@ -30,6 +32,7 @@ function Merchants() {
         fetchMerchants();
     }, []);
 
+    // ================= ACTIONS =================
     const approve = async (id) => {
         try {
             await axios.put(
@@ -81,6 +84,7 @@ function Merchants() {
         }
     };
 
+    // ================= STATUS =================
     const getStatus = (m) => {
         if (!m.approved) return "PENDING";
         if (m.approved && m.active) return "APPROVED";
@@ -88,56 +92,109 @@ function Merchants() {
         return "UNKNOWN";
     };
 
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "PENDING": return "bg-yellow-500";
+            case "APPROVED": return "bg-green-600";
+            case "BLOCKED": return "bg-red-500";
+            default: return "bg-gray-400";
+        }
+    };
+
     return (
-        <div className="p-6">
-            <h1 className="text-xl font-bold mb-4">Merchants</h1>
+        <div className="min-h-screen bg-gray-100 p-6">
 
-            {merchants.length === 0 ? (
-                <p>No merchants found</p>
-            ) : (
-                merchants.map(m => {
-                    const status = getStatus(m);
+            <div className="max-w-6xl mx-auto">
 
-                    return (
-                        <div key={m.id} className="border p-3 mb-2 flex justify-between items-center">
-                            <span>
-                                {m.email} ({status})
-                            </span>
+                {/* HEADER */}
+                <div className="flex items-center gap-4 mb-6">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="text-blue-600 hover:underline"
+                    >
+                        ← Back
+                    </button>
 
-                            <div className="flex gap-2">
+                    <h1 className="text-3xl font-bold">
+                        Merchants Management
+                    </h1>
+                </div>
 
-                                {status === "PENDING" && (
-                                    <button
-                                        onClick={() => approve(m.id)}
-                                        className="bg-green-500 text-white px-3 py-1 rounded"
-                                    >
-                                        Approve
-                                    </button>
-                                )}
+                {/* EMPTY */}
+                {merchants.length === 0 && (
+                    <p className="text-gray-500">No merchants found</p>
+                )}
 
-                                {status === "APPROVED" && (
-                                    <button
-                                        onClick={() => block(m.id)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded"
-                                    >
-                                        Block
-                                    </button>
-                                )}
+                {/* LIST */}
+                <div className="grid md:grid-cols-2 gap-6">
 
-                                {status === "BLOCKED" && (
-                                    <button
-                                        onClick={() => unblock(m.id)}
-                                        className="bg-yellow-500 text-white px-3 py-1 rounded"
-                                    >
-                                        Unblock
-                                    </button>
-                                )}
+                    {merchants.map((m) => {
+                        const status = getStatus(m);
+
+                        return (
+                            <div
+                                key={m.id}
+                                className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
+                            >
+
+                                {/* TOP */}
+                                <div className="flex justify-between items-center mb-3">
+
+                                    <div>
+                                        <p className="font-semibold">
+                                            {m.businessName || "No Business"}
+                                        </p>
+                                        <p className="text-sm text-gray-500">
+                                            {m.email}
+                                        </p>
+                                    </div>
+
+                                    <span className={`text-white px-3 py-1 rounded text-xs ${getStatusColor(status)}`}>
+                                        {status}
+                                    </span>
+
+                                </div>
+
+                                {/* ACTIONS */}
+                                <div className="flex gap-2 mt-4">
+
+                                    {status === "PENDING" && (
+                                        <button
+                                            onClick={() => approve(m.id)}
+                                            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 rounded"
+                                        >
+                                            Approve
+                                        </button>
+                                    )}
+
+                                    {status === "APPROVED" && (
+                                        <button
+                                            onClick={() => block(m.id)}
+                                            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-1 rounded"
+                                        >
+                                            Block
+                                        </button>
+                                    )}
+
+                                    {status === "BLOCKED" && (
+                                        <button
+                                            onClick={() => unblock(m.id)}
+                                            className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-1 rounded"
+                                        >
+                                            Unblock
+                                        </button>
+                                    )}
+
+                                </div>
 
                             </div>
-                        </div>
-                    );
-                })
-            )}
+                        );
+                    })}
+
+                </div>
+
+            </div>
+
         </div>
     );
 }

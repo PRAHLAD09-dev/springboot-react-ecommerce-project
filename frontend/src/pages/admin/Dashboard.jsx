@@ -10,6 +10,8 @@ function Dashboard() {
         merchants: 0
     });
 
+    const [loading, setLoading] = useState(true);
+
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
@@ -28,8 +30,6 @@ function Dashboard() {
                 }
             );
 
-            console.log(res.data);
-
             setStats(res.data.data || {
                 users: 0,
                 orders: 0,
@@ -39,53 +39,96 @@ function Dashboard() {
         } catch (err) {
             console.log(err);
             alert("Dashboard load failed ❌");
+        } finally {
+            setLoading(false);
         }
     };
 
+    // ================= LOGOUT =================
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate("/login");
+    };
+
+    if (loading) {
+        return <p className="text-center mt-10">Loading Dashboard...</p>;
+    }
+
     return (
-        <div className="p-6 max-w-5xl mx-auto">
+        <div className="min-h-screen bg-gray-100 p-6">
 
-            <h1 className="text-3xl font-bold mb-6">
-                Admin Dashboard
-            </h1>
+            <div className="max-w-6xl mx-auto">
 
-            <p className="text-gray-600 mb-6">
-                Welcome Admin
-            </p>
+                {/* HEADER */}
+                <div className="flex justify-between items-center mb-6">
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div>
+                        <h1 className="text-3xl font-bold">
+                            Admin Dashboard
+                        </h1>
 
-                {/* USERS */}
-                <div
-                    onClick={() => navigate("/admin/users")}
-                    className="bg-white p-4 rounded-xl shadow cursor-pointer hover:shadow-lg hover:scale-105 transition"
-                >
-                    <h2 className="text-gray-500">Total Users</h2>
-                    <p className="text-2xl font-bold mt-2">
-                        {stats.users}
-                    </p>
+                        <p className="text-gray-600">
+                            Overview of your platform
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                    >
+                        Logout
+                    </button>
+
                 </div>
 
-                {/* ORDERS */}
-                <div
-                    onClick={() => navigate("/admin/orders")}
-                    className="bg-white p-4 rounded-xl shadow cursor-pointer hover:shadow-lg hover:scale-105 transition"
-                >
-                    <h2 className="text-gray-500">Orders</h2>
-                    <p className="text-2xl font-bold mt-2">
-                        {stats.orders}
-                    </p>
-                </div>
+                {/* CARDS */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
-                {/* MERCHANTS */}
-                <div
-                    onClick={() => navigate("/admin/merchants")}
-                    className="bg-white p-4 rounded-xl shadow cursor-pointer hover:shadow-lg hover:scale-105 transition"
-                >
-                    <h2 className="text-gray-500">Merchants</h2>
-                    <p className="text-2xl font-bold mt-2">
-                        {stats.merchants}
-                    </p>
+                    {/* USERS */}
+                    <div
+                        onClick={() => navigate("/admin/users")}
+                        className="bg-white p-6 rounded-xl shadow cursor-pointer 
+                        hover:shadow-lg hover:scale-105 transition duration-300"
+                    >
+                        <h2 className="text-gray-500 text-sm">
+                            Total Users
+                        </h2>
+
+                        <p className="text-3xl font-bold mt-2 text-blue-600">
+                            {stats.users}
+                        </p>
+                    </div>
+
+                    {/* ORDERS */}
+                    <div
+                        onClick={() => navigate("/admin/orders")}
+                        className="bg-white p-6 rounded-xl shadow cursor-pointer 
+                        hover:shadow-lg hover:scale-105 transition duration-300"
+                    >
+                        <h2 className="text-gray-500 text-sm">
+                            Total Orders
+                        </h2>
+
+                        <p className="text-3xl font-bold mt-2 text-green-600">
+                            {stats.orders}
+                        </p>
+                    </div>
+
+                    {/* MERCHANTS */}
+                    <div
+                        onClick={() => navigate("/admin/merchants")}
+                        className="bg-white p-6 rounded-xl shadow cursor-pointer 
+                        hover:shadow-lg hover:scale-105 transition duration-300"
+                    >
+                        <h2 className="text-gray-500 text-sm">
+                            Merchants
+                        </h2>
+
+                        <p className="text-3xl font-bold mt-2 text-purple-600">
+                            {stats.merchants}
+                        </p>
+                    </div>
+
                 </div>
 
             </div>
