@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class CategoryController 
 {
 

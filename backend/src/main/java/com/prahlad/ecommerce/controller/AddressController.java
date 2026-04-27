@@ -2,6 +2,7 @@ package com.prahlad.ecommerce.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.prahlad.ecommerce.dto.address.AddressRequest;
@@ -11,7 +12,8 @@ import com.prahlad.ecommerce.service.address.AddressService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/addresses")
+@RequestMapping("/api/user/address")
+@PreAuthorize("hasAnyRole('USER')")
 @RequiredArgsConstructor
 public class AddressController 
 {

@@ -28,43 +28,47 @@ public class PaymentService
 
 	public PaymentResponse makePayment(Long orderId, String email) 
 	{
+	    Order order = orderRepository.findById(orderId)
+	        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-		Order order = orderRepository.findById(orderId)
-				.orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+	    if (!order.getUser().getEmail().equals(email)) 
+	    {
+	        throw new UnauthorizedException("You cannot pay for this order");
+	    }
+
+	    if (paymentRepository.existsByOrder(order)) 
+	    {
+	        throw new BadRequestException("Payment already completed");
+	    }
+
+	
+	    if (order.getStatus() != OrderStatus.CREATED) 
+	    {
+	        throw new BadRequestException("Invalid order state for payment");
+	    }
+
+	    Payment payment = new Payment();
+	    payment.setOrder(order);
+	    payment.setAmount(order.getTotalPrice());
+	    payment.setStatus(PaymentStatus.SUCCESS);
+	    payment.setTransactionId(generateTxnId());
 
 
-		if (!order.getUser().getEmail().equals(email)) 
-		{
-			throw new UnauthorizedException("You cannot pay for this order");
-		}
+	    order.setPaid(true);
+	    order.setStatus(OrderStatus.CONFIRMED); 
 
-		if (paymentRepository.existsByOrder(order)) 
-		{
-			throw new BadRequestException("Payment already completed");
-		}
+	    orderRepository.save(order);
+	    Payment savedPayment = paymentRepository.save(payment);
 
-		if (order.getStatus() != OrderStatus.CONFIRMED) 
-		{
-			throw new BadRequestException("Order not confirmed yet");
-		}
+	    notificationService.sendNotification(
+	        order.getUser().getEmail(),
+	        "Payment Successful",
+	        String.format("Payment of ₹%.0f received...", order.getTotalPrice()) +
+	        " received for Order #" + order.getId(),
+	        NotificationType.PAYMENT_SUCCESS
+	    );
 
-		Payment payment = new Payment();
-		payment.setOrder(order);
-		payment.setAmount(order.getTotalPrice());
-		payment.setStatus(PaymentStatus.SUCCESS);
-		payment.setTransactionId(generateTxnId());
-
-		order.setPaid(true);
-		orderRepository.save(order);
-
-		Payment savedPayment = paymentRepository.save(payment);
-
-		notificationService.sendNotification(
-				order.getUser().getEmail(), "Payment Successful ", "Payment of ₹" + order.getTotalPrice()
-						+ " received for Order #" + order.getId() + ". Your order is now being processed ",
-				NotificationType.PAYMENT_SUCCESS);
-
-		return mapToDTO(savedPayment);
+	    return mapToDTO(savedPayment);
 	}
 
 	private String generateTxnId() 

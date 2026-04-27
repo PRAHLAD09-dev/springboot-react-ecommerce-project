@@ -6,10 +6,12 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.prahlad.ecommerce.dto.address.AddressResponse;
 import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
 import com.prahlad.ecommerce.dto.order.OrderItemDTO;
 import com.prahlad.ecommerce.dto.order.OrderResponse;
 import com.prahlad.ecommerce.dto.user.UserResponse;
+import com.prahlad.ecommerce.entity.Address;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.Order;
 import com.prahlad.ecommerce.entity.User;
@@ -170,12 +172,40 @@ public class AdminServiceImpl implements AdminService
 				merchant.isActive());
 	}
 
-	private OrderResponse mapOrderToDTO(Order order) 
+	private OrderResponse mapOrderToDTO(Order order)
 	{
+	    List<OrderItemDTO> items = order.getOrderItems().stream()
+	        .map(i -> new OrderItemDTO(
+	            i.getProduct().getName(),
+	            i.getQuantity(),
+	            i.getPrice()
+	        ))
+	        .toList();
 
-		List<OrderItemDTO> items = order.getOrderItems().stream()
-				.map(i -> new OrderItemDTO(i.getProduct().getName(), i.getQuantity(), i.getPrice())).toList();
+	    Address address = order.getAddress();
 
-		return new OrderResponse(order.getId(), order.getStatus(), order.getTotalPrice(), order.isPaid(), items);
+	    AddressResponse addressDTO = null;
+
+	    if (address != null) {
+	        addressDTO = new AddressResponse(
+	                        address.getId(),
+	                        address.getFullName(),
+	                        address.getPhoneNumber(),
+	                        address.getStreet(),
+	                        address.getCity(),
+	                        address.getState(),
+	                        address.getZipCode(),
+	                        address.getCountry()
+	        );
+	    }
+
+	    return new OrderResponse(
+	        order.getId(),
+	        order.getStatus(),
+	        order.getTotalPrice(),
+	        order.isPaid(),
+	        items,
+	        addressDTO  
+	    );
 	}
 }

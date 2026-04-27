@@ -24,12 +24,10 @@ public class UserOrderController
 	private final OrderService orderService;
 
 	@PostMapping("/place")
-	public ApiResponse<OrderResponse> placeOrder(Authentication authentication) 
+	public ApiResponse<OrderResponse> placeOrder(@RequestParam Long addressId, Authentication auth) 
 	{
 
-		OrderResponse response = orderService.placeOrder(authentication.getName());
-
-		return ApiResponse.success("Order placed successfully", response);
+		return ApiResponse.success("Order placed successfully", orderService.placeOrder(auth.getName(), addressId));
 	}
 	
 	@PutMapping("/cancel/{orderId}")

@@ -1,6 +1,8 @@
 package com.prahlad.ecommerce.dto.order;
 
 import java.util.List;
+
+import com.prahlad.ecommerce.dto.address.AddressResponse;
 import com.prahlad.ecommerce.enums.OrderStatus;
 
 public record OrderResponse(
@@ -8,5 +10,6 @@ public record OrderResponse(
         OrderStatus status,
         double totalPrice,
         boolean paid,
-        List<OrderItemDTO> items
+        List<OrderItemDTO> items,
+        AddressResponse address
 ) {}

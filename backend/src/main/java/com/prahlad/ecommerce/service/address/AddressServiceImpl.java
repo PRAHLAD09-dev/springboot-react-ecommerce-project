@@ -107,10 +107,13 @@ public class AddressServiceImpl implements AddressService
     {
         return new AddressResponse(
                 address.getId(),
+                address.getFullName(),
+                address.getPhoneNumber(),
                 address.getStreet(),
                 address.getCity(),
                 address.getState(),
-                address.getZipCode()
+                address.getZipCode(),
+                address.getCountry()
         );
     }
 }

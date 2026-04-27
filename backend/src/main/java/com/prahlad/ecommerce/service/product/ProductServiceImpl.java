@@ -72,6 +72,21 @@ public class ProductServiceImpl implements ProductService
     public ProductResponse addProduct(ProductRequest request, String imageUrl) 
     {
 
+        if (request.name() == null || request.name().isBlank()) 
+        {
+            throw new IllegalArgumentException("Product name required");
+        }
+
+        if (request.price() == null || request.price() <= 0) 
+        {
+            throw new IllegalArgumentException("Invalid price");
+        }
+
+        if (request.categoryId() == null) 
+        {
+            throw new IllegalArgumentException("Category required");
+        }
+
         Merchant merchant = getCurrentMerchant();
 
         Category category = categoryRepository.findById(request.categoryId())
@@ -81,15 +96,18 @@ public class ProductServiceImpl implements ProductService
         product.setName(request.name());
         product.setDescription(request.description());
         product.setPrice(request.price());
-        product.setStock(request.stock());
+        product.setStock(request.stock() != null ? request.stock() : 0);
         product.setActive(true);
         product.setMerchant(merchant);
         product.setCategory(category);
-        product.setImageUrl(imageUrl);
 
-        return mapToDTO(productRepository.save(product));
+        product.setImageUrl(imageUrl != null ? imageUrl : "");
+
+    
+        Product saved = productRepository.save(product);
+
+        return mapToDTO(saved);
     }
-
     // =========================
     // UPDATE PRODUCT
     // =========================

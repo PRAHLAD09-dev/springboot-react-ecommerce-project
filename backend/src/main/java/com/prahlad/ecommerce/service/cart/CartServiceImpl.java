@@ -36,12 +36,12 @@ public class CartServiceImpl implements CartService
 		User user = userRepository.findByEmail(userEmail)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		Cart cart = cartRepository.findByUser(user).orElseGet(() -> 
-		{
-			Cart newCart = new Cart();
-			newCart.setUser(user);
-			return cartRepository.save(newCart);
-		});
+		Cart cart = cartRepository.findByUserWithItems(user)
+			    .orElseGet(() -> {
+			        Cart newCart = new Cart();
+			        newCart.setUser(user);
+			        return cartRepository.save(newCart);
+			    });
 
 		Product product = productRepository.findById(productId)
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -146,7 +146,8 @@ public class CartServiceImpl implements CartService
 		User user = userRepository.findByEmail(userEmail)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-		Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+		Cart cart = cartRepository.findByUserWithItems(user)
+			    .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 
 		return mapToDTO(cart);
 	}
@@ -157,6 +158,7 @@ public class CartServiceImpl implements CartService
 
         List<CartItemDTO> items = cart.getItems().stream()
                 .map(i -> new CartItemDTO(
+                		i.getId(),
                         i.getProduct().getId(),
                         i.getProduct().getName(),
                         i.getQuantity(),

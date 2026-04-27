@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('USER' ,'MERCHANT')")
+@PreAuthorize("hasAnyRole('USER')")
 public class UserController 
 {
 
