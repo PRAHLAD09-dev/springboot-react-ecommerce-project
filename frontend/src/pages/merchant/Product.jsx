@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import API from "../../services/api";
 
 function Product() {
@@ -53,49 +54,80 @@ function Product() {
         });
     };
 
+    // ================= RESET FORM =================
+    const resetForm = () => {
+        setForm({
+            name: "",
+            price: "",
+            description: "",
+            stock: "",
+            categoryId: ""
+        });
+        setFile(null);
+        setEditId(null);
+    };
+
     // ================= SUBMIT =================
     const handleSubmit = async () => {
-
-        if (!form.name || !form.price || !form.categoryId) {
-            alert("Fill required fields");
-            return;
-        }
-
         try {
-            const data = new FormData();
+            const token = localStorage.getItem("token");
 
-            data.append("name", form.name);
-            data.append("price", form.price);
-            data.append("description", form.description);
-            data.append("stock", form.stock);
-            data.append("categoryId", form.categoryId);
-
-            if (file) data.append("file", file);
-
-            if (editId) {
-                await API.put(`/api/merchant/products/${editId}`, data);
-                alert("Product updated");
-            } else {
-                await API.post("/api/merchant/products", data);
-                alert("Product added");
+            if (!form.name || !form.price || !form.categoryId) {
+                alert("Fill required fields ⚠️");
+                return;
             }
 
-            setForm({
-                name: "",
-                price: "",
-                description: "",
-                stock: "",
-                categoryId: ""
-            });
+            const formData = new FormData();
 
-            setFile(null);
-            setEditId(null);
+            const productData = {
+                name: form.name,
+                price: Number(form.price),
+                description: form.description,
+                stock: Number(form.stock),
+                categoryId: Number(form.categoryId)
+            };
+
+            formData.append(
+                "data",
+                new Blob([JSON.stringify(productData)], {
+                    type: "application/json"
+                })
+            );
+
+            if (file) {
+                formData.append("file", file);
+            }
+
+            if (editId) {
+                await axios.put(
+                    `http://localhost:8080/api/merchant/products/${editId}`,
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+                alert("Product updated ✅");
+            } else {
+                await axios.post(
+                    "http://localhost:8080/api/merchant/products",
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+                alert("Product added ✅");
+            }
 
             fetchProducts();
+            resetForm();
 
         } catch (err) {
             console.log(err.response?.data || err);
-            alert("Failed");
+            alert("Operation failed ❌");
         }
     };
 
@@ -122,6 +154,7 @@ function Product() {
         });
 
         setEditId(p.id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     return (
@@ -130,7 +163,7 @@ function Product() {
             <div className="max-w-6xl mx-auto">
 
                 {/* HEADER */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center justify-between mb-6">
                     <button
                         onClick={() => navigate(-1)}
                         className="text-blue-600 hover:underline"
@@ -169,7 +202,6 @@ function Product() {
                             className="border p-3 rounded"
                         />
 
-                        {/* CATEGORY DROPDOWN */}
                         <select
                             name="categoryId"
                             value={form.categoryId}
@@ -210,16 +242,27 @@ function Product() {
 
                     </div>
 
-                    <button
-                        onClick={handleSubmit}
-                        className={`mt-4 w-full py-3 text-white rounded font-semibold 
-                        ${editId
-                                ? "bg-blue-600 hover:bg-blue-700"
-                                : "bg-green-600 hover:bg-green-700"
-                            }`}
-                    >
-                        {editId ? "Update Product" : "Add Product"}
-                    </button>
+                    <div className="flex gap-3 mt-4">
+                        <button
+                            onClick={handleSubmit}
+                            className={`flex-1 py-3 text-white rounded font-semibold 
+                            ${editId
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "bg-green-600 hover:bg-green-700"
+                                }`}
+                        >
+                            {editId ? "Update Product" : "Add Product"}
+                        </button>
+
+                        {editId && (
+                            <button
+                                onClick={resetForm}
+                                className="px-4 py-3 bg-gray-400 text-white rounded"
+                            >
+                                Cancel
+                            </button>
+                        )}
+                    </div>
 
                 </div>
 
@@ -233,20 +276,24 @@ function Product() {
                     )}
 
                     {products.map((p) => (
-                        <div key={p.id} className="bg-white p-4 rounded-xl shadow">
+                        <div key={p.id} className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition">
 
                             {p.imageUrl && (
-                                <img
-                                    src={p.imageUrl}
-                                    alt={p.name}
-                                    className="w-full h-40 object-cover mb-2 rounded"
-                                />
+                                <div className="w-full h-40 flex items-center justify-center bg-gray-50 rounded mb-2">
+                                    <img
+                                        src={p.imageUrl}
+                                        alt={p.name}
+                                        className="max-h-full max-w-full object-contain"
+                                    />
+                                </div>
                             )}
 
-                            <h2 className="font-bold">{p.name}</h2>
-                            <p>₹ {p.price}</p>
+                            <h2 className="font-bold text-lg">{p.name}</h2>
 
-                            {/* CATEGORY NAME */}
+                            <p className="text-green-600 font-bold">
+                                ₹ {p.price}
+                            </p>
+
                             <p className="text-sm text-gray-500">
                                 {p.category?.name}
                             </p>
@@ -255,18 +302,18 @@ function Product() {
                                 Stock: {p.stock}
                             </p>
 
-                            <div className="flex gap-2 mt-3">
+                            <div className="flex gap-2 mt-4">
 
                                 <button
                                     onClick={() => handleEdit(p)}
-                                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                                    className="flex-1 bg-blue-500 text-white py-1 rounded"
                                 >
                                     Edit
                                 </button>
 
                                 <button
                                     onClick={() => handleDelete(p.id)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded"
+                                    className="flex-1 bg-red-500 text-white py-1 rounded"
                                 >
                                     Delete
                                 </button>
