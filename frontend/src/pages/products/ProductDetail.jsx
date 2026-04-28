@@ -128,11 +128,11 @@ function ProductDetail() {
                 <div className="bg-white p-6 rounded-xl shadow grid md:grid-cols-2 gap-6">
 
                     {/* IMAGE */}
-                    <div>
+                    <div className="w-full h-[400px] flex items-center justify-center bg-white rounded-xl shadow">
                         <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="w-full h-80 object-cover rounded-xl"
+                            className="max-h-full object-contain"
                         />
                     </div>
 
