@@ -64,14 +64,16 @@ function ProductList() {
                             onClick={() => navigate(`/product/${p.id}`)}
                         >
                             {/* IMAGE */}
-                            <img
-                                src={p.imageUrl}
-                                alt={p.name}
-                                className="w-full h-40 object-cover rounded-lg mb-3"
-                                onError={(e) => {
-                                    e.target.src = "https://via.placeholder.com/200";
-                                }}
-                            />
+                            <div className="w-full aspect-square bg-gray-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                                <img
+                                    src={p.imageUrl}
+                                    alt={p.name}
+                                    className="max-h-full max-w-full object-contain"
+                                    onError={(e) => {
+                                        e.target.src = "https://via.placeholder.com/200";
+                                    }}
+                                />
+                            </div>
 
                             <h2 className="font-semibold text-lg">{p.name}</h2>
 
