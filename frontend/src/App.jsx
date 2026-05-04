@@ -21,7 +21,7 @@ import Cart from "./pages/user/Cart";
 import Address from "./pages/user/Address";
 import Payment from "./pages/user/Payment";
 
-import BecomeMerchant from "./pages/Merchant/BecomeMerchant";
+import BecomeMerchant from "./pages/merchant/BecomeMerchant";
 import MerchantProfile from "./pages/merchant/MerchantProfile";
 // import MerchantUpdate from "./pages/merchant/MerchantUpdate";
 // import MerchantDelete from "./pages/merchant/MerchantDelete";
