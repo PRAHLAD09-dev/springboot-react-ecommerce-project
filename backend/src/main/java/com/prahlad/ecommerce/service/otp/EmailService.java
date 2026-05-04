@@ -1,13 +1,15 @@
 package com.prahlad.ecommerce.service.otp;
 
-import jakarta.mail.internet.MimeMessage;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 @Service
 @RequiredArgsConstructor
@@ -15,66 +17,77 @@ import org.springframework.stereotype.Service;
 public class EmailService 
 {
 
-	private final JavaMailSender mailSender;
+    @Value("${brevo.api.key}")
+    private String apiKey;
 
-	public void sendOtp(String toEmail, String otp) 
-	{
-	    SimpleMailMessage message = new SimpleMailMessage();
-	    message.setFrom("Ecommerce Team <introvertprahlad@gmail.com>");
-	    message.setTo(toEmail);
-	    message.setSubject("OTP Verification");
-
-	    message.setText(
-	    		" Hi,\n " +
-	    				
-	    		 " Your verification code for Ecommerce App: "  + otp 
-	    		 + 
-	    		 "\nThis code will expire in 5 minutes."
-	    				                +
-	    	     "\nIf you did not request this, please ignore.\n"
-	    				                +
-	    	     "\nThanks,"
-	    				                +
-	    		 "\nTeam Ecommerce"
-	    );
-
-	    mailSender.send(message);
-	}
-	
-	public void sendSimpleMail(String toEmail, String subject, String body) 
-	{
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("Ecommerce Team <introvertprahlad@gmail.com>");
-        message.setTo(toEmail);
-        message.setSubject(subject);
-        message.setText(body);
-
-        mailSender.send(message);
+    public void sendOtp(String toEmail, String otp) 
+    {
+        sendMail(
+                toEmail,
+                "OTP Verification",
+                "Hi,\n\n"
+                + "Your verification code is: " + otp
+                + "\nThis code expires in 5 minutes.\n\n"
+                + "Thanks,\nEcommerce Team"
+        );
     }
-	
-	public void sendHtmlMail(String toEmail, String subject, String htmlContent) 
-	{
-	    try {
-	        MimeMessage message = mailSender.createMimeMessage();
 
-	        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    public void sendSimpleMail(String toEmail, String subject, String body) 
+    {
+        sendMail(toEmail, subject, body);
+    }
 
-	        helper.setFrom("introvertprahlad@gmail.com", "Ecommerce Team");
-	        helper.setTo(toEmail);
-	        helper.setSubject(subject);
+    private void sendMail(String toEmail, String subject, String body) 
+    {
+        try {
 
-	        helper.setText(htmlContent, true);
+            OkHttpClient client = new OkHttpClient();
 
-	        mailSender.send(message);
+            String jsonBody = "{"
+                    + "\"sender\":{"
+                    + "\"name\":\"Ecommerce Team\","
+                    + "\"email\":\"introvertprahlad@gmail.com\""
+                    + "},"
+                    + "\"to\":[{"
+                    + "\"email\":\"" + toEmail + "\""
+                    + "}],"
+                    + "\"subject\":\"" + subject + "\","
+                    + "\"textContent\":\"" + body + "\""
+                    + "}";
 
-	    } 
-	    catch (Exception e) 
-	    {
-	        throw new RuntimeException("HTML Email sending failed: " + e.getMessage());
-	    }
-	}
-	
+            RequestBody requestBody = RequestBody.create(
+                    jsonBody,
+                    MediaType.parse("application/json")
+            );
+
+            Request request = new Request.Builder()
+                    .url("https://api.brevo.com/v3/smtp/email")
+                    .post(requestBody)
+                    .addHeader("accept", "application/json")
+                    .addHeader("api-key", apiKey)
+                    .addHeader("content-type", "application/json")
+                    .build();
+
+            Response response = client.newCall(request).execute();
+
+            if (!response.isSuccessful()) 
+            {
+                throw new RuntimeException(
+                        "Brevo mail failed: " + response.body().string()
+                );
+            }
+
+            System.out.println("Email sent successfully");
+
+        } 
+        catch (Exception e) 
+        {
+            throw new RuntimeException(
+                    "Email sending failed: " + e.getMessage()
+            );
+        }
+    }
+}
 //    @Value("${sendgrid.api.key}")
 //    private String apiKey;
 //
@@ -175,4 +188,4 @@ public class EmailService
 //            throw new EmailException("Error sending email: " + e.getMessage());
 //        }
 //    }
-}
+//}
