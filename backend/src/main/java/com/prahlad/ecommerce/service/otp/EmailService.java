@@ -22,14 +22,14 @@ public class EmailService
 
     public void sendOtp(String toEmail, String otp) 
     {
-        sendMail(
-                toEmail,
-                "OTP Verification",
-                "Hi,\n\n"
-                + "Your verification code is: " + otp
-                + "\nThis code expires in 5 minutes.\n\n"
-                + "Thanks,\nEcommerce Team"
-        );
+        String body =
+                "Hi,\n\n" +
+                "Your verification code for Ecommerce App: " + otp +
+                "\nThis code will expire in 5 minutes." +
+                "\nIf you did not request this, please ignore.\n\n" +
+                "Thanks,\nTeam Ecommerce";
+
+        sendMail(toEmail, "OTP Verification", body);
     }
 
     public void sendSimpleMail(String toEmail, String subject, String body) 
@@ -37,10 +37,14 @@ public class EmailService
         sendMail(toEmail, subject, body);
     }
 
+    public void sendHtmlMail(String toEmail, String subject, String htmlContent) 
+    {
+        sendMail(toEmail, subject, htmlContent);
+    }
+
     private void sendMail(String toEmail, String subject, String body) 
     {
         try {
-
             OkHttpClient client = new OkHttpClient();
 
             String jsonBody = "{"
@@ -52,7 +56,9 @@ public class EmailService
                     + "\"email\":\"" + toEmail + "\""
                     + "}],"
                     + "\"subject\":\"" + subject + "\","
-                    + "\"textContent\":\"" + body + "\""
+                    + "\"htmlContent\":\"<html><body><p>" 
+                    + body.replace("\n", "<br>") 
+                    + "</p></body></html>\""
                     + "}";
 
             RequestBody requestBody = RequestBody.create(
@@ -73,7 +79,7 @@ public class EmailService
             if (!response.isSuccessful()) 
             {
                 throw new RuntimeException(
-                        "Brevo mail failed: " + response.body().string()
+                        "Brevo failed: " + response.body().string()
                 );
             }
 
@@ -189,3 +195,69 @@ public class EmailService
 //        }
 //    }
 //}
+
+//@Service
+//@RequiredArgsConstructor
+//@Transactional
+//public class EmailService 
+//{
+//
+//  private final JavaMailSender mailSender;
+//
+//  public void sendOtp(String toEmail, String otp) 
+//  {
+//      SimpleMailMessage message = new SimpleMailMessage();
+//      message.setFrom("Ecommerce Team <introvertprahlad@gmail.com>");
+//      message.setTo(toEmail);
+//      message.setSubject("OTP Verification");
+//
+//      message.setText(
+//          " Hi,\n " +
+//              
+//           " Your verification code for Ecommerce App: "  + otp 
+//           + 
+//           "\nThis code will expire in 5 minutes."
+//                              +
+//             "\nIf you did not request this, please ignore.\n"
+//                              +
+//             "\nThanks,"
+//                              +
+//           "\nTeam Ecommerce"
+//      );
+//
+//      mailSender.send(message);
+//  }
+//  
+//  public void sendSimpleMail(String toEmail, String subject, String body) 
+//  {
+//
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setFrom("Ecommerce Team <introvertprahlad@gmail.com>");
+//        message.setTo(toEmail);
+//        message.setSubject(subject);
+//        message.setText(body);
+//
+//        mailSender.send(message);
+//    }
+//  
+//  public void sendHtmlMail(String toEmail, String subject, String htmlContent) 
+//  {
+//      try {
+//          MimeMessage message = mailSender.createMimeMessage();
+//
+//          MimeMessageHelper helper = new MimeMessageHelper(message, true);
+//
+//          helper.setFrom("introvertprahlad@gmail.com", "Ecommerce Team");
+//          helper.setTo(toEmail);
+//          helper.setSubject(subject);
+//
+//          helper.setText(htmlContent, true);
+//
+//          mailSender.send(message);
+//
+//      } 
+//      catch (Exception e) 
+//      {
+//          throw new RuntimeException("HTML Email sending failed: " + e.getMessage());
+//      }
+//  }
