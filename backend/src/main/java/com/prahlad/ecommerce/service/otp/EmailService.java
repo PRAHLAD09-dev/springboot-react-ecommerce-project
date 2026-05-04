@@ -1,5 +1,7 @@
 package com.prahlad.ecommerce.service.otp;
 
+import org.cloudinary.json.JSONArray;
+import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,22 +46,35 @@ public class EmailService
 
     private void sendMail(String toEmail, String subject, String body) 
     {
-        try {
+        try 
+        {
             OkHttpClient client = new OkHttpClient();
 
-            String jsonBody = "{"
-                    + "\"sender\":{"
-                    + "\"name\":\"Ecommerce Team\","
-                    + "\"email\":\"introvertprahlad@gmail.com\""
-                    + "},"
-                    + "\"to\":[{"
-                    + "\"email\":\"" + toEmail + "\""
-                    + "}],"
-                    + "\"subject\":\"" + subject + "\","
-                    + "\"htmlContent\":\"<html><body><p>" 
-                    + body.replace("\n", "<br>") 
-                    + "</p></body></html>\""
-                    + "}";
+          
+            JSONObject sender = new JSONObject();
+            sender.put("name", "Ecommerce Team");
+            sender.put("email", "introvertprahlad@gmail.com");
+
+         
+            JSONObject receiver = new JSONObject();
+            receiver.put("email", toEmail);
+
+            JSONArray toArray = new JSONArray();
+            toArray.put(receiver);
+
+          
+            JSONObject payload = new JSONObject();
+            payload.put("sender", sender);
+            payload.put("to", toArray);
+            payload.put("subject", subject);
+            payload.put(
+                    "htmlContent",
+                    "<html><body><p>"
+                            + body.replace("\n", "<br>")
+                            + "</p></body></html>"
+            );
+
+            String jsonBody = payload.toString();
 
             RequestBody requestBody = RequestBody.create(
                     jsonBody,
@@ -76,8 +91,7 @@ public class EmailService
 
             Response response = client.newCall(request).execute();
 
-            if (!response.isSuccessful()) 
-            {
+            if (!response.isSuccessful()) {
                 throw new RuntimeException(
                         "Brevo failed: " + response.body().string()
                 );
