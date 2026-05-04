@@ -28,11 +28,11 @@ function Profile() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await API.get("/api/user/profile");
+                const res = await API.get("/user/profile");
                 setUser(res.data.data);
 
                 try {
-                    const mRes = await API.get("/api/merchant/profile");
+                    const mRes = await API.get("/merchant/profile");
                     setMerchant(mRes.data.data);
                 } catch {
                     setMerchant(null);

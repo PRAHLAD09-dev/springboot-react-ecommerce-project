@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import API from "../../services/api";
 
 function Product() {
@@ -24,7 +23,7 @@ function Product() {
     // ================= FETCH PRODUCTS =================
     const fetchProducts = async () => {
         try {
-            const res = await API.get("/api/merchant/products");
+            const res = await API.get("/merchant/products");
             setProducts(res.data.data || []);
         } catch (err) {
             console.log(err);
@@ -34,7 +33,7 @@ function Product() {
     // ================= FETCH CATEGORIES =================
     const fetchCategories = async () => {
         try {
-            const res = await API.get("/api/categories");
+            const res = await API.get("/categories");
             setCategories(res.data.data || []);
         } catch (err) {
             console.log("CATEGORY ERROR:", err.response?.data || err);
@@ -73,7 +72,7 @@ function Product() {
             const token = localStorage.getItem("token");
 
             if (!form.name || !form.price || !form.categoryId) {
-                alert("Fill required fields ⚠️");
+                alert("Fill required fields ");
                 return;
             }
 
@@ -99,8 +98,8 @@ function Product() {
             }
 
             if (editId) {
-                await axios.put(
-                    `http://localhost:8080/api/merchant/products/${editId}`,
+                await API.put(
+                    `/merchant/products/${editId}`,
                     formData,
                     {
                         headers: {
@@ -108,10 +107,10 @@ function Product() {
                         }
                     }
                 );
-                alert("Product updated ✅");
+                alert("Product updated");
             } else {
-                await axios.post(
-                    "http://localhost:8080/api/merchant/products",
+                await API.post(
+                    "/merchant/products",
                     formData,
                     {
                         headers: {
@@ -119,7 +118,7 @@ function Product() {
                         }
                     }
                 );
-                alert("Product added ✅");
+                alert("Product added");
             }
 
             fetchProducts();
@@ -127,7 +126,7 @@ function Product() {
 
         } catch (err) {
             console.log(err.response?.data || err);
-            alert("Operation failed ❌");
+            alert("Operation failed");
         }
     };
 
@@ -136,7 +135,7 @@ function Product() {
         if (!window.confirm("Delete this product?")) return;
 
         try {
-            await API.delete(`/api/merchant/products/${id}`);
+            await API.delete(`/merchant/products/${id}`);
             fetchProducts();
         } catch (err) {
             console.log(err);

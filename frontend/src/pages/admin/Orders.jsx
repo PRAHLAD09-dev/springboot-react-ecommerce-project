@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../services/api";
 
 function AdminOrders() {
     const [orders, setOrders] = useState([]);
@@ -10,8 +10,8 @@ function AdminOrders() {
     // ================= FETCH =================
     const fetchOrders = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:8080/api/admin/orders",
+            const res = await API.get(
+                "/admin/orders",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -32,8 +32,8 @@ function AdminOrders() {
     // ================= UPDATE STATUS =================
     const updateStatus = async (orderId, status) => {
         try {
-            await axios.put(
-                `http://localhost:8080/api/admin/orders/${orderId}/status`,
+            await API.put(
+                `/admin/orders/${orderId}/status`,
                 null,
                 {
                     params: { status },
@@ -51,7 +51,6 @@ function AdminOrders() {
         }
     };
 
-    // 🎨 STATUS COLOR
     const getStatusColor = (status) => {
         switch (status) {
             case "CREATED": return "bg-gray-500";

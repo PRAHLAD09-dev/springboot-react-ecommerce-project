@@ -9,30 +9,62 @@ function Navbar() {
     const [role, setRole] = useState("");
     const [isMerchant, setIsMerchant] = useState(false);
 
+    // auth sync
     useEffect(() => {
         const updateAuth = () => {
-            setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
-            setRole(localStorage.getItem("role") || "");
+            const loggedIn =
+                localStorage.getItem("isLoggedIn") === "true";
+
+            const userRole =
+                localStorage.getItem("role") || "";
+
+            setIsLoggedIn(loggedIn);
+            setRole(userRole);
         };
 
         updateAuth();
+
         window.addEventListener("storage", updateAuth);
 
-        return () => window.removeEventListener("storage", updateAuth);
+        return () => {
+            window.removeEventListener("storage", updateAuth);
+        };
     }, []);
 
+    // merchant check
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const checkMerchant = async () => {
+            const token = localStorage.getItem("token");
 
-        if (!token) {
-            setIsMerchant(false);
-            return;
+            if (!token) {
+                setIsMerchant(false);
+                return;
+            }
+
+            try {
+                const res = await API.get("/merchant/profile");
+
+                console.log("Merchant API:", res.data);
+
+                if (res.data?.data || res.data) {
+                    setIsMerchant(true);
+                }
+
+            } catch (err) {
+                if (err.response?.status === 404) {
+                    console.log("Normal user → no merchant account");
+                    setIsMerchant(false);
+                } else {
+                    console.log(err);
+                }
+            }
+        };
+
+        if (isLoggedIn && role === "user") {
+            checkMerchant();
         }
 
-        API.get("/api/merchant/profile")
-            .then(() => setIsMerchant(true))
-            .catch(() => setIsMerchant(false));
-    }, []);
+    }, [isLoggedIn, role]);
 
     const handleLogout = () => {
         localStorage.clear();
@@ -58,22 +90,22 @@ function Navbar() {
                     </>
                 )}
 
+                {/* USER */}
                 {isLoggedIn && role === "user" && (
                     <>
-                        {/* USER (always visible if logged in) */}
                         <Link to="/profile">Profile</Link>
-                        {/* <Link to="/profile/update">Update</Link>
-                        <Link to="/change-password">Change Password</Link>
-                        <Link to="/delete-account">Delete</Link>
-                        <Link to="/orders">Orders</Link> */}
                         <Link to="/cart">Cart</Link>
-                        {/* <Link to="/address">Address</Link> */}
 
-                        {/* MERCHANT (extra) */}
+                        {/* Merchant links */}
                         {isMerchant && (
                             <>
-                                <Link to="/merchant/products">My Products</Link>
-                                <Link to="/merchant/orders">My Orders</Link>
+                                <Link to="/merchant/products">
+                                    My Products
+                                </Link>
+
+                                <Link to="/merchant/orders">
+                                    My Orders
+                                </Link>
                             </>
                         )}
                     </>
@@ -92,7 +124,7 @@ function Navbar() {
                 )}
 
             </div>
-        </nav >
+        </nav>
     );
 }
 

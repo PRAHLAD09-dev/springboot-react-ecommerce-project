@@ -24,7 +24,7 @@ function ChangePassword() {
         try {
             setLoading(true);
 
-            await API.put("/api/user/change-password", {
+            await API.put("/user/change-password", {
                 oldPassword,
                 newPassword,
             });

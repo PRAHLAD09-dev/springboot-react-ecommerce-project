@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../services/api";
 
 function ResetPassword() {
     const [otp, setOtp] = useState("");
@@ -14,7 +14,7 @@ function ResetPassword() {
             alert("First enter email");
             navigate("/forgot-password");
         }
-    }, []);
+    }, [email, navigate]);
 
     const handleReset = async () => {
         if (!otp || !password) {
@@ -23,8 +23,8 @@ function ResetPassword() {
         }
 
         try {
-            await axios.post(
-                "http://localhost:8080/api/auth/reset-password",
+            await API.post(
+                "/auth/reset-password",
                 {
                     email,
                     otp,
@@ -34,7 +34,6 @@ function ResetPassword() {
 
             alert("Password reset successful");
 
-            // 🔥 cleanup
             localStorage.removeItem("resetEmail");
 
             navigate("/login");

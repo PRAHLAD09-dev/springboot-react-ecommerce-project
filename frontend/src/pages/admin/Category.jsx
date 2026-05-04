@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/api";
 
 function Category() {
 
@@ -14,8 +14,8 @@ function Category() {
     // ================= FETCH =================
     const fetchCategories = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:8080/api/categories",
+            const res = await API.get(
+                "/categories",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -45,8 +45,8 @@ function Category() {
         try {
             setLoading(true);
 
-            await axios.post(
-                `http://localhost:8080/api/categories?name=${name}`,
+            await API.post(
+                `/categories?name=${name}`,
                 {},
                 {
                     headers: {
@@ -71,8 +71,8 @@ function Category() {
         if (!window.confirm("Delete this category?")) return;
 
         try {
-            await axios.delete(
-                `http://localhost:8080/api/categories/${id}`,
+            await API.delete(
+                `/categories/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

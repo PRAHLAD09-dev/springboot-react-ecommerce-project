@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../services/api";
 
 function ProductList() {
     const navigate = useNavigate();
@@ -11,8 +11,8 @@ function ProductList() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await axios.get(
-                    "http://localhost:8080/api/products"
+                const res = await API.get(
+                    "/products"
                 );
 
                 console.log("API RESPONSE ", res.data);

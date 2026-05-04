@@ -8,7 +8,7 @@ function MerchantOrders() {
 
     const fetchOrders = async () => {
         try {
-            const res = await API.get("/api/merchant/orders");
+            const res = await API.get("/merchant/orders");
             setOrders(res.data.data || []);
         } catch (err) {
             console.log(err);
@@ -26,7 +26,7 @@ function MerchantOrders() {
 
     const updateStatus = async (orderId, status) => {
         try {
-            await API.put(`/api/merchant/orders/${orderId}/status`, null, {
+            await API.put(`/merchant/orders/${orderId}/status`, null, {
                 params: { status }
             });
 
@@ -139,7 +139,7 @@ function MerchantOrders() {
                         {/* FINAL STATE */}
                         {selectedOrder.status === "DELIVERED" && (
                             <span className="text-green-600 font-semibold">
-                                ✅ Order Delivered
+                                Order Delivered
                             </span>
                         )}
 

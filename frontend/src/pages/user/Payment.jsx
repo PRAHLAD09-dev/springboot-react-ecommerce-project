@@ -17,7 +17,7 @@ function Payment() {
     // ================= FETCH ORDER =================
     const fetchOrder = async () => {
         try {
-            const res = await API.get(`/api/user/orders/${orderId}`);
+            const res = await API.get(`/user/orders/${orderId}`);
             setOrder(res.data.data);
         } catch (err) {
             console.log(err.response?.data || err);
@@ -31,7 +31,7 @@ function Payment() {
     // ================= PAYMENT =================
     const handlePayment = async () => {
         try {
-            const res = await API.post("/api/payments/pay", null, {
+            const res = await API.post("/payments/pay", null, {
                 params: { orderId }
             });
 

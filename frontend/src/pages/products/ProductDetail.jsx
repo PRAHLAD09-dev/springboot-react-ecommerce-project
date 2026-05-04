@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 
 function ProductDetail() {
     const { id } = useParams();
@@ -13,8 +13,8 @@ function ProductDetail() {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await axios.get(
-                    `http://localhost:8080/api/products/${id}`
+                const res = await API.get(
+                    `/products/${id}`
                 );
                 setProduct(res.data.data);
             } catch (err) {
@@ -39,8 +39,8 @@ function ProductDetail() {
         }
 
         try {
-            await axios.post(
-                "http://localhost:8080/api/cart/add",
+            await API.post(
+                "/cart/add",
                 null,
                 {
                     params: {
@@ -71,8 +71,8 @@ function ProductDetail() {
         }
 
         try {
-            await axios.post(
-                "http://localhost:8080/api/cart/add",
+            await API.post(
+                "/cart/add",
                 null,
                 {
                     params: {
@@ -85,8 +85,8 @@ function ProductDetail() {
                 }
             );
 
-            const res = await axios.post(
-                "http://localhost:8080/api/user/orders/place",
+            const res = await API.post(
+                "/api/user/orders/place",
                 {},
                 {
                     headers: {

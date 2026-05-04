@@ -8,7 +8,7 @@ function MerchantProfile() {
     useEffect(() => {
         const fetchMerchantProfile = async () => {
             try {
-                const res = await API.get("/api/merchant/profile");
+                const res = await API.get("/merchant/profile");
 
                 setMerchant(res.data.data);
             } catch (err) {

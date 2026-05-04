@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../services/api";
 
 function Merchants() {
 
@@ -11,8 +11,8 @@ function Merchants() {
     // ================= FETCH =================
     const fetchMerchants = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:8080/api/admin/merchants",
+            const res = await API.get(
+                "/admin/merchants",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -35,8 +35,8 @@ function Merchants() {
     // ================= ACTIONS =================
     const approve = async (id) => {
         try {
-            await axios.put(
-                `http://localhost:8080/api/admin/approve/${id}`,
+            await API.put(
+                `/admin/approve/${id}`,
                 {},
                 {
                     headers: {
@@ -52,8 +52,8 @@ function Merchants() {
 
     const block = async (id) => {
         try {
-            await axios.put(
-                `http://localhost:8080/api/admin/block/${id}`,
+            await API.put(
+                `/admin/block/${id}`,
                 {},
                 {
                     headers: {
@@ -69,8 +69,8 @@ function Merchants() {
 
     const unblock = async (id) => {
         try {
-            await axios.put(
-                `http://localhost:8080/api/admin/unblock/${id}`,
+            await API.put(
+                `/admin/unblock/${id}`,
                 {},
                 {
                     headers: {

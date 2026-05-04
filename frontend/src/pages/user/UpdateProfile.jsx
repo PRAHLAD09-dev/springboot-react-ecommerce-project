@@ -16,7 +16,7 @@ function UpdateProfile() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await API.get("/api/user/profile");
+                const res = await API.get("/user/profile");
                 setForm({
                     name: res.data.data.name || "",
                     email: res.data.data.email || ""
@@ -49,7 +49,7 @@ function UpdateProfile() {
         try {
             setLoading(true);
 
-            await API.put("/api/user/profile", {
+            await API.put("/user/profile", {
                 name: form.name
             });
 

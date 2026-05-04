@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../services/api";
 
 function Signup() {
     const navigate = useNavigate();
@@ -23,8 +23,8 @@ function Signup() {
         }
 
         try {
-            await axios.post(
-                "http://localhost:8080/api/auth/send-otp",
+            await API.post(
+                "/auth/send-otp",
                 {
                     email: form.email,
                 }

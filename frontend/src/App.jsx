@@ -21,6 +21,7 @@ import Cart from "./pages/user/Cart";
 import Address from "./pages/user/Address";
 import Payment from "./pages/user/Payment";
 
+import BecomeMerchant from "./pages/Merchant/BecomeMerchant";
 import MerchantProfile from "./pages/merchant/MerchantProfile";
 // import MerchantUpdate from "./pages/merchant/MerchantUpdate";
 // import MerchantDelete from "./pages/merchant/MerchantDelete";
@@ -60,6 +61,7 @@ function App() {
           <Route path="/address" element={<Address />} />
           <Route path="/payment/:orderId" element={<Payment />} />
 
+          <Route path="/become-merchant" element={<BecomeMerchant />} />
           <Route path="/merchant/profile" element={<MerchantProfile />} />
           {/* <Route path="/merchant/update" element={<MerchantUpdate />} />
           <Route path="/merchant/delete" element={<MerchantDelete />} /> */}

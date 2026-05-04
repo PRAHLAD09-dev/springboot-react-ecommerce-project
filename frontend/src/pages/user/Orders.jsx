@@ -13,7 +13,7 @@ function Orders() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const res = await API.get("/api/user/orders/my-orders");
+                const res = await API.get("/user/orders/my-orders");
                 setOrders(res.data.data || []);
             } catch (err) {
                 console.log(err);
@@ -26,8 +26,8 @@ function Orders() {
     const handleSelectOrder = async (orderId) => {
         try {
             const [orderRes, trackingRes] = await Promise.all([
-                API.get(`/api/user/orders/${orderId}`),
-                API.get(`/api/user/orders/${orderId}/tracking`)
+                API.get(`/user/orders/${orderId}`),
+                API.get(`/user/orders/${orderId}/tracking`)
             ]);
 
             setSelectedOrder({

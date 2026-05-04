@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../services/api";
 
 function Users() {
 
@@ -11,8 +11,8 @@ function Users() {
     // ================= FETCH =================
     const fetchUsers = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:8080/api/admin/users",
+            const res = await API.get(
+                "/admin/users",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

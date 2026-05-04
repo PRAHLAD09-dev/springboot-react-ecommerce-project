@@ -15,7 +15,7 @@ function DeleteAccount() {
         try {
             setLoading(true);
 
-            await API.post("/api/user/delete/request");
+            await API.post("/user/delete/request");
 
             setOtpSent(true);
             alert("OTP sent to your email");
@@ -50,7 +50,7 @@ function DeleteAccount() {
         try {
             setLoading(true);
 
-            await API.delete("/api/user/delete", {
+            await API.delete("/user/delete", {
                 params: { otp },
             });
 

@@ -24,7 +24,7 @@ function Address() {
     // ================= FETCH =================
     const fetchAddresses = async () => {
         try {
-            const res = await API.get("/api/user/address");
+            const res = await API.get("/user/address");
             setAddresses(res.data.data || []);
         } catch (err) {
             console.log(err);
@@ -52,9 +52,9 @@ function Address() {
             setLoading(true);
 
             if (editingId) {
-                await API.put(`/api/user/address/${editingId}`, form);
+                await API.put(`/user/address/${editingId}`, form);
             } else {
-                await API.post("/api/user/address", form);
+                await API.post("/user/address", form);
             }
 
             setForm({
@@ -82,7 +82,7 @@ function Address() {
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this address?")) return;
 
-        await API.delete(`/api/user/address/${id}`);
+        await API.delete(`/user/address/${id}`);
         fetchAddresses();
     };
 

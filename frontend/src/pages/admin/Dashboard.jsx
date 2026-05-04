@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/api";
 
 function Dashboard() {
 
@@ -21,8 +21,8 @@ function Dashboard() {
 
     const fetchDashboard = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:8080/api/admin/dashboard",
+            const res = await API.get(
+                "/admin/dashboard",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -38,7 +38,7 @@ function Dashboard() {
 
         } catch (err) {
             console.log(err);
-            alert("Dashboard load failed ❌");
+            alert("Dashboard load failed ");
         } finally {
             setLoading(false);
         }

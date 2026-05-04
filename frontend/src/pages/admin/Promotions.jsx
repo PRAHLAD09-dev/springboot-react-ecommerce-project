@@ -1,6 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/api";
 
 function Promotions() {
 
@@ -13,7 +13,7 @@ function Promotions() {
     // ================= SEND =================
     const send = async () => {
 
-        if (!data.title || !data.message) { // FIX
+        if (!data.title || !data.message) {
             alert("Fill all fields");
             return;
         }
@@ -21,8 +21,8 @@ function Promotions() {
         try {
             setLoading(true);
 
-            const res = await axios.post(
-                "http://localhost:8080/api/admin/promotion",
+            const res = await API.post(
+                "/admin/promotion",
                 data,
                 {
                     headers: {
@@ -31,7 +31,7 @@ function Promotions() {
                 }
             );
 
-            alert("Promotion Sent ✅");
+            alert("Promotion Sent ");
 
             setData({ title: "", message: "" });
 
