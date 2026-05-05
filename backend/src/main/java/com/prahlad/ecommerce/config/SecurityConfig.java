@@ -52,6 +52,7 @@ public class SecurityConfig
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/merchant/**").hasRole("USER")
                         .requestMatchers("/api/user/**").hasRole("USER")
+                        .requestMatchers("/api/cart").hasRole("USER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -64,7 +65,7 @@ public class SecurityConfig
 
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("https://springboot-react-ecommerce-project-alpha.vercel.app/"));
-//        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
