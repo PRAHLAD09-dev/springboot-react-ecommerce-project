@@ -22,9 +22,9 @@ import Address from "./pages/user/Address";
 import Payment from "./pages/user/Payment";
 
 import BecomeMerchant from "./pages/merchant/BecomeMerchant";
+import MerchantDelete from "./pages/merchant/MerchantDelete";
 import MerchantProfile from "./pages/merchant/MerchantProfile";
-// import MerchantUpdate from "./pages/merchant/MerchantUpdate";
-// import MerchantDelete from "./pages/merchant/MerchantDelete";
+import MerchantUpdate from "./pages/merchant/MerchantUpdate";
 import Product from "./pages/merchant/Product";
 import MerchantOrders from "./pages/merchant/Orders";
 
@@ -63,8 +63,8 @@ function App() {
 
           <Route path="/become-merchant" element={<BecomeMerchant />} />
           <Route path="/merchant/profile" element={<MerchantProfile />} />
-          {/* <Route path="/merchant/update" element={<MerchantUpdate />} />
-          <Route path="/merchant/delete" element={<MerchantDelete />} /> */}
+          <Route path="/merchant/update" element={<MerchantUpdate />} />
+          <Route path="/merchant/delete" element={<MerchantDelete />} />
           <Route path="/merchant/products" element={<Product />} />
           <Route path="/merchant/orders" element={<MerchantOrders />} />
 

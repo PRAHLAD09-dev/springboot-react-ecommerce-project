@@ -29,16 +29,32 @@ function Profile() {
         const fetchData = async () => {
             try {
                 const res = await API.get("/user/profile");
-                setUser(res.data.data);
+                const userData = res.data.data;
+
+                console.log("User Data:", userData);
+
+                setUser(userData);
 
                 try {
                     const mRes = await API.get("/merchant/profile");
-                    setMerchant(mRes.data.data);
-                } catch {
+
+                    if (
+                        mRes.data.success &&
+                        mRes.data.data
+                    ) {
+                        setMerchant(mRes.data.data);
+                    } else {
+                        setMerchant(null);
+                    }
+
+                } catch (err) {
+                    console.log("No merchant account found");
                     setMerchant(null);
                 }
 
             } catch (err) {
+                console.log(err);
+
                 if (err.response?.status === 401) {
                     localStorage.clear();
                     navigate("/login");
@@ -130,7 +146,6 @@ function Profile() {
 
                     {/* MERCHANT CARD */}
                     <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-
                         <h2 className="text-lg font-semibold mb-4">
                             Merchant
                         </h2>
@@ -141,13 +156,35 @@ function Profile() {
                                     {merchant.businessName}
                                 </p>
 
-                                <span className={`px-3 py-1 rounded text-sm font-medium
-                                    ${merchant.approved
-                                        ? "bg-green-100 text-green-600"
-                                        : "bg-yellow-100 text-yellow-600"}`}
+                                {/* STATUS */}
+                                <span
+                                    className={`px - 3 py-1 rounded text-sm font-medium ${!merchant.approved
+                                        ? "bg-yellow-100 text-yellow-600"
+                                        : merchant.approved && merchant.active
+                                            ? "bg-green-100 text-green-600"
+                                            : "bg-red-100 text-red-600"
+                                        }`}
                                 >
-                                    {merchant.approved ? "Approved" : "Pending"}
+                                    {
+                                        !merchant.approved
+                                            ? "Pending"
+                                            : merchant.approved && merchant.active
+                                                ? "Approved"
+                                                : "Blocked"
+                                    }
                                 </span>
+
+                                {/* only approved + active */}
+                                {merchant.approved && merchant.active && (
+                                    <div className="mt-4">
+                                        <button
+                                            onClick={() => navigate("/merchant/profile")}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                                        >
+                                            View Merchant Profile
+                                        </button>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <button
@@ -157,7 +194,6 @@ function Profile() {
                                 Become Merchant
                             </button>
                         )}
-
                     </div>
 
                 </div>

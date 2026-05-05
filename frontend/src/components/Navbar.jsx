@@ -9,7 +9,9 @@ function Navbar() {
     const [role, setRole] = useState("");
     const [isMerchant, setIsMerchant] = useState(false);
 
-    // auth sync
+    // -------------------------
+    // AUTH CHECK
+    // -------------------------
     useEffect(() => {
         const updateAuth = () => {
             const loggedIn =
@@ -24,14 +26,16 @@ function Navbar() {
 
         updateAuth();
 
-        window.addEventListener("storage", updateAuth);
+        window.addEventListener("authChange", updateAuth);
 
         return () => {
-            window.removeEventListener("storage", updateAuth);
+            window.removeEventListener("authChange", updateAuth);
         };
     }, []);
 
-    // merchant check
+    // -------------------------
+    // MERCHANT CHECK
+    // -------------------------
     useEffect(() => {
         const checkMerchant = async () => {
             const token = localStorage.getItem("token");
@@ -46,31 +50,40 @@ function Navbar() {
 
                 console.log("Merchant API:", res.data);
 
-                if (res.data?.data || res.data) {
+                const merchant = res.data.data;
+
+                if (
+                    merchant &&
+                    merchant.active === true &&
+                    merchant.approved === true
+                ) {
                     setIsMerchant(true);
+                } else {
+                    setIsMerchant(false);
                 }
 
             } catch (err) {
-                if (err.response?.status === 404) {
-                    console.log("Normal user → no merchant account");
-                    setIsMerchant(false);
-                } else {
-                    console.log(err);
-                }
+                console.log("No active merchant found");
+                setIsMerchant(false);
             }
         };
 
-        if (isLoggedIn && role === "user") {
-            checkMerchant();
-        }
+        checkMerchant();
 
     }, [isLoggedIn, role]);
 
+    // -------------------------
+    // LOGOUT
+    // -------------------------
     const handleLogout = () => {
         localStorage.clear();
+
         setIsLoggedIn(false);
         setRole("");
         setIsMerchant(false);
+
+        window.dispatchEvent(new Event("authChange"));
+
         navigate("/login");
     };
 
@@ -96,7 +109,6 @@ function Navbar() {
                         <Link to="/profile">Profile</Link>
                         <Link to="/cart">Cart</Link>
 
-                        {/* Merchant links */}
                         {isMerchant && (
                             <>
                                 <Link to="/merchant/products">
