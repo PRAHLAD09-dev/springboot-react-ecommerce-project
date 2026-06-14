@@ -1,19 +1,10 @@
 package com.prahlad.ecommerce.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter
@@ -21,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Product 
+public class Product
 {
 
     @Id
@@ -33,20 +24,82 @@ public class Product
     @Column(length = 1000)
     private String description;
 
+    // ================= AI GENERATED =================
+
+    @Column(columnDefinition = "TEXT")
+    private String aiDescription;
+
+    @Column(columnDefinition = "TEXT")
+    private String specificationsJson;
+
+    @Column(columnDefinition = "TEXT")
+    private String featureHighlightsJson;
+
+    @Column(columnDefinition = "TEXT")
+    private String seoKeywords;
+
+    // ================= BASIC =================
+
     private double price;
 
     private int stock;
 
     private boolean active = true;
-    
-    private String imageUrl;
+
+    // ================= MERCHANT =================
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "merchant_id")
     private Merchant merchant;
 
+    // ================= CATEGORY =================
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
-    
+
+    // ================= IMAGES =================
+
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<ProductImage> images =
+            new ArrayList<>();
+
+    // ================= REVIEWS =================
+
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Review> reviews =
+            new ArrayList<>();
+
+    // ================= RATINGS =================
+
+    public Double getAverageRating()
+    {
+
+        if (reviews == null || reviews.isEmpty())
+        {
+            return 0.0;
+        }
+
+        return reviews.stream()
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+    }
+
+    public Integer getTotalReviews()
+    {
+        return reviews == null
+                ? 0
+                : reviews.size();
+    }
 }

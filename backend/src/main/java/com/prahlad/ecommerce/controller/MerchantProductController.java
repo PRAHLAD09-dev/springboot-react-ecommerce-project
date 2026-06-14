@@ -15,6 +15,7 @@ import com.prahlad.ecommerce.dto.product.ProductRequest;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.service.imageService.ImageService;
 import com.prahlad.ecommerce.service.product.ProductService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -29,21 +30,24 @@ public class MerchantProductController
     private final ImageService imageService;
 
     // ================= ADD PRODUCT =================
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/add" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponse>> addProduct(
             @RequestPart("data") @Valid ProductRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart("files") MultipartFile[] files,
             Authentication auth
     ) throws IOException 
     {
 
-        String imageUrl = uploadImageIfPresent(file);
+        List<String> imageUrls = uploadImagesIfPresent(files);
 
         ProductResponse response =
-                productService.addProduct(request, imageUrl);
+                productService.addProduct(request, imageUrls);
 
         return ResponseEntity.ok(
-                ApiResponse.success("Product added successfully", response)
+                ApiResponse.success(
+                        "Product added successfully",
+                        response
+                )
         );
     }
 
@@ -52,18 +56,24 @@ public class MerchantProductController
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Long id,
             @RequestPart("data") @Valid ProductRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart("files") MultipartFile[] files,
             Authentication auth
-    ) throws IOException 
-    {
+    ) throws IOException {
 
-        String imageUrl = uploadImageIfPresent(file);
+        List<String> imageUrls = uploadImagesIfPresent(files);
 
         ProductResponse response =
-                productService.updateProduct(id, request, imageUrl);
+                productService.updateProduct(
+                        id,
+                        request,
+                        imageUrls
+                );
 
         return ResponseEntity.ok(
-                ApiResponse.success("Product updated successfully", response)
+                ApiResponse.success(
+                        "Product updated successfully",
+                        response
+                )
         );
     }
 
@@ -72,13 +82,15 @@ public class MerchantProductController
     public ResponseEntity<ApiResponse<String>> deleteProduct(
             @PathVariable Long id,
             Authentication auth
-    ) 
-    {
+    ) {
 
         productService.deleteProduct(id);
 
         return ResponseEntity.ok(
-                ApiResponse.success("Product deleted successfully", null)
+                ApiResponse.success(
+                        "Product deleted successfully",
+                        null
+                )
         );
     }
 
@@ -86,8 +98,7 @@ public class MerchantProductController
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getMyProducts(
             Authentication auth
-    ) 
-    {
+    ) {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -98,11 +109,15 @@ public class MerchantProductController
     }
 
     // ================= HELPER =================
-    private String uploadImageIfPresent(MultipartFile file) throws IOException 
-    {
-        if (file != null && !file.isEmpty()) {
-            return imageService.uploadImage(file);
+    private List<String> uploadImagesIfPresent(
+            MultipartFile[] files
+    ) throws IOException {
+
+        if (files != null && files.length > 0) 
+        {
+            return imageService.uploadImages(files);
         }
-        return null;
+
+        return List.of();
     }
 }

@@ -25,5 +25,18 @@ public interface OrderRepository extends JpaRepository<Order, Long>
 			WHERE p.merchant.id = :merchantId
 			""")
 	List<Order> findOrdersByMerchantId(Long merchantId);
+	
+	@Query("""
+		       SELECT COUNT(o) > 0
+		       FROM Order o
+		       JOIN o.orderItems oi
+		       WHERE o.user.id = :userId
+		       AND oi.product.id = :productId
+		       AND o.status = com.prahlad.ecommerce.enums.OrderStatus.DELIVERED
+		       """)
+		boolean hasPurchasedProduct(
+		        Long userId,
+		        Long productId
+		);
 
 }

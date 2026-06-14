@@ -10,6 +10,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prahlad.ecommerce.dto.ai.AIProductResponse;
 import com.prahlad.ecommerce.dto.product.ProductRequest;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.entity.Category;
@@ -23,6 +26,7 @@ import com.prahlad.ecommerce.repository.CategoryRepository;
 import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
+import com.prahlad.ecommerce.service.ai.GeminiService;
 
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -37,6 +41,8 @@ public class ProductServiceImpl implements ProductService
     private final MerchantRepository merchantRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final GeminiService geminiService;
+    private final ObjectMapper objectMapper;
 
     // =========================
     // GET LOGGED IN MERCHANT
@@ -65,9 +71,6 @@ public class ProductServiceImpl implements ProductService
         return merchant;
     }
 
-    // =========================
-    // ADD PRODUCT
-    // =========================
     @Override
     @Transactional
     public ProductResponse addProduct(
@@ -75,11 +78,12 @@ public class ProductServiceImpl implements ProductService
             List<String> imageUrls
     )
     {
-
-        if (request.name() == null || request.name().isBlank())
-        {
-            throw new IllegalArgumentException("Product name required");
-        }
+    	if (imageUrls == null || imageUrls.isEmpty())
+    	{
+    	    throw new IllegalArgumentException(
+    	            "At least one product image is required"
+    	    );
+    	}
 
         if (request.price() == null || request.price() <= 0)
         {
@@ -91,43 +95,102 @@ public class ProductServiceImpl implements ProductService
             throw new IllegalArgumentException("Category required");
         }
 
+        if (imageUrls == null || imageUrls.isEmpty())
+        {
+            throw new IllegalArgumentException("Product images required");
+        }
+
         Merchant merchant = getCurrentMerchant();
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        Category category = categoryRepository.findById(
+                request.categoryId()
+        ).orElseThrow(() ->
+                new ResourceNotFoundException(
+                        "Category not found"
+                ));
+
+        AIProductResponse ai =
+                geminiService.generateProductContent(
+                        imageUrls,
+                        category.getName()
+                );
 
         Product product = new Product();
 
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setPrice(request.price());
-        product.setStock(request.stock() != null ? request.stock() : 0);
-        product.setActive(true);
+        product.setName(
+                ai.productName()
+        );
 
-        product.setMerchant(merchant);
-        product.setCategory(category);
+        product.setDescription(
+                ai.aiDescription()
+        );
 
-        // MULTIPLE IMAGES
-        if (imageUrls != null && !imageUrls.isEmpty())
+        product.setAiDescription(
+                ai.aiDescription()
+        );
+
+        try
         {
-            for (String url : imageUrls)
-            {
-                ProductImage image = new ProductImage();
+            product.setSpecificationsJson(
+                    objectMapper.writeValueAsString(
+                            ai.specifications()
+                    )
+            );
 
-                image.setImageUrl(url);
-                image.setProduct(product);
-
-                product.getImages().add(image);
-            }
+            product.setFeatureHighlightsJson(
+                    objectMapper.writeValueAsString(
+                            ai.featureHighlights()
+                    )
+            );
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
         }
 
-        Product saved = productRepository.save(product);
+        product.setSeoKeywords(
+                String.join(
+                        ",",
+                        ai.seoKeywords()
+                )
+        );
+
+        product.setPrice(
+                request.price()
+        );
+
+        product.setStock(
+                request.stock() != null
+                        ? request.stock()
+                        : 0
+        );
+
+        product.setActive(true);
+
+        product.setMerchant(
+                merchant
+        );
+
+        product.setCategory(
+                category
+        );
+
+        for (String url : imageUrls)
+        {
+            ProductImage image = new ProductImage();
+
+            image.setImageUrl(url);
+            image.setProduct(product);
+
+            product.getImages().add(image);
+        }
+
+        Product saved =
+                productRepository.save(product);
 
         return mapToDTO(saved);
     }
-    // =========================
-    // UPDATE PRODUCT
-    // =========================
+    
     @Override
     @Transactional
     public ProductResponse updateProduct(
@@ -137,33 +200,100 @@ public class ProductServiceImpl implements ProductService
     )
     {
 
-        Merchant merchant = getCurrentMerchant();
+        Merchant merchant =
+                getCurrentMerchant();
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Product product =
+                productRepository.findById(productId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Product not found"
+                                ));
 
-        if (!product.getMerchant().getId().equals(merchant.getId()))
+        if (!product.getMerchant()
+                .getId()
+                .equals(merchant.getId()))
         {
-            throw new UnauthorizedException("Not your product");
+            throw new UnauthorizedException(
+                    "Not your product"
+            );
         }
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        Category category =
+                categoryRepository.findById(
+                        request.categoryId()
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Category not found"
+                        ));
 
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setPrice(request.price());
-        product.setStock(request.stock());
-        product.setCategory(category);
+        product.setPrice(
+                request.price()
+        );
 
-        // UPDATE IMAGES
-        if (imageUrls != null && !imageUrls.isEmpty())
+        product.setStock(
+                request.stock()
+        );
+
+        product.setCategory(
+                category
+        );
+
+        if (imageUrls != null &&
+                !imageUrls.isEmpty())
         {
+
+            AIProductResponse ai =
+                    geminiService.generateProductContent(
+                            imageUrls,
+                            category.getName()
+                    );
+
+            product.setName(
+                    ai.productName()
+            );
+
+            product.setDescription(
+                    ai.aiDescription()
+            );
+
+            product.setAiDescription(
+                    ai.aiDescription()
+            );
+
+            try
+            {
+                product.setSpecificationsJson(
+                        objectMapper.writeValueAsString(
+                                ai.specifications()
+                        )
+                );
+
+                product.setFeatureHighlightsJson(
+                        objectMapper.writeValueAsString(
+                                ai.featureHighlights()
+                        )
+                );
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+
+            product.setSeoKeywords(
+                    String.join(
+                            ",",
+                            ai.seoKeywords()
+                    )
+            );
+
             product.getImages().clear();
 
             for (String url : imageUrls)
             {
-                ProductImage image = new ProductImage();
+                ProductImage image =
+                        new ProductImage();
 
                 image.setImageUrl(url);
                 image.setProduct(product);
@@ -172,9 +302,11 @@ public class ProductServiceImpl implements ProductService
             }
         }
 
-        return mapToDTO(productRepository.save(product));
+        return mapToDTO(
+                productRepository.save(product)
+        );
     }
-
+    
     // =========================
     // DELETE PRODUCT
     // =========================
