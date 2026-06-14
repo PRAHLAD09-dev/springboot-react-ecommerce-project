@@ -15,6 +15,7 @@ import com.prahlad.ecommerce.dto.product.ProductResponse;
 import com.prahlad.ecommerce.entity.Category;
 import com.prahlad.ecommerce.entity.Merchant;
 import com.prahlad.ecommerce.entity.Product;
+import com.prahlad.ecommerce.entity.ProductImage;
 import com.prahlad.ecommerce.entity.User;
 import com.prahlad.ecommerce.exception.ResourceNotFoundException;
 import com.prahlad.ecommerce.exception.UnauthorizedException;
@@ -69,20 +70,23 @@ public class ProductServiceImpl implements ProductService
     // =========================
     @Override
     @Transactional
-    public ProductResponse addProduct(ProductRequest request, String imageUrl) 
+    public ProductResponse addProduct(
+            ProductRequest request,
+            List<String> imageUrls
+    )
     {
 
-        if (request.name() == null || request.name().isBlank()) 
+        if (request.name() == null || request.name().isBlank())
         {
             throw new IllegalArgumentException("Product name required");
         }
 
-        if (request.price() == null || request.price() <= 0) 
+        if (request.price() == null || request.price() <= 0)
         {
             throw new IllegalArgumentException("Invalid price");
         }
 
-        if (request.categoryId() == null) 
+        if (request.categoryId() == null)
         {
             throw new IllegalArgumentException("Category required");
         }
@@ -93,17 +97,30 @@ public class ProductServiceImpl implements ProductService
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         Product product = new Product();
+
         product.setName(request.name());
         product.setDescription(request.description());
         product.setPrice(request.price());
         product.setStock(request.stock() != null ? request.stock() : 0);
         product.setActive(true);
+
         product.setMerchant(merchant);
         product.setCategory(category);
 
-        product.setImageUrl(imageUrl != null ? imageUrl : "");
+        // MULTIPLE IMAGES
+        if (imageUrls != null && !imageUrls.isEmpty())
+        {
+            for (String url : imageUrls)
+            {
+                ProductImage image = new ProductImage();
 
-    
+                image.setImageUrl(url);
+                image.setProduct(product);
+
+                product.getImages().add(image);
+            }
+        }
+
         Product saved = productRepository.save(product);
 
         return mapToDTO(saved);
@@ -113,7 +130,11 @@ public class ProductServiceImpl implements ProductService
     // =========================
     @Override
     @Transactional
-    public ProductResponse updateProduct(Long productId, ProductRequest request, String imageUrl) 
+    public ProductResponse updateProduct(
+            Long productId,
+            ProductRequest request,
+            List<String> imageUrls
+    )
     {
 
         Merchant merchant = getCurrentMerchant();
@@ -121,7 +142,8 @@ public class ProductServiceImpl implements ProductService
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        if (!product.getMerchant().getId().equals(merchant.getId())) {
+        if (!product.getMerchant().getId().equals(merchant.getId()))
+        {
             throw new UnauthorizedException("Not your product");
         }
 
@@ -134,8 +156,20 @@ public class ProductServiceImpl implements ProductService
         product.setStock(request.stock());
         product.setCategory(category);
 
-        if (imageUrl != null) {
-            product.setImageUrl(imageUrl);
+        // UPDATE IMAGES
+        if (imageUrls != null && !imageUrls.isEmpty())
+        {
+            product.getImages().clear();
+
+            for (String url : imageUrls)
+            {
+                ProductImage image = new ProductImage();
+
+                image.setImageUrl(url);
+                image.setProduct(product);
+
+                product.getImages().add(image);
+            }
         }
 
         return mapToDTO(productRepository.save(product));
@@ -154,7 +188,8 @@ public class ProductServiceImpl implements ProductService
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        if (!product.getMerchant().getId().equals(merchant.getId())) {
+        if (!product.getMerchant().getId().equals(merchant.getId())) 
+        {
             throw new UnauthorizedException("Unauthorized");
         }
 
@@ -257,31 +292,51 @@ public class ProductServiceImpl implements ProductService
     // =========================
     // DTO MAPPING
     // =========================
-    private ProductResponse mapToDTO(Product product) 
+    private ProductResponse mapToDTO(Product product)
     {
         String merchantName = null;
 
-        if (product.getMerchant() != null) 
+        if (product.getMerchant() != null)
         {
-            merchantName = product.getMerchant().getBusinessName();
+            merchantName =
+                    product.getMerchant()
+                           .getBusinessName();
         }
 
         String categoryName = null;
 
         if (product.getCategory() != null)
         {
-            categoryName = product.getCategory().getName();
+            categoryName =
+                    product.getCategory()
+                           .getName();
         }
+
+        List<String> imageUrls =
+                product.getImages()
+                        .stream()
+                        .map(ProductImage::getImageUrl)
+                        .toList();
 
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
+
+                product.getAiDescription(),
+                product.getSpecificationsJson(),
+                product.getFeatureHighlightsJson(),
+                product.getSeoKeywords(),
+
                 product.getPrice(),
                 product.getStock(),
-                product.getImageUrl(),
+
+                product.getAverageRating(),
+                product.getTotalReviews(),
+
                 categoryName,
-                merchantName
+                merchantName,
+                imageUrls
         );
     }
 }
