@@ -1,5 +1,6 @@
 package com.prahlad.ecommerce.entity;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -62,6 +63,13 @@ public class User implements UserDetails
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL ,  fetch = FetchType.LAZY)
     private List<Order> orders;
+    
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Review> reviews = new ArrayList<>();
 
 	
 	@Override
