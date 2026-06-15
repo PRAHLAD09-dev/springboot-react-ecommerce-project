@@ -158,7 +158,7 @@ public class ReviewServiceImpl implements ReviewService
         return new ReviewResponse(
                 review.getId(),
                 review.getUser().getId(),
-                review.getUser().getUsername(),
+                review.getUser().getName(),
                 review.getRating(),
                 review.getComment(),
                 review.getCreatedAt(),
