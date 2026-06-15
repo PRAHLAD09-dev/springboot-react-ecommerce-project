@@ -4,6 +4,8 @@ import com.prahlad.ecommerce.dto.review.ReviewResponse;
 import com.prahlad.ecommerce.service.Review.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('USER')")
 public class ReviewController
 {
 
@@ -27,21 +30,20 @@ public class ReviewController
 
             @PathVariable Long productId,
 
-            @RequestParam Long userId,
-
             @RequestParam Integer rating,
 
             @RequestParam(required = false)
             String comment,
 
             @RequestParam(required = false)
-            MultipartFile[] images
+            MultipartFile[] images,
+
+            Authentication authentication
     )
     {
-
         return reviewService.addReview(
                 productId,
-                userId,
+                authentication.getName(),
                 rating,
                 comment,
                 images

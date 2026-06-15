@@ -10,12 +10,12 @@ public interface ReviewService
 
     ReviewResponse addReview(
             Long productId,
-            Long userId,
+            String email,
             Integer rating,
             String comment,
             MultipartFile[] images
     );
-
+    
     List<ReviewResponse> getProductReviews(
             Long productId
     );

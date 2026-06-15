@@ -35,9 +35,9 @@ public class ReviewServiceImpl implements ReviewService
     private final ImageService imageService;
 
     @Override
-    public ReviewResponse addReview(
+    public  ReviewResponse addReview(
             Long productId,
-            Long userId,
+            String email,
             Integer rating,
             String comment,
             MultipartFile[] images
@@ -57,17 +57,17 @@ public class ReviewServiceImpl implements ReviewService
                                 "Product not found"
                         ));
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found"
                         ));
 
         boolean purchased =
-                orderRepository.hasPurchasedProduct(
-                        userId,
-                        productId
-                );
+        		orderRepository.hasPurchasedProduct(
+        		        user.getId(),
+        		        productId
+                    );
 
         if (!purchased)
         {
@@ -77,10 +77,10 @@ public class ReviewServiceImpl implements ReviewService
         }
 
         reviewRepository.findByUserIdAndProductId(
-                        userId,
-                        productId
-                )
-                .ifPresent(r ->
+                user.getId(),
+                productId
+        )
+             .ifPresent(r ->
                 {
                     throw new BadRequestException(
                             "You already reviewed this product"
