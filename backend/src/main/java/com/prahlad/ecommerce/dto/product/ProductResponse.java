@@ -8,8 +8,6 @@ public record ProductResponse(
 
         String name,
 
-        String description,
-
         String aiDescription,
 
         String specificationsJson,

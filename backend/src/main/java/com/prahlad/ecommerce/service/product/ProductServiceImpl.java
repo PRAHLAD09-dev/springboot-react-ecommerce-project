@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prahlad.ecommerce.dto.ai.AIProductResponse;
@@ -27,6 +28,7 @@ import com.prahlad.ecommerce.repository.MerchantRepository;
 import com.prahlad.ecommerce.repository.ProductRepository;
 import com.prahlad.ecommerce.repository.UserRepository;
 import com.prahlad.ecommerce.service.ai.GeminiService;
+import com.prahlad.ecommerce.service.imageService.ImageService;
 
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
@@ -43,6 +45,7 @@ public class ProductServiceImpl implements ProductService
     private final UserRepository userRepository;
     private final GeminiService geminiService;
     private final ObjectMapper objectMapper;
+    private final ImageService imageService;
 
     // =========================
     // GET LOGGED IN MERCHANT
@@ -75,10 +78,10 @@ public class ProductServiceImpl implements ProductService
     @Transactional
     public ProductResponse addProduct(
             ProductRequest request,
-            List<String> imageUrls
+            MultipartFile[] files
     )
     {
-    	if (imageUrls == null || imageUrls.isEmpty())
+    	if (files == null || files.length == 0)
     	{
     	    throw new IllegalArgumentException(
     	            "At least one product image is required"
@@ -95,11 +98,6 @@ public class ProductServiceImpl implements ProductService
             throw new IllegalArgumentException("Category required");
         }
 
-        if (imageUrls == null || imageUrls.isEmpty())
-        {
-            throw new IllegalArgumentException("Product images required");
-        }
-
         Merchant merchant = getCurrentMerchant();
 
         Category category = categoryRepository.findById(
@@ -111,7 +109,7 @@ public class ProductServiceImpl implements ProductService
 
         AIProductResponse ai =
                 geminiService.generateProductContent(
-                        imageUrls,
+                        files,
                         category.getName()
                 );
 
@@ -121,9 +119,6 @@ public class ProductServiceImpl implements ProductService
                 ai.productName()
         );
 
-        product.setDescription(
-                ai.aiDescription()
-        );
 
         product.setAiDescription(
                 ai.aiDescription()
@@ -174,6 +169,21 @@ public class ProductServiceImpl implements ProductService
         product.setCategory(
                 category
         );
+        
+        List<String> imageUrls;
+
+        try
+        {
+            imageUrls =
+                    imageService.uploadImages(files);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(
+                    "Image upload failed",
+                    e
+            );
+        }
 
         for (String url : imageUrls)
         {
@@ -196,7 +206,7 @@ public class ProductServiceImpl implements ProductService
     public ProductResponse updateProduct(
             Long productId,
             ProductRequest request,
-            List<String> imageUrls
+            MultipartFile[] files
     )
     {
 
@@ -240,23 +250,20 @@ public class ProductServiceImpl implements ProductService
                 category
         );
 
-        if (imageUrls != null &&
-                !imageUrls.isEmpty())
+        if (files != null &&
+                files.length > 0)
         {
 
-            AIProductResponse ai =
-                    geminiService.generateProductContent(
-                            imageUrls,
-                            category.getName()
-                    );
+        	AIProductResponse ai =
+        	        geminiService.generateProductContent(
+        	                files,
+        	                category.getName()
+        	        );
 
             product.setName(
                     ai.productName()
             );
 
-            product.setDescription(
-                    ai.aiDescription()
-            );
 
             product.setAiDescription(
                     ai.aiDescription()
@@ -287,6 +294,23 @@ public class ProductServiceImpl implements ProductService
                             ai.seoKeywords()
                     )
             );
+
+            product.getImages().clear();
+
+            List<String> imageUrls;
+
+            try
+            {
+                imageUrls =
+                        imageService.uploadImages(files);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(
+                        "Image upload failed",
+                        e
+                );
+            }
 
             product.getImages().clear();
 
@@ -453,7 +477,7 @@ public class ProductServiceImpl implements ProductService
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
-                product.getDescription(),
+           
 
                 product.getAiDescription(),
                 product.getSpecificationsJson(),

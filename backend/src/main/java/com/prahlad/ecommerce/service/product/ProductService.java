@@ -3,6 +3,7 @@ package com.prahlad.ecommerce.service.product;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.prahlad.ecommerce.dto.product.ProductRequest;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
@@ -10,16 +11,16 @@ import com.prahlad.ecommerce.dto.product.ProductResponse;
 public interface ProductService 
 {
 
-	public ProductResponse addProduct(
+	ProductResponse addProduct(
 	        ProductRequest request,
-	        List<String> imageUrls
+	        MultipartFile[] files
 	);
 
 	public ProductResponse updateProduct(
-	        Long productId,
-	        ProductRequest request,
-	        List<String> imageUrls
-	);
+            Long productId,
+            ProductRequest request,
+            MultipartFile[] files
+    );
 	 public void deleteProduct(Long productId);
 
 	 public List<ProductResponse> getMyProducts() ;

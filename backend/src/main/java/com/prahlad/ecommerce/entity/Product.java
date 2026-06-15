@@ -21,8 +21,6 @@ public class Product
 
     private String name;
 
-    @Column(length = 1000)
-    private String description;
 
     // ================= AI GENERATED =================
 

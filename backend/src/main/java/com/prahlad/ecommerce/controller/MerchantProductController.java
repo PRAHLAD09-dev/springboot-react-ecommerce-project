@@ -38,10 +38,11 @@ public class MerchantProductController
     ) throws IOException 
     {
 
-        List<String> imageUrls = uploadImagesIfPresent(files);
-
-        ProductResponse response =
-                productService.addProduct(request, imageUrls);
+    	ProductResponse response =
+    	        productService.addProduct(
+    	                request,
+    	                files
+    	        );
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -60,14 +61,12 @@ public class MerchantProductController
             Authentication auth
     ) throws IOException {
 
-        List<String> imageUrls = uploadImagesIfPresent(files);
-
-        ProductResponse response =
-                productService.updateProduct(
-                        id,
-                        request,
-                        imageUrls
-                );
+    	ProductResponse response =
+    	        productService.updateProduct(
+    	        		id,
+    	                request,
+    	                files
+    	        );
 
         return ResponseEntity.ok(
                 ApiResponse.success(
