@@ -37,5 +37,8 @@ public interface ProductService
 
      ProductResponse getProductById(Long id);
 	
+     List<ProductResponse> getSimilarProducts(
+    	        Long productId
+    	);
 }
 

@@ -41,4 +41,15 @@ public class ProductController
 	                productService.getProductById(id)
 	        );
 	    }
+	    
+	    @GetMapping("/{id}/similar")
+	    public ApiResponse<?> getSimilarProducts(
+	            @PathVariable Long id
+	    )
+	    {
+	        return ApiResponse.success(
+	                "Similar products fetched",
+	                productService.getSimilarProducts(id)
+	        );
+	    }
 }

@@ -444,6 +444,28 @@ public class ProductServiceImpl implements ProductService
 
         return mapToDTO(product);
     }
+    
+    @Override
+    public List<ProductResponse> getSimilarProducts(
+            Long productId
+    )
+    {
+        Product product =
+                productRepository.findById(productId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Product not found"
+                        ));
+
+        return productRepository
+                .findTop8ByCategoryIdAndIdNotAndActiveTrue(
+                        product.getCategory().getId(),
+                        productId
+                )
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
 
     // =========================
     // DTO MAPPING

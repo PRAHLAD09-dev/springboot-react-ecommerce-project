@@ -24,4 +24,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     
     boolean existsByCategoryId(Long productId);
     
+    List<Product> findTop8ByCategoryIdAndIdNotAndActiveTrue(
+            Long categoryId,
+            Long productId
+    );
+    
 }
