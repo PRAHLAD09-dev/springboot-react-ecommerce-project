@@ -158,12 +158,19 @@ public class CartServiceImpl implements CartService
 
         List<CartItemDTO> items = cart.getItems().stream()
                 .map(i -> new CartItemDTO(
-                		i.getId(),
-                        i.getProduct().getId(),
-                        i.getProduct().getName(),
-                        i.getQuantity(),
-                        i.getPrice()
+                	    i.getId(),
+                	    i.getProduct().getId(),
+                	    i.getProduct().getName(),
+                	   i.getProduct().getImages().isEmpty()
+                	            ? null
+                	            : i.getProduct().getImages()
+                	                     .get(0)
+                	                     .getImageUrl(),
+                	    i.getQuantity(),
+                	    i.getPrice()
+                	
                 ))
+         
                 .toList();
 
         double total = items.stream()

@@ -433,9 +433,21 @@ public class OrderService
 	{
 	    List<OrderItemDTO> items = order.getOrderItems().stream()
 	        .map(i -> new OrderItemDTO(
-	            i.getProduct().getName(),
-	            i.getQuantity(),
-	            i.getPrice()
+
+	                i.getProduct().getId(),
+
+	                i.getProduct().getName(),
+
+	                i.getProduct().getImages().isEmpty()
+	                        ? null
+	                        : i.getProduct()
+	                              .getImages()
+	                              .get(0)
+	                              .getImageUrl(),
+
+	                i.getQuantity(),
+
+	                i.getPrice()
 	        ))
 	        .toList();
 
