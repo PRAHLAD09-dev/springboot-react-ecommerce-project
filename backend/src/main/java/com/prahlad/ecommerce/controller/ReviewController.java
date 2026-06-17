@@ -14,14 +14,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('USER')")
 public class ReviewController
 {
 
     private final ReviewService reviewService;
 
     // ================= ADD REVIEW WITH IMAGES =================
-
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(
             value = "/product/{productId}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
