@@ -1,5 +1,7 @@
 package com.prahlad.ecommerce.controller;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.*;
 import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
@@ -50,6 +52,28 @@ public class ProductController
 	        return ApiResponse.success(
 	                "Similar products fetched",
 	                productService.getSimilarProducts(id)
+	        );
+	    }
+	    
+	    @GetMapping("/latest")
+	    public ApiResponse<List<ProductResponse>>
+	    getLatestProducts() 
+	    {
+
+	        return ApiResponse.success(
+	                "Latest products fetched",
+	                productService.getLatestProducts()
+	        );
+	    }
+	    
+	    @GetMapping("/best-sellers")
+	    public ApiResponse<List<ProductResponse>>
+	    getBestSellers() 
+	    {
+
+	        return ApiResponse.success(
+	                "Best sellers fetched",
+	                productService.getBestSellingProducts()
 	        );
 	    }
 }

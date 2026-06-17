@@ -28,6 +28,8 @@ public class OrderItem
 
     private Double price;
 
+    private String selectedColor;
+
     @ManyToOne
     private Product product;
 

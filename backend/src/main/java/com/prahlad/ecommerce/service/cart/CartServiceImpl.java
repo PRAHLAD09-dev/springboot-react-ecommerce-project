@@ -31,7 +31,7 @@ public class CartServiceImpl implements CartService
 
 	// ================= ADD =================
 	@Override
-	public CartResponse addToCart(Long productId, int quantity, String userEmail) 
+	public CartResponse addToCart( Long productId,int quantity,String selectedColor,String userEmail)
 	{
 		User user = userRepository.findByEmail(userEmail)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -56,8 +56,19 @@ public class CartServiceImpl implements CartService
 			throw new BadRequestException("Insufficient stock");
 		}
 
-		Optional<CartItem> existingItem = cart.getItems().stream().filter(i -> i.getProduct().getId().equals(productId))
-				.findFirst();
+		Optional<CartItem> existingItem =
+		        cart.getItems()
+		            .stream()
+		            .filter(i ->
+		                    i.getProduct()
+		                     .getId()
+		                     .equals(productId)
+		                    &&
+		                    selectedColor.equalsIgnoreCase(
+		                            i.getSelectedColor()
+		                    )
+		            )
+		            .findFirst();
 
 		if (existingItem.isPresent()) 
 		{
@@ -78,10 +89,19 @@ public class CartServiceImpl implements CartService
 		else 
 		{
 			CartItem item = new CartItem();
+
 			item.setCart(cart);
 			item.setProduct(product);
+
+			item.setSelectedColor(
+			        selectedColor
+			);
+
 			item.setQuantity(quantity);
-			item.setPrice(product.getPrice() * quantity);
+
+			item.setPrice(
+			        product.getPrice() * quantity
+			);
 
 			cart.getItems().add(item);
 		}
@@ -153,34 +173,41 @@ public class CartServiceImpl implements CartService
 	}
 
 	// ================= MAPPER =================
-	private CartResponse mapToDTO(Cart cart) 
+	private CartResponse mapToDTO(Cart cart)
 	{
+	    List<CartItemDTO> items = cart.getItems().stream()
+	            .map(i -> new CartItemDTO(
+	                    i.getId(),
+	                    i.getProduct().getId(),
+	                    i.getProduct().getName(),
 
-        List<CartItemDTO> items = cart.getItems().stream()
-                .map(i -> new CartItemDTO(
-                	    i.getId(),
-                	    i.getProduct().getId(),
-                	    i.getProduct().getName(),
-                	   i.getProduct().getImages().isEmpty()
-                	            ? null
-                	            : i.getProduct().getImages()
-                	                     .get(0)
-                	                     .getImageUrl(),
-                	    i.getQuantity(),
-                	    i.getPrice()
-                	
-                ))
-         
-                .toList();
+	                    i.getProduct().getImages().isEmpty()
+	                            ? null
+	                            : i.getProduct()
+	                                 .getImages()
+	                                 .get(0)
+	                                 .getImageUrl(),
 
-        double total = items.stream()
-                .mapToDouble(i -> i.price())
-                .sum();
+	                    i.getSelectedColor(),
 
-        return new CartResponse(
-                cart.getId(),
-                items,
-                total
-        );
-    }
+	                    i.getQuantity(),
+
+	                    i.getPrice(),
+
+	                    i.getProduct().getMrp(),
+
+	                    i.getProduct().getDiscountPercentage()
+	            ))
+	            .toList();
+
+	    double total = items.stream()
+	            .mapToDouble(CartItemDTO::price)
+	            .sum();
+
+	    return new CartResponse(
+	            cart.getId(),
+	            items,
+	            total
+	    );
+	}
 }

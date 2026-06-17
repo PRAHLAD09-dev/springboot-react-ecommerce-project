@@ -110,11 +110,23 @@ public class OrderService
 	        productRepository.save(product); 
 	        
 	        OrderItem orderItem = new OrderItem();
-	        orderItem.setProduct(product);
-	        orderItem.setQuantity(cartItem.getQuantity());
 
-	        double itemPrice = product.getPrice() * cartItem.getQuantity();
+	        orderItem.setProduct(product);
+
+	        orderItem.setQuantity(
+	                cartItem.getQuantity()
+	        );
+
+	        double itemPrice =
+	                product.getPrice()
+	                * cartItem.getQuantity();
+
 	        orderItem.setPrice(itemPrice);
+
+	        orderItem.setSelectedColor(
+	                cartItem.getSelectedColor()
+	        );
+
 	        orderItem.setOrder(order);
 
 	        orderItems.add(orderItem);
@@ -441,13 +453,19 @@ public class OrderService
 	                i.getProduct().getImages().isEmpty()
 	                        ? null
 	                        : i.getProduct()
-	                              .getImages()
-	                              .get(0)
-	                              .getImageUrl(),
+	                             .getImages()
+	                             .get(0)
+	                             .getImageUrl(),
+
+	                i.getSelectedColor(),
 
 	                i.getQuantity(),
 
-	                i.getPrice()
+	                i.getPrice(),
+
+	                i.getProduct().getMrp(),
+
+	                i.getProduct().getDiscountPercentage()
 	        ))
 	        .toList();
 

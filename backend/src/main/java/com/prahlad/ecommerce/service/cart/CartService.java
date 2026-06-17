@@ -8,7 +8,7 @@ import com.prahlad.ecommerce.dto.cart.CartResponse;
 public interface CartService 
 {
 
-    CartResponse addToCart(Long productId, int quantity, String userEmail);
+	CartResponse addToCart( Long productId,int quantity,String selectedColor,String userEmail);
 
     CartResponse updateQuantity(Long cartItemId, int quantity, String userEmail);
 

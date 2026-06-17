@@ -184,13 +184,19 @@ public class AdminServiceImpl implements AdminService
 	                i.getProduct().getImages().isEmpty()
 	                        ? null
 	                        : i.getProduct()
-	                              .getImages()
-	                              .get(0)
-	                              .getImageUrl(),
+	                             .getImages()
+	                             .get(0)
+	                             .getImageUrl(),
+
+	                i.getSelectedColor(),
 
 	                i.getQuantity(),
 
-	                i.getPrice()
+	                i.getPrice(),
+
+	                i.getProduct().getMrp(),
+
+	                i.getProduct().getDiscountPercentage()
 	        ))
 	        .toList();
 

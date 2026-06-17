@@ -11,16 +11,10 @@ import com.prahlad.ecommerce.dto.product.ProductResponse;
 public interface ProductService 
 {
 
-	ProductResponse addProduct(
-	        ProductRequest request,
-	        MultipartFile[] files
-	);
+	ProductResponse addProduct( ProductRequest request,  MultipartFile[] files);
 
-	public ProductResponse updateProduct(
-            Long productId,
-            ProductRequest request,
-            MultipartFile[] files
-    );
+	public ProductResponse updateProduct(  Long productId,  ProductRequest request,  MultipartFile[] files );
+	
 	 public void deleteProduct(Long productId);
 
 	 public List<ProductResponse> getMyProducts() ;
@@ -37,8 +31,10 @@ public interface ProductService
 
      ProductResponse getProductById(Long id);
 	
-     List<ProductResponse> getSimilarProducts(
-    	        Long productId
-    	);
+     List<ProductResponse> getSimilarProducts(Long productId);
+     
+     List<ProductResponse> getLatestProducts();
+     
+     List<ProductResponse> getBestSellingProducts();
 }
 

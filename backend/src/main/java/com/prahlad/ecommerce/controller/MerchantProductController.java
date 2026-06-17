@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.product.ProductRequest;
 import com.prahlad.ecommerce.dto.product.ProductResponse;
-import com.prahlad.ecommerce.service.imageService.ImageService;
 import com.prahlad.ecommerce.service.product.ProductService;
 
 import jakarta.validation.Valid;
@@ -27,7 +26,6 @@ public class MerchantProductController
 {
 
     private final ProductService productService;
-    private final ImageService imageService;
 
     // ================= ADD PRODUCT =================
     @PostMapping(value = "/add" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -57,7 +55,7 @@ public class MerchantProductController
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Long id,
             @RequestPart("data") @Valid ProductRequest request,
-            @RequestPart("files") MultipartFile[] files,
+            @RequestPart(required = false) MultipartFile[] files,
             Authentication auth
     ) throws IOException {
 
@@ -105,18 +103,5 @@ public class MerchantProductController
                         productService.getMyProducts()
                 )
         );
-    }
-
-    // ================= HELPER =================
-    private List<String> uploadImagesIfPresent(
-            MultipartFile[] files
-    ) throws IOException {
-
-        if (files != null && files.length > 0) 
-        {
-            return imageService.uploadImages(files);
-        }
-
-        return List.of();
     }
 }

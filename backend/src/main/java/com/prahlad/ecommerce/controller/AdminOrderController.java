@@ -18,7 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/admin/orders")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminOrderController {
+public class AdminOrderController 
+{
 
     private final OrderService orderService;
 
@@ -27,7 +28,8 @@ public class AdminOrderController {
             @PathVariable Long orderId,
             @RequestParam OrderStatus status,
             Authentication auth
-    ) {
+    ) 
+    {
 
         OrderResponse response = orderService.updateOrderStatus(orderId, status);
 

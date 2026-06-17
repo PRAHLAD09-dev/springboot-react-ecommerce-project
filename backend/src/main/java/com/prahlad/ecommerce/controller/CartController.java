@@ -20,11 +20,22 @@ public class CartController
 	private final CartService cartService;
 
 	@PostMapping("/add")
-	public ApiResponse<CartResponse> addToCart(@RequestParam Long productId, @RequestParam int quantity,
-			Authentication auth) 
+	public ApiResponse<CartResponse> addToCart(
+	        @RequestParam Long productId,
+	        @RequestParam int quantity,
+	        @RequestParam String selectedColor,
+	        Authentication auth
+	)
 	{
-
-		return ApiResponse.success("Product added to cart", cartService.addToCart(productId, quantity, auth.getName()));
+	    return ApiResponse.success(
+	            "Product added to cart",
+	            cartService.addToCart(
+	                    productId,
+	                    quantity,
+	                    selectedColor,
+	                    auth.getName()
+	            )
+	    );
 	}
 
 	@PutMapping("/update/{cartItemId}")

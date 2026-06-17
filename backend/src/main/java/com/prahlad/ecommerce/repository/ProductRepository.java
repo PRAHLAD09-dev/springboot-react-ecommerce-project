@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.prahlad.ecommerce.entity.Product;
@@ -24,9 +25,18 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     
     boolean existsByCategoryId(Long productId);
     
-    List<Product> findTop8ByCategoryIdAndIdNotAndActiveTrue(
-            Long categoryId,
-            Long productId
-    );
+    List<Product> findTop8ByCategoryIdAndIdNotAndActiveTrue( Long categoryId, Long productId);
+    
+    Page<Product> findAllByOrderByIdDesc(Pageable pageable);
+    
+    @Query("""
+    		SELECT oi.product
+    		FROM OrderItem oi
+    		GROUP BY oi.product
+    		ORDER BY COUNT(oi.id) DESC
+    		""")
+    		List<Product> findBestSellingProducts(
+    		        Pageable pageable
+    		);
     
 }

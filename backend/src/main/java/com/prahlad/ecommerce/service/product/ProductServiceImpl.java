@@ -88,15 +88,29 @@ public class ProductServiceImpl implements ProductService
     	    );
     	}
 
-        if (request.price() == null || request.price() <= 0)
-        {
-            throw new IllegalArgumentException("Invalid price");
-        }
+    	if (request.price() == null || request.price() <= 0)
+    	{
+    	    throw new IllegalArgumentException("Invalid price");
+    	}
 
-        if (request.categoryId() == null)
-        {
-            throw new IllegalArgumentException("Category required");
-        }
+    	if (request.mrp() == null || request.mrp() <= 0)
+    	{
+    	    throw new IllegalArgumentException("Invalid MRP");
+    	}
+
+    	if (request.mrp() < request.price())
+    	{
+    	    throw new IllegalArgumentException(
+    	            "MRP cannot be less than price"
+    	    );
+    	}
+
+    	if (request.categoryId() == null)
+    	{
+    	    throw new IllegalArgumentException(
+    	            "Category required"
+    	    );
+    	}
 
         Merchant merchant = getCurrentMerchant();
 
@@ -154,6 +168,10 @@ public class ProductServiceImpl implements ProductService
                 request.price()
         );
 
+        product.setMrp(
+                request.mrp()
+        );
+
         product.setStock(
                 request.stock() != null
                         ? request.stock()
@@ -168,6 +186,12 @@ public class ProductServiceImpl implements ProductService
 
         product.setCategory(
                 category
+        );
+
+        product.setColors(
+                request.colors() != null
+                        ? request.colors()
+                        : List.of()
         );
         
         List<String> imageUrls;
@@ -238,8 +262,20 @@ public class ProductServiceImpl implements ProductService
                                 "Category not found"
                         ));
 
+        if (request.mrp() != null &&
+                request.mrp() < request.price())
+        {
+            throw new IllegalArgumentException(
+                    "MRP cannot be less than price"
+            );
+        }
+
         product.setPrice(
                 request.price()
+        );
+
+        product.setMrp(
+                request.mrp()
         );
 
         product.setStock(
@@ -248,6 +284,12 @@ public class ProductServiceImpl implements ProductService
 
         product.setCategory(
                 category
+        );
+
+        product.setColors(
+                request.colors() != null
+                        ? request.colors()
+                        : List.of()
         );
 
         if (files != null &&
@@ -466,7 +508,45 @@ public class ProductServiceImpl implements ProductService
                 .map(this::mapToDTO)
                 .toList();
     }
+    
+    @Override
+    public List<ProductResponse> getLatestProducts() 
+    {
 
+        Pageable pageable =
+                PageRequest.of(
+                        0,
+                        8
+                );
+
+        return productRepository
+                .findAllByOrderByIdDesc(
+                        pageable
+                )
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ProductResponse>
+    getBestSellingProducts() 
+    {
+
+        Pageable pageable =
+                PageRequest.of(
+                        0,
+                        8
+                );
+
+        return productRepository
+                .findBestSellingProducts(
+                        pageable
+                )
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
     // =========================
     // DTO MAPPING
     // =========================
@@ -499,7 +579,6 @@ public class ProductServiceImpl implements ProductService
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
-           
 
                 product.getAiDescription(),
                 product.getSpecificationsJson(),
@@ -507,6 +586,11 @@ public class ProductServiceImpl implements ProductService
                 product.getSeoKeywords(),
 
                 product.getPrice(),
+
+                product.getMrp(),
+
+                product.getDiscountPercentage(),
+
                 product.getStock(),
 
                 product.getAverageRating(),
@@ -514,6 +598,9 @@ public class ProductServiceImpl implements ProductService
 
                 categoryName,
                 merchantName,
+
+                product.getColors(),
+
                 imageUrls
         );
     }

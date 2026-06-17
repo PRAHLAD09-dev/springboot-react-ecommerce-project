@@ -39,11 +39,22 @@ public class Product
     // ================= BASIC =================
 
     private double price;
+    
+    private double mrp;
 
     private int stock;
 
     private boolean active = true;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "product_colors",
+            joinColumns = @JoinColumn(name = "product_id")
+    )
+    @Column(name = "color")
+    @Builder.Default
+    private List<String> colors = new ArrayList<>();
+    
     // ================= MERCHANT =================
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -94,6 +105,18 @@ public class Product
                 .orElse(0.0);
     }
 
+    public Integer getDiscountPercentage()
+    {
+        if (mrp <= 0 || mrp <= price)
+        {
+            return 0;
+        }
+
+        return (int) Math.round(
+                ((mrp - price) / mrp) * 100
+        );
+    }
+    
     public Integer getTotalReviews()
     {
         return reviews == null
@@ -101,5 +124,10 @@ public class Product
                 : reviews.size();
     }
 
-
+    
+    @OneToMany(
+            mappedBy = "product"
+    )
+    private List<HeroBanner> heroBanners =
+            new ArrayList<>();
 }

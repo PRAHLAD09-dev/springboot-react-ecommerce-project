@@ -18,6 +18,10 @@ public record ProductResponse(
 
         double price,
 
+        double mrp,
+
+        Integer discountPercentage,
+
         int stock,
 
         Double averageRating,
@@ -28,5 +32,8 @@ public record ProductResponse(
 
         String merchantName,
 
+        List<String> colors,
+
         List<String> imageUrls
+
 ) {}
