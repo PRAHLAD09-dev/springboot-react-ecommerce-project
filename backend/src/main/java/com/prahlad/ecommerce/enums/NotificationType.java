@@ -17,4 +17,5 @@ public enum NotificationType
     NEW_ORDER_ADMIN,
     PROMOTION, 
     ACCOUNT_DELETED,
+    PASSWORD_CHANGED,
 }

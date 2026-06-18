@@ -9,6 +9,8 @@ import com.prahlad.ecommerce.dto.address.AddressRequest;
 import com.prahlad.ecommerce.dto.address.AddressResponse;
 import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.service.address.AddressService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,7 +23,7 @@ public class AddressController
 	private final AddressService addressService;
 
 	@PostMapping
-	public ApiResponse<AddressResponse> addAddress(@RequestBody AddressRequest request, Authentication auth) 
+	public ApiResponse<AddressResponse> addAddress(@Valid @RequestBody AddressRequest request, Authentication auth) 
 	{
 
 		return ApiResponse.success("Address added successfully", addressService.addAddress(request, auth.getName()));
@@ -35,7 +37,7 @@ public class AddressController
 	}
 
 	@PutMapping("/{id}")
-	public ApiResponse<AddressResponse> updateAddress(@PathVariable Long id, @RequestBody AddressRequest request,
+	public ApiResponse<AddressResponse> updateAddress(@PathVariable Long id,@Valid  @RequestBody AddressRequest request,
 			Authentication auth) 
 	{
 

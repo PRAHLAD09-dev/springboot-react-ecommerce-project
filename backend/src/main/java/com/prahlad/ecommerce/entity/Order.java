@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,9 +53,15 @@ public class Order
     @JoinColumn(name = "address_id")
     private Address address;
     
+    @OneToOne(mappedBy = "order")
+    private Payment payment;
+    
+    private LocalDateTime createdAt;
+    
     private LocalDateTime confirmedAt;
     private LocalDateTime shippedAt;
     private LocalDateTime outForDeliveryAt;
     private LocalDateTime deliveredAt;
+	
 
 }

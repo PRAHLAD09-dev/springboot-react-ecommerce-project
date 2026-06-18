@@ -54,10 +54,7 @@ public class UserServiceImpl implements UserService
 
         User user = getUserByEmail(email);
 
-        if (request.name() != null && !request.name().isBlank()) 
-        {
-            user.setName(request.name());
-        }
+        user.setName(request.name().trim());
 
         userRepository.save(user);
 
@@ -108,27 +105,47 @@ public class UserServiceImpl implements UserService
     // CHANGE PASSWORD (NO OTP)
     // =========================
     @Override
-    public String changePassword(String email, String oldPassword, String newPassword) 
+    public String changePassword(
+            String email,
+            String oldPassword,
+            String newPassword)
     {
 
         User user = getUserByEmail(email);
 
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) 
+        if (!passwordEncoder.matches(
+                oldPassword,
+                user.getPassword()))
         {
-            throw new BadRequestException("Old password is incorrect");
+            throw new BadRequestException(
+                    "Old password is incorrect"
+            );
         }
 
-        if (passwordEncoder.matches(newPassword, user.getPassword())) 
+        if (passwordEncoder.matches(
+                newPassword,
+                user.getPassword()))
         {
-            throw new BadRequestException("New password must be different");
+            throw new BadRequestException(
+                    "New password must be different"
+            );
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(
+                passwordEncoder.encode(newPassword)
+        );
+
         userRepository.save(user);
+
+        notificationService.sendNotification(
+                email,
+                "Password Changed",
+                "Your account password was changed successfully.",
+                NotificationType.PASSWORD_CHANGED
+        );
 
         return "Password changed successfully";
     }
-
    
     // =========================
     // DTO MAPPING

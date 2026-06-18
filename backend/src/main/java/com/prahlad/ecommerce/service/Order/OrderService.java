@@ -15,6 +15,7 @@ import com.prahlad.ecommerce.dto.address.AddressResponse;
 import com.prahlad.ecommerce.dto.order.OrderItemDTO;
 import com.prahlad.ecommerce.dto.order.OrderResponse;
 import com.prahlad.ecommerce.dto.order.OrderStatusHistoryDTO;
+import com.prahlad.ecommerce.dto.payment.PaymentSummaryDTO;
 import com.prahlad.ecommerce.entity.Address;
 import com.prahlad.ecommerce.entity.Cart;
 import com.prahlad.ecommerce.entity.CartItem;
@@ -83,6 +84,7 @@ public class OrderService
 	    order.setUser(user);
 	    order.setAddress(address); 
 	    order.setStatus(OrderStatus.CREATED);
+	    order.setCreatedAt(LocalDateTime.now());
 
 	    List<OrderItem> orderItems = new ArrayList<>();
 	    double totalPrice = 0;
@@ -142,18 +144,22 @@ public class OrderService
 
 	    notificationService.sendNotification(
 	            user.getEmail(),
-	            "Order Placed ",
-	            "Your order #" + savedOrder.getId() + " has been placed successfully.",
+	            "Complete Your Payment",
+	            "Order #" + savedOrder.getId()
+	            + " has been created. Please complete payment within 30 minutes to confirm your order. Unpaid orders are automatically cancelled.",
 	            NotificationType.ORDER_PLACED
-	        );
+	    );
 	        
 	      
-	        notificationService.sendNotification(
-	          "prahladbhakat05@gmail.com",  
-	            "New Order Received ",
-	            "New order #" + savedOrder.getId() + " placed by " + user.getEmail(),
+	    notificationService.sendNotification(
+	            "prahladbhakat05@gmail.com",
+	            "New Order Awaiting Payment",
+	            "Order #" + savedOrder.getId()
+	            + " has been created by "
+	            + user.getEmail()
+	            + " and is waiting for payment confirmation.",
 	            NotificationType.NEW_ORDER_ADMIN
-	        );
+	    );
 
 
 	    // ================= HISTORY =================
@@ -476,7 +482,7 @@ public class OrderService
 	    if (address != null) {
 	        addressDTO = new AddressResponse(
 	                        address.getId(),
-	                        address.getFullName(),
+	                        address.getAddressType(),
 	                        address.getPhoneNumber(),
 	                        address.getStreet(),
 	                        address.getCity(),
@@ -486,13 +492,26 @@ public class OrderService
 	    );
 	    }
 
+	    PaymentSummaryDTO paymentDto = null;
+
+	    if(order.getPayment() != null)
+	    {
+	        paymentDto = new PaymentSummaryDTO(
+	                order.getPayment().getTransactionId(),
+	                order.getPayment().getStatus(),
+	                order.getPayment().getPaidAt(),
+	                order.getPayment().getAmount()
+	        );
+	    }
 	    return new OrderResponse(
-	        order.getId(),
-	        order.getStatus(),
-	        order.getTotalPrice(),
-	        order.isPaid(),
-	        items,
-	        addressDTO  
+	            order.getId(),
+	            order.getStatus(),
+	            order.getTotalPrice(),
+	            order.isPaid(),
+	            items,
+	            addressDTO,
+	            paymentDto
+
 	    );
 	}
 	

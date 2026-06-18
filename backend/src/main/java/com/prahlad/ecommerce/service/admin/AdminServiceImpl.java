@@ -10,6 +10,7 @@ import com.prahlad.ecommerce.dto.address.AddressResponse;
 import com.prahlad.ecommerce.dto.merchant.MerchantResponse;
 import com.prahlad.ecommerce.dto.order.OrderItemDTO;
 import com.prahlad.ecommerce.dto.order.OrderResponse;
+import com.prahlad.ecommerce.dto.payment.PaymentSummaryDTO;
 import com.prahlad.ecommerce.dto.user.UserResponse;
 import com.prahlad.ecommerce.entity.Address;
 import com.prahlad.ecommerce.entity.Merchant;
@@ -207,7 +208,7 @@ public class AdminServiceImpl implements AdminService
 	    if (address != null) {
 	        addressDTO = new AddressResponse(
 	                        address.getId(),
-	                        address.getFullName(),
+	                        address.getAddressType(),
 	                        address.getPhoneNumber(),
 	                        address.getStreet(),
 	                        address.getCity(),
@@ -217,13 +218,27 @@ public class AdminServiceImpl implements AdminService
 	        );
 	    }
 
+	    PaymentSummaryDTO paymentDto = null;
+
+	    if(order.getPayment() != null)
+	    {
+	        paymentDto = new PaymentSummaryDTO(
+	                order.getPayment().getTransactionId(),
+	                order.getPayment().getStatus(),
+	                order.getPayment().getPaidAt(),
+	                order.getPayment().getAmount()
+	        );
+	    }
 	    return new OrderResponse(
-	        order.getId(),
-	        order.getStatus(),
-	        order.getTotalPrice(),
-	        order.isPaid(),
-	        items,
-	        addressDTO  
+	            order.getId(),
+	            order.getStatus(),
+	            order.getTotalPrice(),
+	            order.isPaid(),
+	            items,
+	            addressDTO,
+	            paymentDto
+
 	    );
+	  
 	}
 }

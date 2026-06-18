@@ -1,5 +1,6 @@
 package com.prahlad.ecommerce.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,5 +39,10 @@ public interface OrderRepository extends JpaRepository<Order, Long>
 		        Long userId,
 		        Long productId
 		);
+	
+	List<Order> findByStatusAndCreatedAtBefore(
+	        OrderStatus status,
+	        LocalDateTime time
+	);
 
 }

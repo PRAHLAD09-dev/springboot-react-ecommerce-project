@@ -59,24 +59,32 @@ public class AddressServiceImpl implements AddressService
 
     // ================= UPDATE =================
     @Override
-    public AddressResponse updateAddress(Long id, AddressRequest request, String email) 
+    public AddressResponse updateAddress(
+            Long id,
+            AddressRequest request,
+            String email)
     {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
 
         Address existing = addressRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Address not found"));
 
-        if (!existing.getUser().getId().equals(user.getId())) 
+        if (!existing.getUser().getId().equals(user.getId()))
         {
             throw new UnauthorizedException("Unauthorized access");
         }
 
+        existing.setAddressType(request.addressType());
+        existing.setPhoneNumber(request.phoneNumber());
         existing.setStreet(request.street());
         existing.setCity(request.city());
         existing.setState(request.state());
         existing.setZipCode(request.zipCode());
+        existing.setCountry(request.country());
 
         Address updated = addressRepository.save(existing);
 
@@ -107,7 +115,7 @@ public class AddressServiceImpl implements AddressService
     {
         return new AddressResponse(
                 address.getId(),
-                address.getFullName(),
+                address.getAddressType(),
                 address.getPhoneNumber(),
                 address.getStreet(),
                 address.getCity(),

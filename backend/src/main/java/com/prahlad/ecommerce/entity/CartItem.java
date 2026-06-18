@@ -35,7 +35,9 @@ public class CartItem
     private int quantity;
 
     private double price;
-    
+
+    private String selectedColor;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
     

@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalDateTime;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
@@ -37,4 +38,7 @@ public class Payment
 	    @OneToOne
 	    @JoinColumn(name = "order_id", unique = true)
 	    private Order order;
+	    
+
+	    private LocalDateTime paidAt;
 	}

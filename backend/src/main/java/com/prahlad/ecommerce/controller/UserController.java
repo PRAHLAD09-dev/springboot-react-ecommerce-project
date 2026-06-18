@@ -10,6 +10,8 @@ import com.prahlad.ecommerce.dto.apiresponce.ApiResponse;
 import com.prahlad.ecommerce.dto.user.UserResponse;
 import com.prahlad.ecommerce.dto.user.UserUpdateRequest;
 import com.prahlad.ecommerce.service.user.UserService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,7 +40,7 @@ public class UserController
 	// ======================
 	@PutMapping("/profile")
 	public ResponseEntity<ApiResponse<UserResponse>> updateProfile(Authentication authentication,
-			@RequestBody UserUpdateRequest request) 
+			 @Valid	@RequestBody UserUpdateRequest request) 
 	{
 
 		UserResponse response = userService.updateProfile(authentication.getName(), request);
@@ -51,7 +53,7 @@ public class UserController
 	// ======================
 	@PutMapping("/change-password")
 	public ResponseEntity<ApiResponse<String>> changePassword(Authentication authentication,
-			@RequestBody Map<String, String> request)
+			 @Valid@RequestBody Map<String, String> request)
 	{
 
 		String oldPassword = request.get("oldPassword");

@@ -8,8 +8,14 @@ public record OrderItemDTO(
 
         String productImage,
 
+        String selectedColor,
+
         int quantity,
 
-        double price
+        double price,
+ 
+        double mrp,
+        
+        int discountPercentage
 
 ) {}

@@ -14,6 +14,7 @@ import com.prahlad.ecommerce.exception.UnauthorizedException;
 import com.prahlad.ecommerce.repository.OrderRepository;
 import com.prahlad.ecommerce.repository.PaymentRepository;
 import com.prahlad.ecommerce.service.notification.NotificationService;
+import java.time.LocalDateTime;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,59 +27,99 @@ public class PaymentService
 	private final OrderRepository orderRepository;
 	private final NotificationService notificationService;
 
-	public PaymentResponse makePayment(Long orderId, String email) 
+
+
+	public PaymentResponse makePayment(
+	        Long orderId,
+	        String email
+	)
 	{
 	    Order order = orderRepository.findById(orderId)
-	        .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+	            .orElseThrow(() ->
+	                    new ResourceNotFoundException(
+	                            "Order not found"
+	                    ));
 
-	    if (!order.getUser().getEmail().equals(email)) 
+	    if (!order.getUser()
+	            .getEmail()
+	            .equals(email))
 	    {
-	        throw new UnauthorizedException("You cannot pay for this order");
+	        throw new UnauthorizedException(
+	                "You cannot pay for this order"
+	        );
 	    }
 
-	    if (paymentRepository.existsByOrder(order)) 
+	    if (paymentRepository.existsByOrder(order))
 	    {
-	        throw new BadRequestException("Payment already completed");
+	        throw new BadRequestException(
+	                "Payment already completed"
+	        );
 	    }
 
-	
-	    if (order.getStatus() != OrderStatus.CREATED) 
+	    if (order.getStatus() != OrderStatus.CREATED)
 	    {
-	        throw new BadRequestException("Invalid order state for payment");
+	        throw new BadRequestException(
+	                "Invalid order state for payment"
+	        );
 	    }
 
 	    Payment payment = new Payment();
-	    payment.setOrder(order);
-	    payment.setAmount(order.getTotalPrice());
-	    payment.setStatus(PaymentStatus.SUCCESS);
-	    payment.setTransactionId(generateTxnId());
 
+	    payment.setOrder(order);
+
+	    payment.setAmount(
+	            order.getTotalPrice()
+	    );
+
+	    payment.setStatus(
+	            PaymentStatus.SUCCESS
+	    );
+
+	    payment.setTransactionId(
+	            generateTxnId()
+	    );
+
+	    payment.setPaidAt(
+	            LocalDateTime.now()
+	    );
 
 	    order.setPaid(true);
-	    order.setStatus(OrderStatus.CONFIRMED); 
+
+	    order.setStatus(OrderStatus.PENDING);
 
 	    orderRepository.save(order);
-	    Payment savedPayment = paymentRepository.save(payment);
+
+	    Payment savedPayment =
+	            paymentRepository.save(payment);
 
 	    notificationService.sendNotification(
-	        order.getUser().getEmail(),
-	        "Payment Successful",
-	        String.format("Payment of ₹%.0f received...", order.getTotalPrice()) +
-	        " received for Order #" + order.getId(),
-	        NotificationType.PAYMENT_SUCCESS
+	            order.getUser().getEmail(),
+	            "Payment Successful",
+	            String.format(
+	                    "Payment of ₹%.0f received for Order #%d",
+	                    order.getTotalPrice(),
+	                    order.getId()
+	            ),
+	            NotificationType.PAYMENT_SUCCESS
 	    );
 
 	    return mapToDTO(savedPayment);
 	}
 
-	private String generateTxnId() 
+	private String generateTxnId()
 	{
-		return "TXN_" + System.currentTimeMillis();
+	    return "TXN-" +
+	            System.currentTimeMillis();
 	}
-
-	private PaymentResponse mapToDTO(Payment payment) 
+	private PaymentResponse mapToDTO(Payment payment)
 	{
-		return new PaymentResponse(payment.getId(), payment.getOrder().getId(), payment.getAmount(),
-				payment.getStatus(), payment.getTransactionId());
+	    return new PaymentResponse(
+	            payment.getId(),
+	            payment.getOrder().getId(),
+	            payment.getAmount(),
+	            payment.getStatus(),
+	            payment.getTransactionId(),
+	            payment.getPaidAt()
+	    );
 	}
 }

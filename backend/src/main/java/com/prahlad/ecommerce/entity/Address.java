@@ -1,7 +1,11 @@
 package com.prahlad.ecommerce.entity;
 
+import com.prahlad.ecommerce.enums.AddressType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,8 +30,8 @@ public class Address
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "full_name")
-    private String fullName;
+    @Enumerated(EnumType.STRING)
+    private AddressType addressType;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -46,4 +50,5 @@ public class Address
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
 }
