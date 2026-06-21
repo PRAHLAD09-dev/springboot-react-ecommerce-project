@@ -20,6 +20,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.prahlad.ecommerce.security.JwtAuthenticationFilter;
+import com.prahlad.ecommerce.security.OAuth2LoginSuccessHandler;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +32,7 @@ public class SecurityConfig
 {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() 
@@ -45,6 +47,11 @@ public class SecurityConfig
     	   http
                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                .oauth2Login(oauth ->
+                oauth.successHandler(
+                        oAuth2LoginSuccessHandler
+                )
+        )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
@@ -53,6 +60,7 @@ public class SecurityConfig
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/", "/actuator/health").permitAll()
+                        .requestMatchers("/oauth2/**","/login/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/merchant/**").hasRole("USER")
                         .requestMatchers("/api/user/**").hasRole("USER")
@@ -60,6 +68,7 @@ public class SecurityConfig
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    	
 
         return http.build();
     }
