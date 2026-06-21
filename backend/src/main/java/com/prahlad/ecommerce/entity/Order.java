@@ -58,10 +58,13 @@ public class Order
     
     private LocalDateTime createdAt;
     
+   private  String cancelReason;
+    
     private LocalDateTime confirmedAt;
     private LocalDateTime shippedAt;
     private LocalDateTime outForDeliveryAt;
     private LocalDateTime deliveredAt;
+    
 	
 
 }

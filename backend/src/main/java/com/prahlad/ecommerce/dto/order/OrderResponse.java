@@ -13,5 +13,6 @@ public record OrderResponse(
         boolean paid,
         List<OrderItemDTO> items,
         AddressResponse address,
-        PaymentSummaryDTO payment
+        PaymentSummaryDTO payment,
+        String cancelReason
 ) {}

@@ -201,8 +201,10 @@ public class OrderService
 		}
 
 		order.setStatus(OrderStatus.CANCELLED);
-		Order savedOrder = orderRepository.save(order);
+		order.setCancelReason("USER_CANCELLED");
 
+		Order savedOrder = orderRepository.save(order);
+		
 		OrderStatusHistory history = new OrderStatusHistory();
 		history.setOrder(savedOrder);
 		history.setStatus(OrderStatus.CANCELLED);
@@ -211,8 +213,12 @@ public class OrderService
 
 		orderStatusHistoryRepository.save(history);
 
-		notificationService.sendNotification(savedOrder.getUser().getEmail(), "Order Cancelled ",
-				"Your order #" + savedOrder.getId() + " has been cancelled.", NotificationType.ORDER_CANCELLED);
+		notificationService.sendNotification(
+		        savedOrder.getUser().getEmail(),
+		        "Order Cancelled",
+		        "You cancelled order #" + savedOrder.getId(),
+		        NotificationType.ORDER_CANCELLED
+		);
 
 		return mapToDTO(savedOrder);
 	}
@@ -277,10 +283,20 @@ public class OrderService
 	            throw new BadRequestException("Invalid flow: must be OUT_FOR_DELIVERY → DELIVERED");
 	        }
 
-	        if (status == OrderStatus.CANCELLED) 
+	        if(status == OrderStatus.CANCELLED)
 	        {
-	            setStatusWithTime(order, OrderStatus.CANCELLED);
-	        } 
+	            order.setStatus(OrderStatus.CANCELLED);
+
+	            order.setCancelReason("ADMIN_CANCELLED");
+
+	            notificationService.sendNotification(
+	                    order.getUser().getEmail(),
+	                    "Order Cancelled By Admin",
+	                    "Your order #" + order.getId()
+	                    + " has been cancelled by the administrator.",
+	                    NotificationType.ORDER_CANCELLED_BY_ADMIN
+	            );
+	        }
 	        else 
 	        {
 	            setStatusWithTime(order, status);
@@ -305,18 +321,16 @@ public class OrderService
 	            throw new UnauthorizedException("Not your order");
 	        }
 
-	        if (status == OrderStatus.SHIPPED && current == OrderStatus.CONFIRMED) 
+	        if (status == OrderStatus.SHIPPED
+	                && current == OrderStatus.CONFIRMED)
 	        {
 	            setStatusWithTime(order, OrderStatus.SHIPPED);
 	        }
-
-	        else if (status == OrderStatus.OUT_FOR_DELIVERY && current == OrderStatus.SHIPPED) 
+	        else
 	        {
-	            setStatusWithTime(order, OrderStatus.OUT_FOR_DELIVERY);
-	        }
-
-	        else {
-	            throw new BadRequestException("Invalid status flow");
+	            throw new BadRequestException(
+	                    "Merchant can only ship confirmed orders"
+	            );
 	        }
 	    }
 
@@ -351,6 +365,12 @@ public class OrderService
 
 	    return orderRepository.findOrdersByMerchantId(merchant.getId())
 	            .stream()
+	            .filter(order ->
+	                    order.getStatus() == OrderStatus.CONFIRMED
+	                 || order.getStatus() == OrderStatus.SHIPPED
+	                 || order.getStatus() == OrderStatus.OUT_FOR_DELIVERY
+	                 || order.getStatus() == OrderStatus.DELIVERED
+	            )
 	            .map(this::mapToDTO)
 	            .toList();
 	}
@@ -408,15 +428,9 @@ public class OrderService
 	                "Your order #" + orderId + " has been delivered",
 	                NotificationType.ORDER_DELIVERED
 	        );
-
-	        // ================= CANCELLED =================
-	        case CANCELLED -> notificationService.sendNotification(
-	                userEmail,
-	                "Order Cancelled",
-	                "Your order #" + orderId + " has been cancelled",
-	                NotificationType.ORDER_CANCELLED
-	        );
 	        
+	        
+	       // =================OUT FOR DELIVERY =================
 	        case OUT_FOR_DELIVERY -> notificationService.sendNotification(
 	        	    userEmail,
 	        	    "Out for Delivery",
@@ -510,7 +524,8 @@ public class OrderService
 	            order.isPaid(),
 	            items,
 	            addressDTO,
-	            paymentDto
+	            paymentDto,
+	            order.getCancelReason()
 
 	    );
 	}

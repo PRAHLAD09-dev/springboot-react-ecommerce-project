@@ -236,7 +236,8 @@ public class AdminServiceImpl implements AdminService
 	            order.isPaid(),
 	            items,
 	            addressDTO,
-	            paymentDto
+	            paymentDto,
+	            order.getCancelReason()
 
 	    );
 	  
