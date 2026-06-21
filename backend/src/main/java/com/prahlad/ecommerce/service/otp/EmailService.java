@@ -21,6 +21,8 @@ public class EmailService
 
     @Value("${brevo.api.key}")
     private String apiKey;
+    
+    private final OkHttpClient client = new OkHttpClient();
 
     public void sendOtp(String toEmail, String otp) 
     {
@@ -44,29 +46,26 @@ public class EmailService
         sendMail(toEmail, subject, htmlContent);
     }
 
-    private void sendMail(String toEmail, String subject, String body) 
+    private void sendMail(String toEmail, String subject, String body)
     {
-        try 
+        try
         {
-            OkHttpClient client = new OkHttpClient();
 
-          
             JSONObject sender = new JSONObject();
             sender.put("name", "Ecommerce Team");
             sender.put("email", "introvertprahlad@gmail.com");
 
-         
             JSONObject receiver = new JSONObject();
             receiver.put("email", toEmail);
 
             JSONArray toArray = new JSONArray();
             toArray.put(receiver);
 
-          
             JSONObject payload = new JSONObject();
             payload.put("sender", sender);
             payload.put("to", toArray);
             payload.put("subject", subject);
+
             payload.put(
                     "htmlContent",
                     "<html><body><p>"
@@ -89,21 +88,29 @@ public class EmailService
                     .addHeader("content-type", "application/json")
                     .build();
 
-            Response response = client.newCall(request).execute();
+            try (Response response =
+                         client.newCall(request).execute())
+            {
 
-            if (!response.isSuccessful()) {
-                throw new RuntimeException(
-                        "Brevo failed: " + response.body().string()
+                if (!response.isSuccessful())
+                {
+                    throw new RuntimeException(
+                            "Brevo failed: "
+                                    + response.body().string()
+                    );
+                }
+
+                System.out.println(
+                        "Email sent successfully"
                 );
             }
 
-            System.out.println("Email sent successfully");
-
-        } 
-        catch (Exception e) 
+        }
+        catch (Exception e)
         {
             throw new RuntimeException(
-                    "Email sending failed: " + e.getMessage()
+                    "Email sending failed: "
+                            + e.getMessage()
             );
         }
     }
