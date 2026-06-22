@@ -30,6 +30,10 @@ function Login() {
 
             localStorage.setItem("email", userData.email);
 
+            window.dispatchEvent(
+                new Event("authChanged")
+            );
+
             alert("Login successful");
 
             if (userData.role.toLowerCase() === "admin") {
@@ -50,17 +54,44 @@ function Login() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
-            <div className="bg-white shadow-lg rounded-xl p-8 w-96">
+        <div className="
+                    min-h-screen
+                    flex
+                    justify-center
+                    items-center
+                    bg-gray-50
+                    px-4
+                ">
+            <div className="
+                w-full
+                max-w-md
+                bg-white
+                shadow-xl
+                rounded-2xl
+                p-8
+                    ">
 
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                    Login
+                <h1 className="text-3xl font-bold text-center mb-2">
+                    Welcome Back
                 </h1>
+
+                <p className="text-center text-gray-500 mb-6">
+                    Sign in to continue shopping
+                </p>
 
                 <input
                     type="email"
                     placeholder="Enter Email"
-                    className="border p-2 mb-3 w-full rounded"
+                    className="
+                            w-full
+                            border
+                            rounded-xl
+                            p-3
+                            mb-4
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-500
+                        "
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
@@ -68,14 +99,32 @@ function Login() {
                 <input
                     type="password"
                     placeholder="Enter Password"
-                    className="border p-2 mb-4 w-full rounded"
+                    className="
+                            w-full
+                            border
+                            rounded-xl
+                            p-3
+                            mb-4
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-500
+                        "
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
                 <button
                     onClick={handleLogin}
-                    className="bg-blue-500 hover:bg-blue-600 text-white w-full py-2 rounded"
+                    className="
+                            w-full
+                            bg-blue-600
+                            hover:bg-blue-700
+                            text-white
+                            py-3
+                            rounded-xl
+                            font-medium
+                            transition
+                        "
                 >
                     Login
                 </button>
@@ -87,7 +136,66 @@ function Login() {
                     Forgot Password?
                 </p>
 
+                <div className="flex items-center my-5">
+
+                    <div className="flex-1 border-t"></div>
+
+                    <span className="px-3 text-gray-500 text-sm">
+                        OR
+                    </span>
+
+                    <div className="flex-1 border-t"></div>
+
+                </div>
+                <a
+                    href="http://localhost:8080/oauth2/authorization/google"
+                    className="
+                        flex
+                        items-center
+                        justify-center
+                        gap-3
+                        border
+                        rounded-xl
+                        py-3
+                        px-4
+                        hover:bg-gray-50
+                        transition
+                        w-full
+                    "
+                >
+
+                    <img
+                        src="https://www.svgrepo.com/show/475656/google-color.svg"
+                        alt="Google"
+                        className="w-5 h-5"
+                    />
+
+                    Continue with Google
+
+                </a>
+                <div className="text-center mt-5">
+
+                    <p className="text-gray-600">
+
+                        Don't have an account?
+
+                        <span
+                            onClick={() => navigate("/signup")}
+                            className="
+                                text-blue-600
+                                cursor-pointer
+                                ml-1
+                                font-medium
+                            "
+                        >
+                            Sign Up
+                        </span>
+
+                    </p>
+
+                </div>
             </div>
+
         </div>
     );
 }

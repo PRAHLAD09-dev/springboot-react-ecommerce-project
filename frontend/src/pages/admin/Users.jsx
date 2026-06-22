@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
+import { ArrowLeft } from "lucide-react";
 
 function Users() {
 
@@ -41,9 +42,26 @@ function Users() {
                 <div className="flex items-center gap-4 mb-6">
                     <button
                         onClick={() => navigate(-1)}
-                        className="text-blue-600 hover:underline"
+                        className="
+                                mb-6
+                                w-11
+                                h-11
+                                bg-white
+                                border
+                                border-gray-200
+                                rounded-xl
+                                shadow-sm
+                                hover:bg-blue-50
+                                hover:border-blue-300
+                                flex
+                                items-center
+                                justify-center
+                                transition
+                                "
                     >
-                        ← Back
+
+                        <ArrowLeft size={20} />
+
                     </button>
 
                     <h1 className="text-3xl font-bold">

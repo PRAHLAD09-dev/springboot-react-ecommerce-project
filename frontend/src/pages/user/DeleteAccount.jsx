@@ -1,6 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
+import {
+    AlertTriangle,
+    ShieldAlert,
+    Trash2,
+    Send,
+    KeyRound
+} from "lucide-react";
 
 function DeleteAccount() {
 
@@ -8,125 +14,330 @@ function DeleteAccount() {
     const [loading, setLoading] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
 
-    const navigate = useNavigate();
-
-    // ================= SEND OTP =================
     const handleSendOtp = async () => {
+
         try {
+
             setLoading(true);
 
-            await API.post("/user/delete/request");
+            await API.post(
+                "/user/delete/request"
+            );
 
             setOtpSent(true);
-            alert("OTP sent to your email");
 
-        } catch (err) {
-            console.log(err.response?.data || err);
-            alert("Failed to send OTP");
-        } finally {
-            setLoading(false);
+            alert(
+                "OTP sent to your email"
+            );
+
         }
+        catch (err) {
+
+            console.log(err);
+
+            alert(
+                "Failed to send OTP"
+            );
+
+        }
+        finally {
+
+            setLoading(false);
+
+        }
+
     };
 
-    // ================= DELETE ACCOUNT =================
     const handleDelete = async () => {
 
-        if (!otp) {
-            alert("Please enter OTP");
-            return;
-        }
+        if (!otp.trim()) {
 
-        if (otp.length < 4) {
-            alert("Invalid OTP");
+            alert("Enter OTP");
             return;
+
         }
 
         const confirmDelete = window.confirm(
-            "Are you absolutely sure? This action is PERMANENT."
+            "Are you sure you want to deactivate your account? You will not be able to login afterwards."
         );
-
         if (!confirmDelete) return;
 
         try {
+
             setLoading(true);
 
-            await API.delete("/user/delete", {
-                params: { otp },
-            });
+            await API.delete(
+                "/user/delete",
+                {
+                    params: { otp }
+                }
+            );
 
-            alert("Account deleted successfully");
+            alert(
+                "Account Deactivated successfully"
+            );
 
             localStorage.clear();
-            navigate("/");
 
-        } catch (err) {
-            console.log(err.response?.data || err);
+            window.location.href = "/";
+
+        }
+        catch (err) {
+
+            console.log(err);
+
             alert(
                 err.response?.data?.message ||
-                "Delete failed (wrong OTP or server error)"
+                "Deactivation Account failed"
             );
-        } finally {
-            setLoading(false);
+
         }
+        finally {
+
+            setLoading(false);
+
+        }
+
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
-            <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md relative">
+        <div className="mt-6">
 
-                {/*  BACK BUTTON */}
-                <button
-                    onClick={() => navigate("/profile")}
-                    className="absolute top-4 left-4 text-blue-600 hover:underline"
+            {/* WARNING */}
+
+            <div
+                className="
+                bg-red-50
+                border
+                border-red-200
+                rounded-2xl
+                p-5
+                mb-6
+                "
+            >
+
+                <div className="flex items-start gap-3">
+
+                    <ShieldAlert
+                        size={24}
+                        className="text-red-600"
+                    />
+
+                    <div>
+
+                        <h3
+                            className="
+                                text-red-700
+                                font-semibold
+                                "
+                        >
+                            Deactivate Account
+                        </h3>
+
+                        <p
+                            className="
+                                        text-sm
+                                        text-red-600
+                                        mt-2
+                                        "
+                        >
+                            Your account will be deactivated and
+                            you will no longer be able to login.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+
+                {/* LEFT */}
+
+                <div className="lg:col-span-2">
+
+                    <label
+                        className="
+                        block
+                        text-sm
+                        font-medium
+                        mb-2
+                        "
+                    >
+                        Verification OTP
+                    </label>
+
+                    <div className="relative">
+
+                        <KeyRound
+                            size={18}
+                            className="
+                            absolute
+                            left-3
+                            top-1/2
+                            -translate-y-1/2
+                            text-gray-400
+                            "
+                        />
+
+                        <input
+                            type="text"
+                            value={otp}
+                            onChange={(e) =>
+                                setOtp(
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Enter OTP"
+                            className="
+                            w-full
+                            pl-10
+                            pr-4
+                            py-3
+                            border
+                            border-gray-300
+                            rounded-xl
+                            focus:ring-2
+                            focus:ring-red-500
+                            outline-none
+                            "
+                        />
+
+                    </div>
+
+                </div>
+
+                {/* RIGHT */}
+
+                <div
+                    className="
+                    bg-gray-50
+                    border
+                    rounded-2xl
+                    p-5
+                    h-fit
+                    "
                 >
-                    ← Back
-                </button>
 
-                <h1 className="text-2xl font-bold mb-4 text-red-600 text-center">
-                    Delete Account
-                </h1>
+                    <h3
+                        className="
+                        font-semibold
+                        mb-3
+                        "
+                    >
+                        Steps
+                    </h3>
 
-                <p className="text-sm text-gray-500 mb-6 text-center">
-                    This action is irreversible. All your data will be permanently deleted.
-                </p>
+                    <ul
+                        className="
+                        text-sm
+                        text-gray-600
+                        space-y-3
+                        "
+                    >
 
-                {/* SEND OTP */}
+                        <li>
+                            1. Click Send OTP
+                        </li>
+
+                        <li>
+                            2. Check your email
+                        </li>
+
+                        <li>
+                            3. Enter OTP
+                        </li>
+
+                        <li>
+                            4. Deactivate account
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+            {/* ACTIONS */}
+
+            <div
+                className="
+                flex
+                justify-end
+                gap-3
+                mt-6
+                pt-5
+                border-t
+                "
+            >
+
                 <button
                     onClick={handleSendOtp}
-                    disabled={loading || otpSent}
-                    className={`w-full py-2 rounded text-white mb-4 transition
-                        ${otpSent
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-yellow-500 hover:bg-yellow-600"}`}
+                    disabled={
+                        loading ||
+                        otpSent
+                    }
+                    className={`
+                    px-5
+                    py-2.5
+                    rounded-xl
+                    text-white
+                    flex
+                    items-center
+                    gap-2
+                    transition
+
+                    ${otpSent
+                            ? "bg-gray-400"
+                            : "bg-blue-600 hover:bg-blue-700"
+                        }
+                    `}
                 >
-                    {loading ? "Sending..." : otpSent ? "OTP Sent" : "Send OTP"}
+
+                    <Send size={16} />
+
+                    {
+                        otpSent
+                            ? "OTP Sent"
+                            : "Send OTP"
+                    }
+
                 </button>
 
-                {/* OTP INPUT */}
-                <input
-                    type="text"
-                    placeholder="Enter OTP"
-                    className="border p-2 mb-4 w-full rounded focus:outline-none focus:ring-2 focus:ring-red-400"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                />
-
-                {/* DELETE BUTTON */}
                 <button
                     onClick={handleDelete}
                     disabled={loading}
-                    className={`w-full py-2 rounded text-white transition
-                        ${loading
-                            ? "bg-gray-400"
-                            : "bg-red-600 hover:bg-red-700"}`}
+                    className="
+                    px-5
+                    py-2.5
+                    bg-red-600
+                    hover:bg-red-700
+                    text-white
+                    rounded-xl
+                    flex
+                    items-center
+                    gap-2
+                    "
                 >
-                    {loading ? "Deleting..." : "Delete Account"}
+
+                    <Trash2 size={16} />
+
+                    {
+                        loading
+                            ? "Deactivating..."
+                            : "Deactivate Account"
+                    }
+
                 </button>
 
             </div>
+
         </div>
+
     );
+
 }
 
 export default DeleteAccount;

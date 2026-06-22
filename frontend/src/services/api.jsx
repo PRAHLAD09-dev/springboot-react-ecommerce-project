@@ -2,6 +2,8 @@ import axios from "axios";
 
 const API = axios.create({
     baseURL: "https://ecommerce-backend-o9vh.onrender.com/api"
+    // "http://localhost:8080/api"
+
 });
 
 API.interceptors.request.use((config) => {
@@ -13,5 +15,32 @@ API.interceptors.request.use((config) => {
 
     return config;
 });
+
+API.interceptors.response.use(
+
+    (response) => response,
+
+    (error) => {
+
+        if (
+            error.response?.status === 401 ||
+            error.response?.status === 403
+        ) {
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+
+            window.dispatchEvent(
+                new Event("authChanged")
+            );
+
+            window.location.href = "/login";
+        }
+
+        return Promise.reject(error);
+
+    }
+
+);
 
 export default API;

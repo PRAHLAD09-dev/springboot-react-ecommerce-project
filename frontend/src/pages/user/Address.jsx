@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
+import {
+    Home,
+    Building2,
+    Building,
+    Store,
+    MapPin
+} from "lucide-react";
 
 function Address() {
-
-    const navigate = useNavigate();
 
     const [addresses, setAddresses] = useState([]);
 
     const [form, setForm] = useState({
-        fullName: "",
+        addressType: "HOME",
         phoneNumber: "",
         street: "",
         city: "",
@@ -20,6 +24,7 @@ function Address() {
 
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
 
     // ================= FETCH =================
     const fetchAddresses = async () => {
@@ -43,7 +48,7 @@ function Address() {
     // ================= SUBMIT =================
     const handleSubmit = async () => {
 
-        if (!form.fullName || !form.phoneNumber || !form.street) {
+        if (!form.phoneNumber || !form.street) {
             alert("Please fill required fields");
             return;
         }
@@ -58,7 +63,7 @@ function Address() {
             }
 
             setForm({
-                fullName: "",
+                addressType: "HOME",
                 phoneNumber: "",
                 street: "",
                 city: "",
@@ -71,11 +76,61 @@ function Address() {
             fetchAddresses();
 
         } catch (err) {
-            console.log(err);
-            alert("Failed");
-        } finally {
-            setLoading(false);
+
+            console.log(err.response?.data);
+
+            if (err.response?.data?.errors) {
+
+                setErrors(
+                    err.response.data.errors
+                );
+
+            }
+
         }
+    };
+
+
+    const getAddressType = (type) => {
+
+        switch (type) {
+
+            case "HOME":
+                return {
+                    icon: <Home size={16} />,
+                    label: "Home",
+                    style: "bg-green-100 text-green-700"
+                };
+
+            case "OFFICE":
+                return {
+                    icon: <Building2 size={16} />,
+                    label: "Office",
+                    style: "bg-blue-100 text-blue-700"
+                };
+
+            case "APARTMENT":
+                return {
+                    icon: <Building size={16} />,
+                    label: "Apartment",
+                    style: "bg-purple-100 text-purple-700"
+                };
+
+            case "SHOP":
+                return {
+                    icon: <Store size={16} />,
+                    label: "Shop",
+                    style: "bg-orange-100 text-orange-700"
+                };
+
+            default:
+                return {
+                    icon: <MapPin size={16} />,
+                    label: "Other",
+                    style: "bg-gray-100 text-gray-700"
+                };
+        }
+
     };
 
     // ================= DELETE =================
@@ -88,8 +143,9 @@ function Address() {
 
     // ================= EDIT =================
     const handleEdit = (addr) => {
+
         setForm({
-            fullName: addr.fullName || "",
+            addressType: addr.addressType || "HOME",
             phoneNumber: addr.phoneNumber || "",
             street: addr.street || "",
             city: addr.city || "",
@@ -104,119 +160,382 @@ function Address() {
     return (
         <div className="min-h-screen bg-gray-100 p-6">
 
-            <div className="max-w-6xl mx-auto">
 
-                {/*  HEADER */}
-                <div className="flex items-center justify-between mb-6">
 
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="text-blue-600 hover:underline"
+            {/* ================= FORM ================= */}
+            <div className="bg-white border rounded-2xl p-6 mb-6">
+
+                <h2 className="font-semibold mb-4 text-lg">
+                    {editingId ? "Update Address" : "Add New Address"}
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+
+                    <select
+                        name="addressType"
+                        value={form.addressType}
+                        onChange={handleChange}
+                        className="
+                                border
+                                p-3
+                                rounded-xl
+                                focus:ring-2
+                                focus:ring-blue-500
+                                outline-none
+                                "
                     >
-                        ← Back
-                    </button>
+                        <option value="HOME">Home</option>
+                        <option value="OFFICE">Office</option>
+                        <option value="APARTMENT">Apartment</option>
+                        <option value="SHOP">Shop</option>
+                        <option value="OTHER">Other</option>
+                    </select>
 
-                    <h1 className="text-3xl font-bold">
-                        My Address
-                    </h1>
+                    <input
+                        name="phoneNumber"
+                        maxLength={10}
+                        value={form.phoneNumber}
+                        onChange={(e) => {
 
-                    <span className="text-sm text-gray-500">
-                        {addresses.length} saved
-                    </span>
+                            const value =
+                                e.target.value.replace(/\D/g, "");
+
+                            setForm({
+                                ...form,
+                                phoneNumber: value
+                            });
+
+                        }}
+                        placeholder="Phone Number"
+                        className="
+                                w-full
+                                border
+                                border-gray-300
+                                rounded-xl
+                                px-4
+                                py-3
+                                focus:ring-2
+                                focus:ring-blue-500
+                                focus:border-blue-500
+                                outline-none
+                                "
+                    />
+                    <input name="street" value={form.street} onChange={handleChange} placeholder="Street"
+                        className="
+                        w-full
+                        border
+                        border-gray-300
+                        rounded-xl
+                        px-4
+                        py-3
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        outline-none
+                        " />
+
+                    <input
+                        name="city"
+                        value={form.city}
+                        onChange={(e) => {
+
+                            const value =
+                                e.target.value.replace(
+                                    /[^a-zA-Z ]/g,
+                                    ""
+                                );
+
+                            setForm({
+                                ...form,
+                                city: value
+                            });
+
+                        }}
+                        placeholder="City"
+                        className="
+                        w-full
+                        border
+                        border-gray-300
+                        rounded-xl
+                        px-4
+                        py-3
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        outline-none
+                        "
+                    />
+                    <input
+                        name="state"
+                        value={form.state}
+                        onChange={(e) => {
+
+                            const value =
+                                e.target.value.replace(
+                                    /[^a-zA-Z ]/g,
+                                    ""
+                                );
+
+                            setForm({
+                                ...form,
+                                state: value
+                            });
+
+                        }}
+                        placeholder="State"
+                        className="
+                        w-full
+                        border
+                        border-gray-300
+                        rounded-xl
+                        px-4
+                        py-3
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        outline-none
+                        "
+                    />
+
+                    <input
+                        name="country"
+                        value={form.country}
+                        onChange={(e) => {
+
+                            const value =
+                                e.target.value.replace(
+                                    /[^a-zA-Z ]/g,
+                                    ""
+                                );
+
+                            setForm({
+                                ...form,
+                                country: value
+                            });
+
+                        }}
+                        placeholder="Country"
+                        className="
+                        w-full
+                        border
+                        border-gray-300
+                        rounded-xl
+                        px-4
+                        py-3
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        outline-none
+                        "
+                    />
+
+                    <input
+                        name="zipCode"
+                        maxLength={6}
+                        value={form.zipCode}
+                        onChange={(e) => {
+
+                            const value =
+                                e.target.value.replace(/\D/g, "");
+
+                            setForm({
+                                ...form,
+                                zipCode: value
+                            });
+
+                        }}
+                        placeholder="Zip Code"
+                        className="
+                        w-full
+                        border
+                        border-gray-300
+                        rounded-xl
+                        px-4
+                        py-3
+                        focus:ring-2
+                        focus:ring-blue-500
+                        focus:border-blue-500
+                        outline-none
+                        "
+                    />
+
                 </div>
 
-                {/* ================= FORM ================= */}
-                <div className="bg-white p-6 rounded-2xl shadow mb-8">
+                <div className="flex justify-end gap-3 mt-5">
 
-                    <h2 className="font-semibold mb-4 text-lg">
-                        {editingId ? "Update Address" : "Add New Address"}
-                    </h2>
+                    {
+                        editingId && (
 
-                    <div className="grid md:grid-cols-2 gap-4">
+                            <button
+                                onClick={() => {
+                                    setEditingId(null);
 
-                        <input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full Name" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
+                                    setForm({
+                                        addressType: "HOME",
+                                        phoneNumber: "",
+                                        street: "",
+                                        city: "",
+                                        state: "",
+                                        country: "",
+                                        zipCode: ""
+                                    });
+                                }}
+                                className="
+                px-4
+                py-2
+                border
+                rounded-xl
+                "
+                            >
+                                Cancel
+                            </button>
 
-                        <input name="phoneNumber" value={form.phoneNumber} onChange={handleChange} placeholder="Phone Number" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
-
-                        <input name="street" value={form.street} onChange={handleChange} placeholder="Street" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
-
-                        <input name="city" value={form.city} onChange={handleChange} placeholder="City" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
-
-                        <input name="state" value={form.state} onChange={handleChange} placeholder="State" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
-
-                        <input name="country" value={form.country} onChange={handleChange} placeholder="Country" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
-
-                        <input name="zipCode" value={form.zipCode} onChange={handleChange} placeholder="Zip Code" className="border p-2 rounded focus:ring-2 focus:ring-blue-400" />
-
-                    </div>
+                        )
+                    }
 
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className={`mt-4 w-full py-2 rounded text-white 
-                        ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                        className="
+        px-5
+        py-2
+        bg-blue-600
+        text-white
+        rounded-xl
+        "
                     >
-                        {loading ? "Saving..." : editingId ? "Update Address" : "Add Address"}
+                        {
+                            loading
+                                ? "Saving..."
+                                : editingId
+                                    ? "Update Address"
+                                    : "Add Address"
+                        }
                     </button>
 
                 </div>
 
-                {/* ================= LIST ================= */}
-                <div className="grid md:grid-cols-2 gap-4">
+            </div>
 
-                    {addresses.length === 0 && (
-                        <p className="text-gray-500">No address added</p>
-                    )}
+            {/* ================= LIST ================= */}
+            <div className="grid md:grid-cols-2 gap-4">
 
-                    {addresses.map(addr => (
+                {addresses.length === 0 && (
+                    <p className="text-gray-500">
+                        No address added
+                    </p>
+                )}
+
+                {addresses.map((addr) => {
+
+                    const addressInfo =
+                        getAddressType(
+                            addr.addressType
+                        );
+
+                    return (
+
                         <div
                             key={addr.id}
-                            className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition"
+                            className="
+                bg-white
+                border
+                rounded-2xl
+                p-5
+                "
                         >
 
-                            <p className="font-semibold text-lg">
-                                {addr.fullName}
-                            </p>
+                            <div className="flex justify-between items-start">
 
-                            <p className="text-gray-600">
-                                {addr.street}, {addr.city}, {addr.state}
-                            </p>
+                                <div>
 
-                            <p className="text-gray-500 text-sm">
-                                {addr.country} - {addr.zipCode}
-                            </p>
+                                    <span
+                                        className={`
+                            flex
+                            items-center
+                            gap-2
+                            px-3
+                            py-1
+                            rounded-full
+                            text-xs
+                            font-medium
+                            w-fit
+                            ${addressInfo.style}
+                            `}
+                                    >
 
-                            <p className="text-gray-400 text-sm mt-1">
-                                📞 {addr.phoneNumber}
-                            </p>
+                                        {addressInfo.icon}
 
-                            {/* ACTIONS */}
-                            <div className="flex gap-2 mt-4">
+                                        {addressInfo.label}
 
-                                <button
-                                    onClick={() => handleEdit(addr)}
-                                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-1 rounded"
-                                >
-                                    Edit
-                                </button>
+                                    </span>
 
-                                <button
-                                    onClick={() => handleDelete(addr.id)}
-                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-1 rounded"
-                                >
-                                    Delete
-                                </button>
+                                    <p className="mt-3 text-gray-700">
+                                        {addr.street}
+                                    </p>
+
+                                    <p className="text-gray-600">
+                                        {addr.city}, {addr.state}
+                                    </p>
+
+                                    <p className="text-gray-500">
+                                        {addr.country} - {addr.zipCode}
+                                    </p>
+
+                                    <p className="text-gray-500 mt-2">
+                                        {addr.phoneNumber}
+                                    </p>
+
+                                </div>
+
+                                <div className="flex gap-2">
+
+                                    <button
+                                        onClick={() =>
+                                            handleEdit(addr)
+                                        }
+                                        className="
+                            px-4
+                            py-2
+                            bg-yellow-500
+                            text-white
+                            rounded-xl
+                            "
+                                    >
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        onClick={() =>
+                                            handleDelete(addr.id)
+                                        }
+                                        className="
+                            px-4
+                            py-2
+                            bg-red-500
+                            text-white
+                            rounded-xl
+                            "
+                                    >
+                                        Delete
+                                    </button>
+
+                                </div>
 
                             </div>
 
                         </div>
-                    ))}
 
-                </div>
+                    );
+
+                })}
 
             </div>
-        </div >
+
+        </div>
+
     );
+
 }
 
 export default Address;

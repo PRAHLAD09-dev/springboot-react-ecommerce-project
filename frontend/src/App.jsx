@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 
 import ProductList from "./pages/products/ProductList";
@@ -33,49 +34,63 @@ import Signup from "./pages/Auth/Signup";
 import ForgetPassword from "./pages/Auth/ForgetPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import VerifyOtp from "./pages/Auth/VerifyOtp";
+import OAuthSuccess from "./pages/auth/OAuthSuccess";
 
 
 function App() {
   return (
     <BrowserRouter>
+
       <Navbar />
 
-      <div className="p-4">
-        <Routes>
-          <Route path="/" element={<ProductList />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+      <div className="min-h-screen">
 
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/orders" element={<AdminOrders />} />
-          <Route path="/admin/merchants" element={<Merchants />} />
-          <Route path="/admin/promotions" element={<Promotions />} />
-          <Route path="/admin/categories" element={<Category />} />
+        <div className="p-4">
 
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/update" element={<UpdateProfile />} />
-          <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/delete-account" element={<DeleteAccount />} />
-          <Route path="/orders" element={<UserOrders />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/address" element={<Address />} />
-          <Route path="/payment/:orderId" element={<Payment />} />
+          <Routes>
 
-          <Route path="/become-merchant" element={<BecomeMerchant />} />
-          <Route path="/merchant/profile" element={<MerchantProfile />} />
-          <Route path="/merchant/update" element={<MerchantUpdate />} />
-          <Route path="/merchant/delete" element={<MerchantDelete />} />
-          <Route path="/merchant/products" element={<Product />} />
-          <Route path="/merchant/orders" element={<MerchantOrders />} />
+            <Route path="/" element={<ProductList />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/admin/dashboard" element={<Dashboard />} />
+            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
+            <Route path="/admin/merchants" element={<Merchants />} />
+            <Route path="/admin/promotions" element={<Promotions />} />
+            <Route path="/admin/categories" element={<Category />} />
 
-        </Routes>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/update" element={<UpdateProfile />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/delete-account" element={<DeleteAccount />} />
+            <Route path="/orders" element={<UserOrders />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/address" element={<Address />} />
+            <Route path="/payment/:orderId" element={<Payment />} />
+
+            <Route path="/become-merchant" element={<BecomeMerchant />} />
+            <Route path="/merchant/profile" element={<MerchantProfile />} />
+            <Route path="/merchant/update" element={<MerchantUpdate />} />
+            <Route path="/merchant/delete" element={<MerchantDelete />} />
+            <Route path="/merchant/products" element={<Product />} />
+            <Route path="/merchant/orders" element={<MerchantOrders />} />
+
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgetPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/oauth-success" element={<OAuthSuccess />} />
+
+
+          </Routes>
+
+        </div>
+
+        <Footer />
+
       </div>
+
     </BrowserRouter>
   );
 }

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
+import {
+    User,
+    Mail,
+    Save
+} from "lucide-react";
 
 function UpdateProfile() {
 
@@ -10,35 +14,42 @@ function UpdateProfile() {
     });
 
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
-    // ================= FETCH USER =================
     useEffect(() => {
+
         const fetchUser = async () => {
+
             try {
+
                 const res = await API.get("/user/profile");
+
                 setForm({
                     name: res.data.data.name || "",
                     email: res.data.data.email || ""
                 });
-            } catch (err) {
-                console.log(err.response?.data || err);
-                alert("Failed to load profile");
+
             }
+            catch (err) {
+
+                console.log(err);
+
+            }
+
         };
 
         fetchUser();
+
     }, []);
 
-    // ================= INPUT =================
     const handleChange = (e) => {
+
         setForm({
             ...form,
             [e.target.name]: e.target.value
         });
+
     };
 
-    // ================= UPDATE =================
     const handleUpdate = async () => {
 
         if (!form.name.trim()) {
@@ -47,6 +58,7 @@ function UpdateProfile() {
         }
 
         try {
+
             setLoading(true);
 
             await API.put("/user/profile", {
@@ -55,66 +67,162 @@ function UpdateProfile() {
 
             alert("Profile updated successfully");
 
-            navigate("/profile");
-
-        } catch (err) {
-            console.log(err.response?.data || err);
-            alert(err.response?.data?.message || "Update failed");
-        } finally {
-            setLoading(false);
         }
+        catch (err) {
+
+            console.log(err);
+            alert(
+                err.response?.data?.message ||
+                "Update failed"
+            );
+
+        }
+        finally {
+
+            setLoading(false);
+
+        }
+
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
-            <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md relative">
+        <div className="mt-6">
 
-                {/*BACK BUTTON */}
+            <div className="grid md:grid-cols-2 gap-5">
+
+                <div>
+
+                    <label className="block text-sm font-medium mb-2">
+                        Full Name
+                    </label>
+
+                    <div className="relative">
+
+                        <User
+                            size={18}
+                            className="
+                        absolute
+                        left-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-gray-400
+                        "
+                        />
+
+                        <input
+                            type="text"
+                            name="name"
+                            value={form.name}
+                            onChange={handleChange}
+                            className="
+                        w-full
+                        pl-10
+                        pr-4
+                        py-3
+                        border
+                        rounded-xl
+                        focus:ring-2
+                        focus:ring-blue-500
+                        outline-none
+                        "
+                        />
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <label className="block text-sm font-medium mb-2">
+                        Email
+                    </label>
+
+                    <div className="relative">
+
+                        <Mail
+                            size={18}
+                            className="
+                        absolute
+                        left-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-gray-400
+                        "
+                        />
+
+                        <input
+                            value={form.email}
+                            disabled
+                            className="
+                        w-full
+                        pl-10
+                        pr-4
+                        py-3
+                        border
+                        bg-gray-50
+                        rounded-xl
+                        "
+                        />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6 pt-5 border-t">
+
                 <button
-                    onClick={() => navigate("/profile")}
-                    className="absolute top-4 left-4 text-blue-600 hover:underline"
+                    type="button"
+                    className="
+        px-5
+        py-2.5
+        border
+        border-gray-300
+        text-gray-700
+        rounded-xl
+        hover:bg-gray-100
+        transition
+        "
                 >
-                    ← Back
+                    Cancel
                 </button>
 
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                    Update Profile
-                </h1>
-
-                {/* NAME */}
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Enter name"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="border p-2 mb-4 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-
-                {/* EMAIL (READ ONLY) */}
-                <input
-                    type="email"
-                    value={form.email}
-                    disabled
-                    className="border p-2 mb-4 w-full rounded bg-gray-100 cursor-not-allowed"
-                />
-
-                {/* BUTTON */}
                 <button
                     onClick={handleUpdate}
                     disabled={loading}
-                    className={`w-full py-2 rounded text-white transition
-                        ${loading
-                            ? "bg-gray-400"
-                            : "bg-green-600 hover:bg-green-700"}`}
+                    className="
+        px-5
+        py-2.5
+        bg-blue-600
+        hover:bg-blue-700
+        text-white
+        rounded-xl
+        flex
+        items-center
+        gap-2
+        transition
+        disabled:bg-gray-400
+        "
                 >
-                    {loading ? "Updating..." : "Update Profile"}
+
+                    <Save size={16} />
+
+                    {
+                        loading
+                            ? "Updating..."
+                            : "Save Changes"
+                    }
+
                 </button>
 
             </div>
+
         </div>
+
     );
+
 }
 
 export default UpdateProfile;

@@ -1,117 +1,384 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import API from "../../services/api";
+import {
+    Store,
+    Mail,
+    ShieldCheck
+} from "lucide-react";
 
 function BecomeMerchant() {
-    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [businessName, setBusinessName] = useState("");
     const [otp, setOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
 
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
-        const userEmail = localStorage.getItem("email");
-        setEmail(userEmail || "");
+
+        const fetchProfile = async () => {
+
+            try {
+
+                const res = await API.get("/user/profile");
+
+                console.log("PROFILE => ", res.data);
+
+                setEmail(
+                    res.data.data?.email || ""
+                );
+
+            } catch (err) {
+
+                console.log(err);
+
+            }
+        };
+
+        fetchProfile();
+
     }, []);
 
     const handleSendOtp = async () => {
-        try {
-            await API.post("/auth/send-otp", {
-                email: email
-            });
-
-            alert("OTP sent to your email");
-            setOtpSent(true);
-
-        } catch (err) {
-            console.log(err);
-            alert("Failed to send OTP");
-        }
-    };
-
-    const handleBecomeMerchant = async () => {
-        if (!businessName || !otp) {
-            alert("All fields required");
-            return;
-        }
 
         try {
-            const res = await API.post(
-                "/auth/merchant/register",
+
+            setLoading(true);
+
+            await API.post(
+                "/auth/send-otp",
                 {
-                    businessName,
-                    email,
-                    otp
+                    email
                 }
             );
 
-            console.log(res.data);
+            setOtpSent(true);
 
-            alert("Merchant request submitted successfully");
+            alert(
+                "OTP sent successfully"
+            );
 
-            navigate("/profile");
+        }
+        catch (err) {
 
-        } catch (err) {
             console.log(err);
+
             alert(
                 err.response?.data?.message ||
-                "Merchant registration failed"
+                "Failed to send OTP"
             );
+
         }
+        finally {
+
+            setLoading(false);
+
+        }
+
     };
 
+    const handleBecomeMerchant =
+        async () => {
+
+            if (
+                !businessName.trim() ||
+                !otp.trim()
+            ) {
+
+                alert(
+                    "All fields are required"
+                );
+
+                return;
+
+            }
+
+            try {
+
+                setLoading(true);
+
+                const res =
+                    await API.post(
+                        "/auth/merchant/register",
+                        {
+                            businessName,
+                            email,
+                            otp
+                        }
+                    );
+
+                alert(
+                    res.data.message ||
+                    "Merchant request submitted successfully"
+                );
+
+                window.location.reload();
+
+            }
+            catch (err) {
+
+                console.log(err);
+
+                alert(
+                    err.response?.data?.message ||
+                    "Registration failed"
+                );
+
+            }
+            finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
     return (
-        <div className="min-h-screen flex justify-center items-center bg-gray-100">
-            <div className="bg-white p-8 rounded shadow w-96">
 
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                    Become Merchant
-                </h1>
+        <div
+            className="
+            mt-6
+            max-w-lg
+            border
+            border-green-200
+            bg-green-50
+            rounded-2xl
+            p-5
+            "
+        >
 
-                <input
-                    type="email"
-                    value={email}
-                    disabled
-                    className="w-full border p-2 mb-4 bg-gray-100"
-                />
+            <h3
+                className="
+                text-lg
+                font-semibold
+                mb-5
+                "
+            >
+                Become Merchant
+            </h3>
 
-                <input
-                    type="text"
-                    placeholder="Enter Business Name"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    className="w-full border p-2 mb-4"
-                />
+            {/* EMAIL */}
 
-                {!otpSent ? (
-                    <button
-                        onClick={handleSendOtp}
-                        className="w-full bg-blue-500 text-white p-2 rounded"
-                    >
-                        Send OTP
-                    </button>
-                ) : (
-                    <>
-                        <input
-                            type="text"
-                            placeholder="Enter OTP"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            className="w-full border p-2 mt-4 mb-4"
-                        />
+            <div className="mb-4">
+
+                <label
+                    className="
+                    text-sm
+                    font-medium
+                    block
+                    mb-2
+                    "
+                >
+                    Email
+                </label>
+
+                <div className="relative">
+
+                    <Mail
+                        size={18}
+                        className="
+                        absolute
+                        left-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-gray-400
+                        "
+                    />
+
+                    <input
+                        value={email}
+                        disabled
+                        className="
+                        w-full
+                        pl-10
+                        pr-4
+                        py-3
+                        border
+                        rounded-xl
+                        bg-gray-100
+                        "
+                    />
+
+                </div>
+
+            </div>
+
+            {/* BUSINESS NAME */}
+
+            <div className="mb-4">
+
+                <label
+                    className="
+                    text-sm
+                    font-medium
+                    block
+                    mb-2
+                    "
+                >
+                    Business Name
+                </label>
+
+                <div className="relative">
+
+                    <Store
+                        size={18}
+                        className="
+                        absolute
+                        left-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-gray-400
+                        "
+                    />
+
+                    <input
+                        type="text"
+                        value={businessName}
+                        onChange={(e) =>
+                            setBusinessName(
+                                e.target.value
+                            )
+                        }
+                        placeholder="Enter business name"
+                        className="
+                        w-full
+                        pl-10
+                        pr-4
+                        py-3
+                        border
+                        rounded-xl
+                        "
+                    />
+
+                </div>
+
+            </div>
+
+            {/* OTP */}
+
+            {
+                otpSent && (
+
+                    <div className="mb-4">
+
+                        <label
+                            className="
+                            text-sm
+                            font-medium
+                            block
+                            mb-2
+                            "
+                        >
+                            OTP
+                        </label>
+
+                        <div className="relative">
+
+                            <ShieldCheck
+                                size={18}
+                                className="
+                                absolute
+                                left-3
+                                top-1/2
+                                -translate-y-1/2
+                                text-gray-400
+                                "
+                            />
+
+                            <input
+                                type="text"
+                                value={otp}
+                                onChange={(e) =>
+                                    setOtp(
+                                        e.target.value
+                                    )
+                                }
+                                placeholder="Enter OTP"
+                                className="
+                                w-full
+                                pl-10
+                                pr-4
+                                py-3
+                                border
+                                rounded-xl
+                                "
+                            />
+
+                        </div>
+
+                    </div>
+
+                )
+            }
+
+            {/* ACTIONS */}
+
+            <div
+                className="
+                flex
+                justify-end
+                gap-3
+                mt-5
+                "
+            >
+
+                {
+                    !otpSent ? (
 
                         <button
-                            onClick={handleBecomeMerchant}
-                            className="w-full bg-green-500 text-white p-2 rounded"
+                            onClick={
+                                handleSendOtp
+                            }
+                            disabled={loading}
+                            className="
+                            px-4
+                            py-2
+                            bg-blue-600
+                            hover:bg-blue-700
+                            text-white
+                            rounded-xl
+                            "
                         >
-                            Verify & Become Merchant
+                            {
+                                loading
+                                    ? "Sending..."
+                                    : "Send OTP"
+                            }
                         </button>
-                    </>
-                )}
+
+                    ) : (
+
+                        <button
+                            onClick={
+                                handleBecomeMerchant
+                            }
+                            disabled={loading}
+                            className="
+                            px-4
+                            py-2
+                            bg-green-600
+                            hover:bg-green-700
+                            text-white
+                            rounded-xl
+                            "
+                        >
+                            {
+                                loading
+                                    ? "Submitting..."
+                                    : "Submit Request"
+                            }
+                        </button>
+
+                    )
+                }
+
             </div>
+
         </div>
+
     );
+
 }
 
 export default BecomeMerchant;
