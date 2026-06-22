@@ -336,9 +336,14 @@ public class GeminiService
         }
         catch (Exception e)
         {
-            throw new RuntimeException(
-                    "AI product generation failed",
-                    e
+            e.printStackTrace();
+
+            return new AIProductResponse(
+                    "Unknown Product",
+                    "AI generation failed",
+                    List.of(),
+                    List.of(),
+                    List.of()
             );
         }
     }
