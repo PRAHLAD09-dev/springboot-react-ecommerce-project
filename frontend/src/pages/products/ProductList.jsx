@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Flame, Sparkles } from "lucide-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Truck } from "lucide-react";
-// import { Search, SlidersHorizontal, ShoppingCart, User, House, Package, LayoutDashboard } from "lucide-react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import API from "../../services/api";
 import { COLORS } from "../../constants/colors";
-import HeroCarousel from "../../components/home/HeroCarousel";
-import HorizontalProductSection from "../../components/home/HorizontalProductSection";
+import HeroCarousel from "../../components/Home/HeroCarousel";
+import HorizontalProductSection from "../../components/Home/HorizontalProductSection";
 
 function ProductList() {
 
