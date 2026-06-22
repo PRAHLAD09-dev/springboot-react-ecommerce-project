@@ -34,7 +34,7 @@ import Signup from "./pages/Auth/Signup";
 import ForgetPassword from "./pages/Auth/ForgetPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import VerifyOtp from "./pages/Auth/VerifyOtp";
-import OAuthSuccess from "./pages/auth/OAuthSuccess";
+import OAuthSuccess from "./pages/Auth/OAuthSuccess";
 
 
 function App() {
