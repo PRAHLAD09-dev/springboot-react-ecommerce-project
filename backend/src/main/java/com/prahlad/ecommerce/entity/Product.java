@@ -74,6 +74,7 @@ public class Product
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @OrderBy("displayOrder ASC")
     @Builder.Default
     private List<ProductImage> images =
             new ArrayList<>();
@@ -130,4 +131,6 @@ public class Product
     )
     private List<HeroBanner> heroBanners =
             new ArrayList<>();
+    
+
 }

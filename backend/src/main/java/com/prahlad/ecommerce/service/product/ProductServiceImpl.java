@@ -209,11 +209,14 @@ public class ProductServiceImpl implements ProductService
             );
         }
 
+        int order = 1;
+
         for (String url : imageUrls)
         {
             ProductImage image = new ProductImage();
 
             image.setImageUrl(url);
+            image.setDisplayOrder(order++);
             image.setProduct(product);
 
             product.getImages().add(image);
@@ -356,12 +359,14 @@ public class ProductServiceImpl implements ProductService
 
             product.getImages().clear();
 
+            int order = 1;
+
             for (String url : imageUrls)
             {
-                ProductImage image =
-                        new ProductImage();
+                ProductImage image = new ProductImage();
 
                 image.setImageUrl(url);
+                image.setDisplayOrder(order++);
                 image.setProduct(product);
 
                 product.getImages().add(image);

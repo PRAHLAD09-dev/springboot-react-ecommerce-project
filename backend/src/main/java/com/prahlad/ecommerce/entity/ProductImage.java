@@ -17,6 +17,8 @@ public class ProductImage
     private Long id;
 
     private String imageUrl;
+    
+    private Integer displayOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
