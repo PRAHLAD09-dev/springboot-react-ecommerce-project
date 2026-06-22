@@ -66,10 +66,13 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler
 
         String token =
                 jwtUtil.generateToken(user);
-
         response.sendRedirect(
-                "http://localhost:5173/oauth-success?token="
+                "https://springboot-react-ecommerce-project-alpha.vercel.app/oauth-success?token="
                         + token
         );
+//        response.sendRedirect(
+//                "http://localhost:5173/oauth-success?token="
+//                        + token
+//        );
     }
 }
