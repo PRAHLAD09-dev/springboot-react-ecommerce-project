@@ -174,7 +174,18 @@ function Product() {
             await API.delete(`/merchant/products/${id}`);
             fetchProducts();
         } catch (err) {
-            console.log(err);
+
+            console.log("FULL ERROR", err);
+
+            console.log(
+                err.response?.data
+            );
+
+            alert(
+                JSON.stringify(
+                    err.response?.data
+                )
+            );
         }
     };
 
@@ -211,6 +222,7 @@ function Product() {
         c.name.toLowerCase()
             .includes(colorSearch.toLowerCase())
     );
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-6">
@@ -343,7 +355,12 @@ function Product() {
                 {
                     showForm && (
 
-                        <form onSubmit={handleSubmit}>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleSubmit();
+                            }}
+                        >
                             <div className="bg-white p-8 rounded-2xl shadow mb-8">
 
                                 <div className="flex justify-between items-start mb-6">
@@ -1017,7 +1034,7 @@ function Product() {
 
                                     <button
                                         type="submit"
-                                        onClick={handleSubmit}
+
                                         className={`
                                             flex-1
                                             flex
@@ -1473,8 +1490,11 @@ function Product() {
                                 <div className="grid grid-cols-3 gap-2 mt-4">
 
                                     <button
-                                        onClick={() =>
-                                            navigate(`/product/${p.id}`)
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/product/${p.id}`);
+                                        }
+
                                         }
                                         className="
                                             flex
@@ -1496,9 +1516,11 @@ function Product() {
                                     </button>
 
                                     <button
-                                        onClick={() =>
-                                            handleEdit(p)
-                                        }
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEdit(p);
+                                        }}
+
                                         className="
                                                     flex
                                                     items-center
@@ -1519,9 +1541,11 @@ function Product() {
                                     </button>
 
                                     <button
-                                        onClick={() =>
-                                            handleDelete(p.id)
-                                        }
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(p.id);
+                                        }}
+
                                         className="
                                                 flex
                                                 items-center

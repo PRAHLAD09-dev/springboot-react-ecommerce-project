@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-    baseURL: "https://ecommerce-backend-o9vh.onrender.com/api"
-    // "http://localhost:8080/api"
+    baseURL: //"https://ecommerce-backend-o9vh.onrender.com/api"
+        "http://localhost:8080/api"
 
 });
 

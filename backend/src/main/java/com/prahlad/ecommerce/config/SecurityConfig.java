@@ -64,7 +64,7 @@ public class SecurityConfig
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/merchant/**").hasRole("USER")
                         .requestMatchers("/api/user/**").hasRole("USER")
-                        .requestMatchers("/api/cart**").hasRole("USER")
+                        .requestMatchers("/api/cart/**").hasRole("USER")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
