@@ -65,8 +65,12 @@ function ProductList() {
 
             try {
 
-                const res =
-                    await API.get("/products");
+                const res = await API.get("/products", {
+                    params: {
+                        page: 0,
+                        size: 500,
+                    },
+                });
 
                 const data = res.data.data;
 
@@ -186,21 +190,20 @@ function ProductList() {
 
     }
 
-    const groupedProducts =
-        sortedProducts.reduce((acc, product) => {
+    const groupedProducts = sortedProducts.reduce((acc, product) => {
 
-            const category =
-                product.categoryName || "Others";
+        const category = product.categoryName || "Others";
 
-            if (!acc[category]) {
-                acc[category] = [];
-            }
+        if (!acc[category]) {
+            acc[category] = [];
+        }
 
-            acc[category].push(product);
+        acc[category].push(product);
 
-            return acc;
+        return acc;
 
-        }, {});
+    }, {});
+
 
     return (
         <div className="w-full max-w-7xl mx-auto px-4">
