@@ -100,6 +100,12 @@ The frontend communicates with the Spring Boot backend through REST APIs and off
 
 ---
 
+### 👨‍💼 Admin Dashboard
+
+![User](./assets/user-profile.png)
+
+---
+
 ### 🛍 Merchant Dashboard
 
 ![Merchant](./assets/merchant-dashboard.png)
