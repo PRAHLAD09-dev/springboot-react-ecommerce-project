@@ -34,6 +34,8 @@ function Product() {
     const [colorSearch, setColorSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
 
+    const [loading, setLoading] = useState(false);
+
     const [form, setForm] = useState({
         price: "",
         mrp: "",
@@ -98,11 +100,15 @@ function Product() {
 
     // ================= SUBMIT =================
     const handleSubmit = async () => {
+
         try {
+
+            setLoading(true);
+
             const token = localStorage.getItem("token");
 
             if (!form.price || !form.categoryId) {
-                alert("Fill required fields ");
+                alert("Fill required fields");
                 return;
             }
 
@@ -127,13 +133,11 @@ function Product() {
             );
 
             files.forEach(file => {
-                formData.append(
-                    "files",
-                    file
-                );
+                formData.append("files", file);
             });
 
             if (editId) {
+
                 await API.put(
                     `/merchant/products/${editId}`,
                     formData,
@@ -143,8 +147,11 @@ function Product() {
                         }
                     }
                 );
-                alert("Product updated");
+
+                alert("Product Updated Successfully");
+
             } else {
+
                 await API.post(
                     "/merchant/products/add",
                     formData,
@@ -154,16 +161,29 @@ function Product() {
                         }
                     }
                 );
-                alert("Product added");
+
+                alert("Product Added Successfully");
+
             }
 
-            fetchProducts();
+            await fetchProducts();
+
             resetForm();
 
-        } catch (err) {
-            console.log(err.response?.data || err);
-            alert("Operation failed");
         }
+        catch (err) {
+
+            console.log(err.response?.data || err);
+
+            alert("Operation Failed");
+
+        }
+        finally {
+
+            setLoading(false);
+
+        }
+
     };
 
     // ================= DELETE =================
@@ -1028,83 +1048,176 @@ function Product() {
 
                                 )}
 
-                                {/* BUTTONS */}
+                                {/* ================= BUTTON SECTION ================= */}
 
-                                <div className="flex gap-3 mt-8 pt-6 border-t">
+                                <div className="mt-8 pt-6 border-t">
 
-                                    <button
-                                        type="submit"
+                                    {/* AI Processing Card */}
 
-                                        className={`
-                                            flex-1
-                                            flex
-                                            items-center
-                                            justify-center
-                                            gap-2
-                                            py-4
-                                            rounded-2xl
-                                            text-white
-                                            font-semibold
-                                            text-lg
-                                            shadow-md
-                                            hover:shadow-lg
-                                            transition-all
-                                            duration-300
+                                    {loading && (
 
-                                            ${editId
-                                                ? "bg-blue-600 hover:bg-blue-700"
-                                                : "bg-green-600 hover:bg-green-700"
-                                            }
-                                            `}
-                                    >
-
-                                        {
-                                            editId
-                                                ? (
-                                                    <>
-                                                        <Pencil size={18} />
-                                                        Update Product
-                                                    </>
-                                                )
-                                                : (
-                                                    <>
-                                                        <Plus size={18} />
-                                                        Generate & Add Product
-                                                    </>
-                                                )
-                                        }
-
-                                    </button>
-
-                                    {editId && (
-
-                                        <button
-                                            type="button"
-                                            onClick={resetForm}
+                                        <div
                                             className="
-                                                px-6
-                                                py-4
-                                                flex
-                                                items-center
-                                                gap-2
-                                                bg-gray-100
-                                                hover:bg-gray-200
-                                                text-gray-700
-                                                rounded-2xl
-                                                font-medium
-                                                border
-                                                shadow-sm
-                                                transition
+                                                    mb-5
+                                                    rounded-xl
+                                                    border
+                                                    border-blue-200
+                                                    bg-blue-50
+                                                    p-4
+                                                    animate-pulse
                                                 "
                                         >
 
-                                            <X size={18} />
+                                            <div className="flex items-start gap-3">
 
-                                            Cancel
+                                                <div
+                                                    className="
+                                                            w-6
+                                                            h-6
+                                                            border-[3px]
+                                                            border-blue-600
+                                                            border-t-transparent
+                                                            rounded-full
+                                                            animate-spin
+                                                            mt-1
+                                                        "
+                                                />
+
+                                                <div className="flex-1">
+
+                                                    <h3 className="text-blue-700 font-semibold">
+
+                                                        {
+                                                            editId
+                                                                ? "Updating Product using AI..."
+                                                                : "Generating Product using AI..."
+                                                        }
+
+                                                    </h3>
+
+                                                    <p className="text-sm text-gray-600 mt-1">
+
+                                                        {
+                                                            editId
+                                                                ? "Analyzing uploaded images • Refreshing description • Updating specifications • Saving product..."
+                                                                : "Uploading images • Detecting product • Generating description • Creating specifications • Saving product..."
+                                                        }
+
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
+
+                                    {/* Buttons */}
+
+                                    <div className="flex justify-end gap-3">
+
+                                        {editId && (
+
+                                            <button
+                                                type="button"
+                                                onClick={resetForm}
+                                                disabled={loading}
+                                                className="
+                                                        px-5
+                                                        h-11
+                                                        rounded-xl
+                                                        border
+                                                        bg-white
+                                                        text-gray-700
+                                                        hover:bg-gray-100
+                                                        transition
+                                                        disabled:opacity-60
+                                                    "
+                                            >
+
+                                                Cancel
+
+                                            </button>
+
+                                        )}
+
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className={`
+                                                    min-w-[220px]
+                                                    h-11
+                                                    rounded-xl
+                                                    flex
+                                                    items-center
+                                                    justify-center
+                                                    gap-2
+                                                    font-semibold
+                                                    transition-all
+
+                                                    ${loading
+                                                    ? "bg-gray-600 text-white cursor-not-allowed"
+                                                    : editId
+                                                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                                        : "bg-green-600 hover:bg-green-700 text-white"
+                                                }
+                                                `}
+                                        >
+
+                                            {loading ? (
+
+                                                <>
+
+                                                    <div
+                                                        className="
+                                                                w-4
+                                                                h-4
+                                                                border-2
+                                                                border-white
+                                                                border-t-transparent
+                                                                rounded-full
+                                                                animate-spin
+                                                            "
+                                                    />
+
+                                                    {
+                                                        editId
+                                                            ? "Updating..."
+                                                            : "Generating..."
+                                                    }
+
+                                                </>
+
+                                            ) : (
+
+                                                editId ? (
+
+                                                    <>
+
+                                                        <Pencil size={16} />
+
+                                                        Update Product
+
+                                                    </>
+
+                                                ) : (
+
+                                                    <>
+
+                                                        <Plus size={16} />
+
+                                                        Generate & Add Product
+
+                                                    </>
+
+                                                )
+
+                                            )}
 
                                         </button>
 
-                                    )}
+                                    </div>
 
                                 </div>
 
