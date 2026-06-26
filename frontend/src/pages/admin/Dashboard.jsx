@@ -64,8 +64,12 @@ function Dashboard() {
 
         try {
 
-            const res =
-                await API.get("/products");
+            const res = await API.get("/products", {
+                params: {
+                    page: 0,
+                    size: 500,
+                },
+            });
 
             setProducts(
                 res.data.data.content || []
