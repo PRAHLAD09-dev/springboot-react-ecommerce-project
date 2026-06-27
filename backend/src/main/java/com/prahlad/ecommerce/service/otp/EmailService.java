@@ -28,10 +28,10 @@ public class EmailService
     {
         String body =
                 "Hi,\n\n" +
-                "Your verification code for Ecommerce App: " + otp +
+                "Your verification code for CommerceHub App: " + otp +
                 "\nThis code will expire in 5 minutes." +
                 "\nIf you did not request this, please ignore.\n\n" +
-                "Thanks,\nTeam Ecommerce";
+                "Thanks,\nTeam CommerceHub";
 
         sendMail(toEmail, "OTP Verification", body);
     }
@@ -52,7 +52,7 @@ public class EmailService
         {
 
             JSONObject sender = new JSONObject();
-            sender.put("name", "Ecommerce Team");
+            sender.put("name", "CommerceHub Team");
             sender.put("email", "introvertprahlad@gmail.com");
 
             JSONObject receiver = new JSONObject();
