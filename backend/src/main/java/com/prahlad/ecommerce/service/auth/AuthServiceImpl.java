@@ -104,7 +104,7 @@ public class AuthServiceImpl implements AuthService
         <h2>Welcome to Ecommerce App </h2>
         <p>Your account has been successfully created.</p>
         <br>
-        <a href="https://ecommerce-backend-o9vh.onrender.com/swagger-ui/index.html#/">
+        <a href="https://springboot-react-ecommerce-project-alpha.vercel.app">
             <button style="padding:10px;background:green;color:white;border:none;">
                 Start Shopping
             </button>
@@ -202,6 +202,17 @@ public class AuthServiceImpl implements AuthService
                 "Welcome to Ecommerce App",
                 message,
                 NotificationType.REGISTER_SUCCESS
+        );
+        
+   
+        notificationService.sendNotification(
+                "prahladbhakat05@gmail.com",
+                "New Merchant Approval Request",
+                user.getName() + " has requested to become a merchant.\n\n"
+                        + "Business Name: " + request.businessName()
+                        + "\nEmail: " + user.getEmail()
+                        + "\n\nPlease review and approve the request from the Admin Dashboard.",
+                        NotificationType.REGISTER_SUCCESS
         );
 
         return new AuthResponse(
