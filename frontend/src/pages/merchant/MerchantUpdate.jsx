@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
+import { Store, CheckCircle2 } from "lucide-react";
+import { Card, Input, Button, PageLoader } from "../../components/ui";
 
 function MerchantUpdate() {
     const [businessName, setBusinessName] = useState("");
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const navigate = useNavigate();
 
@@ -12,15 +17,12 @@ function MerchantUpdate() {
         const fetchMerchant = async () => {
             try {
                 const res = await API.get("/merchant/profile");
-
                 if (res.data.success) {
-                    setBusinessName(
-                        res.data.data.businessName || ""
-                    );
+                    setBusinessName(res.data.data.businessName || "");
                 }
             } catch (err) {
                 console.log(err);
-                alert("Failed to load merchant profile");
+                setError("Failed to load merchant profile");
             } finally {
                 setLoading(false);
             }
@@ -31,50 +33,54 @@ function MerchantUpdate() {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
+        setError("");
+        setSuccess("");
 
         try {
-            const res = await API.put("/merchant/profile", {
-                businessName
-            });
-
-            alert(res.data.message);
-            navigate("/merchant/profile");
-
+            setSaving(true);
+            const res = await API.put("/merchant/profile", { businessName });
+            setSuccess(res.data.message || "Profile updated");
+            setTimeout(() => navigate("/merchant/profile"), 800);
         } catch (err) {
             console.log(err);
-            alert("Update failed");
+            setError("Update failed");
+        } finally {
+            setSaving(false);
         }
     };
 
-    if (loading) {
-        return <p className="text-center mt-10">Loading...</p>;
-    }
+    if (loading) return <PageLoader label="Loading profile" />;
 
     return (
-        <div className="min-h-screen flex justify-center items-center bg-gray-100">
-            <div className="bg-white p-8 rounded shadow w-full max-w-md">
+        <div className="mx-auto flex max-w-md flex-col items-center py-6">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-md">
+                <Store size={22} />
+            </div>
+            <h1 className="mb-6 text-xl font-bold text-ink-900">Update Merchant Profile</h1>
 
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                    Update Merchant Profile
-                </h1>
+            <Card className="w-full">
+                <form onSubmit={handleUpdate} className="space-y-4">
+                    {error && (
+                        <div className="rounded-xl bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700">{error}</div>
+                    )}
+                    {success && (
+                        <div className="flex items-center gap-2 rounded-xl bg-success-50 px-4 py-3 text-sm font-medium text-success-700">
+                            <CheckCircle2 size={16} /> {success}
+                        </div>
+                    )}
 
-                <form onSubmit={handleUpdate}>
-                    <input
-                        type="text"
+                    <Input
+                        label="Business name"
                         value={businessName}
                         onChange={(e) => setBusinessName(e.target.value)}
-                        placeholder="Business Name"
-                        className="w-full border p-3 rounded mb-4"
+                        placeholder="Your business name"
                     />
 
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700"
-                    >
-                        Update Profile
-                    </button>
+                    <Button type="submit" fullWidth size="lg" loading={saving}>
+                        Update profile
+                    </Button>
                 </form>
-            </div>
+            </Card>
         </div>
     );
 }

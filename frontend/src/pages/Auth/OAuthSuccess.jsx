@@ -39,55 +39,20 @@ const OAuthSuccess = () => {
 
     return (
 
-        <div
-            className="
-            min-h-screen
-            flex
-            items-center
-            justify-center
-            bg-gray-100
-            "
-        >
+        <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-ink-50 px-4">
 
-            <div
-                className="
-                bg-white
-                rounded-2xl
-                shadow-xl
-                p-10
-                flex
-                flex-col
-                items-center
-                gap-4
-                "
-            >
+            <div className="card-surface flex flex-col items-center gap-4 p-10 text-center animate-scale-in">
 
-                <Loader2
-                    size={50}
-                    className="
-                    text-blue-600
-                    animate-spin
-                    "
-                />
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50">
+                    <Loader2 size={30} className="animate-spin text-brand-600" />
+                </div>
 
-                <h2
-                    className="
-                    text-2xl
-                    font-bold
-                    text-gray-800
-                    "
-                >
-                    Signing You In...
+                <h2 className="text-xl font-bold text-ink-950">
+                    Signing you in…
                 </h2>
 
-                <p
-                    className="
-                    text-gray-500
-                    text-center
-                    "
-                >
-                    Completing your Google login
-                    and loading your account.
+                <p className="max-w-xs text-sm text-ink-500">
+                    Completing your Google login and loading your account.
                 </p>
 
             </div>

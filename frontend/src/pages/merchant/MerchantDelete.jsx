@@ -1,99 +1,95 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
+import { AlertTriangle, ShieldAlert } from "lucide-react";
+import { Card, Input, Button } from "../../components/ui";
 
 function MerchantDelete() {
     const [otp, setOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [info, setInfo] = useState("");
 
     const navigate = useNavigate();
 
-    // Send OTP
     const handleSendOtp = async () => {
+        setError("");
+        setInfo("");
         try {
             setLoading(true);
-
             const res = await API.post("/merchant/delete/request");
-
-            alert(res.data.message || "OTP sent successfully");
+            setInfo(res.data.message || "OTP sent successfully");
             setOtpSent(true);
-
         } catch (err) {
             console.log(err);
-            alert(
-                err.response?.data?.message || "Failed to send OTP"
-            );
+            setError(err.response?.data?.message || "Failed to send OTP");
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async () => {
+        setError("");
         if (!otp) {
-            alert("Enter OTP first");
+            setError("Enter OTP first");
             return;
         }
 
         try {
             setLoading(true);
-
             const res = await API.delete(`/merchant/delete ? otp = ${otp}`);
-
-            alert(res.data.message || "Merchant account deleted");
-
+            setInfo(res.data.message || "Merchant account deleted");
             localStorage.removeItem("merchant");
-
             navigate("/profile");
             window.location.reload();
-
         } catch (err) {
             console.log(err.response?.data || err);
-            alert(
-                err.response?.data?.message ||
-                "Failed to delete merchant account"
-            );
+            setError(err.response?.data?.message || "Failed to delete merchant account");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex justify-center items-center">
-            <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
+        <div className="mx-auto flex max-w-md flex-col items-center py-6">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-danger-50">
+                <ShieldAlert size={22} className="text-danger-600" />
+            </div>
 
-                <h1 className="text-2xl font-bold text-red-600 mb-6 text-center">
-                    Delete Merchant Account
-                </h1>
+            <Card className="w-full">
+                <h1 className="mb-1.5 text-center text-xl font-bold text-danger-600">Delete Merchant Account</h1>
+                <p className="mb-6 text-center text-sm text-ink-500">
+                    This will permanently remove your merchant profile and listings.
+                </p>
+
+                {error && (
+                    <div className="mb-4 flex items-center gap-2 rounded-xl bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700">
+                        <AlertTriangle size={16} /> {error}
+                    </div>
+                )}
+                {info && (
+                    <div className="mb-4 rounded-xl bg-success-50 px-4 py-3 text-sm font-medium text-success-700">{info}</div>
+                )}
 
                 {!otpSent ? (
-                    <button
-                        onClick={handleSendOtp}
-                        disabled={loading}
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded"
-                    >
-                        {loading ? "Sending OTP..." : "Send OTP"}
-                    </button>
+                    <Button variant="danger" fullWidth size="lg" loading={loading} onClick={handleSendOtp}>
+                        Send OTP to confirm
+                    </Button>
                 ) : (
-                    <>
-                        <input
-                            type="text"
-                            placeholder="Enter OTP"
+                    <div className="space-y-4">
+                        <Input
+                            label="Verification code"
+                            placeholder="Enter the OTP"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
-                            className="w-full border p-3 rounded mb-4"
                         />
-
-                        <button
-                            onClick={handleDelete}
-                            disabled={loading}
-                            className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded"
-                        >
-                            {loading ? "Deleting..." : "Delete Account"}
-                        </button>
-                    </>
+                        <Button variant="danger" fullWidth size="lg" loading={loading} onClick={handleDelete}>
+                            Permanently delete account
+                        </Button>
+                    </div>
                 )}
-            </div>
+            </Card>
         </div>
     );
 }

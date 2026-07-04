@@ -197,7 +197,7 @@
 .swiper-button-next::after {
   font-size: 16px !important;
   font-weight: 700 !important;
-  color: #2563eb !important;
+  color: #4F3DE8 !important;
 }
 
 .swiper-button-prev {
@@ -210,5 +210,9 @@
 
 .swiper-button-prev:hover,
 .swiper-button-next:hover {
-  background: #eff6ff !important;
+  background: #EEF1FF !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #4F3DE8 !important;
 }

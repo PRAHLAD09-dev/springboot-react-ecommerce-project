@@ -1,332 +1,119 @@
 import { useState } from "react";
 import API from "../../services/api";
-import {
-    Lock,
-    KeyRound,
-    Save
-} from "lucide-react";
+import { Lock, KeyRound, Save, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Input, Button } from "../../components/ui";
 
 function ChangePassword() {
-
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const handleChangePassword = async () => {
+        setError("");
+        setSuccess("");
 
-        if (
-            !oldPassword ||
-            !newPassword ||
-            !confirmPassword
-        ) {
-            alert("All fields are required");
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setError("All fields are required");
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            alert("Passwords do not match");
+            setError("Passwords do not match");
             return;
         }
 
         try {
-
             setLoading(true);
-
-            await API.put(
-                "/user/change-password",
-                {
-                    oldPassword,
-                    newPassword
-                }
-            );
-
-            alert(
-                "Password changed successfully. Please login again."
-            );
-
-            localStorage.clear();
-
-            window.location.href = "/login";
-
-        }
-        catch (err) {
-
+            await API.put("/user/change-password", { oldPassword, newPassword });
+            setSuccess("Password changed successfully. Redirecting to login…");
+            setTimeout(() => {
+                localStorage.clear();
+                window.location.href = "/login";
+            }, 1000);
+        } catch (err) {
             console.log(err);
-
-            alert(
-                err.response?.data?.message ||
-                "Failed to change password"
-            );
-
-        }
-        finally {
-
+            setError(err.response?.data?.message || "Failed to change password");
+        } finally {
             setLoading(false);
-
         }
-
     };
 
     return (
-
         <div className="mt-6">
+            {error && (
+                <div className="mb-4 rounded-xl bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700">{error}</div>
+            )}
+            {success && (
+                <div className="mb-4 flex items-center gap-2 rounded-xl bg-success-50 px-4 py-3 text-sm font-medium text-success-700">
+                    <CheckCircle2 size={16} /> {success}
+                </div>
+            )}
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid gap-6 lg:grid-cols-3">
+                <div className="space-y-5 lg:col-span-2">
+                    <Input
+                        label="Current password"
+                        type="password"
+                        icon={Lock}
+                        placeholder="Enter current password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                    />
 
-                {/* LEFT SIDE */}
+                    <Input
+                        label="New password"
+                        type="password"
+                        icon={KeyRound}
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                    />
 
-                <div className="lg:col-span-2 space-y-5">
-
-                    {/* OLD PASSWORD */}
-
-                    <div>
-
-                        <label className="block text-sm font-medium mb-2">
-                            Current Password
-                        </label>
-
-                        <div className="relative">
-
-                            <Lock
-                                size={18}
-                                className="
-                                absolute
-                                left-3
-                                top-1/2
-                                -translate-y-1/2
-                                text-gray-400
-                                "
-                            />
-
-                            <input
-                                type="password"
-                                value={oldPassword}
-                                onChange={(e) =>
-                                    setOldPassword(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Enter current password"
-                                className="
-                                w-full
-                                pl-10
-                                pr-4
-                                py-3
-                                border
-                                border-gray-300
-                                rounded-xl
-                                focus:ring-2
-                                focus:ring-blue-500
-                                outline-none
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* NEW PASSWORD */}
-
-                    <div>
-
-                        <label className="block text-sm font-medium mb-2">
-                            New Password
-                        </label>
-
-                        <div className="relative">
-
-                            <KeyRound
-                                size={18}
-                                className="
-                                absolute
-                                left-3
-                                top-1/2
-                                -translate-y-1/2
-                                text-gray-400
-                                "
-                            />
-
-                            <input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) =>
-                                    setNewPassword(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Enter new password"
-                                className="
-                                w-full
-                                pl-10
-                                pr-4
-                                py-3
-                                border
-                                border-gray-300
-                                rounded-xl
-                                focus:ring-2
-                                focus:ring-blue-500
-                                outline-none
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
-                    {/* CONFIRM PASSWORD */}
-
-                    <div>
-
-                        <label className="block text-sm font-medium mb-2">
-                            Confirm Password
-                        </label>
-
-                        <div className="relative">
-
-                            <KeyRound
-                                size={18}
-                                className="
-                                absolute
-                                left-3
-                                top-1/2
-                                -translate-y-1/2
-                                text-gray-400
-                                "
-                            />
-
-                            <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) =>
-                                    setConfirmPassword(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Confirm new password"
-                                className="
-                                w-full
-                                pl-10
-                                pr-4
-                                py-3
-                                border
-                                border-gray-300
-                                rounded-xl
-                                focus:ring-2
-                                focus:ring-blue-500
-                                outline-none
-                                "
-                            />
-
-                        </div>
-
-                    </div>
-
+                    <Input
+                        label="Confirm new password"
+                        type="password"
+                        icon={KeyRound}
+                        placeholder="Confirm new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
                 </div>
 
-                {/* RIGHT SIDE */}
-
-                <div
-                    className="
-                    bg-blue-50
-                    border
-                    border-blue-100
-                    rounded-2xl
-                    p-5
-                    h-fit
-                    "
-                >
-
-                    <h3 className="font-semibold text-lg mb-4">
-                        Password Requirements
-                    </h3>
-
-                    <ul className="space-y-3 text-sm text-gray-600">
-
-                        <li>✓ 8-20 characters</li>
-
-                        <li>✓ One uppercase letter</li>
-
-                        <li>✓ One lowercase letter</li>
-
-                        <li>✓ One number</li>
-
-                        <li>✓ One special character</li>
-
+                <div className="h-fit rounded-2xl border border-brand-100 bg-brand-50 p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                        <ShieldCheck size={18} className="text-brand-600" />
+                        <h3 className="text-base font-semibold text-ink-900">Password requirements</h3>
+                    </div>
+                    <ul className="space-y-2 text-sm text-ink-600">
+                        <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-500" /> 8–20 characters</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-500" /> One uppercase letter</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-500" /> One lowercase letter</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-500" /> One number</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-brand-500" /> One special character</li>
                     </ul>
-
                 </div>
-
             </div>
 
-            {/* ACTIONS */}
-
-            <div
-                className="
-                flex
-                justify-end
-                gap-3
-                mt-6
-                pt-5
-                border-t
-                "
-            >
-
-                <button
+            <div className="mt-6 flex justify-end gap-3 border-t border-ink-100 pt-5">
+                <Button
+                    variant="secondary"
                     onClick={() => {
-
                         setOldPassword("");
                         setNewPassword("");
                         setConfirmPassword("");
-
                     }}
-                    className="
-                    px-5
-                    py-2.5
-                    border
-                    border-gray-300
-                    rounded-xl
-                    hover:bg-gray-100
-                    transition
-                    "
                 >
                     Clear
-                </button>
-
-                <button
-                    onClick={handleChangePassword}
-                    disabled={loading}
-                    className="
-                    px-5
-                    py-2.5
-                    bg-blue-600
-                    hover:bg-blue-700
-                    text-white
-                    rounded-xl
-                    flex
-                    items-center
-                    gap-2
-                    transition
-                    disabled:bg-gray-400
-                    "
-                >
-
-                    <Save size={16} />
-
-                    {
-                        loading
-                            ? "Updating..."
-                            : "Change Password"
-                    }
-
-                </button>
-
+                </Button>
+                <Button icon={Save} loading={loading} onClick={handleChangePassword}>
+                    Change password
+                </Button>
             </div>
-
         </div>
-
     );
-
 }
 
 export default ChangePassword;

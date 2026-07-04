@@ -1,0 +1,17 @@
+{
+  "name": "CommerceHub",
+  "short_name": "CommerceHub",
+  "description": "A modern multi-vendor marketplace — discover products, sell with ease, and manage it all in one place.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4F3DE8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

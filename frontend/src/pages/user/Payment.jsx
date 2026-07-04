@@ -4,17 +4,14 @@ import API from "../../services/api";
 
 import {
     ArrowLeft,
-    MapPin,
     CreditCard,
     CheckCircle2,
     Receipt,
     ShieldCheck,
-    Home,
-    Building2,
-    Building,
-    Store,
     Phone
 } from "lucide-react";
+import { Card, Badge, Button, PageLoader } from "../../components/ui";
+import { getAddressTypeInfo } from "../../utils/addressType";
 
 function Payment() {
     const navigate = useNavigate();
@@ -22,398 +19,162 @@ function Payment() {
 
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [paying, setPaying] = useState(false);
     const [paymentSuccess, setPaymentSuccess] = useState(null);
 
     useEffect(() => {
         fetchOrder();
     }, []);
 
-    const getAddressType = (type) => {
-
-        switch (type) {
-
-            case "HOME":
-                return {
-                    icon: <Home size={18} />,
-                    label: "Home"
-                };
-
-            case "OFFICE":
-                return {
-                    icon: <Building2 size={18} />,
-                    label: "Office"
-                };
-
-            case "APARTMENT":
-                return {
-                    icon: <Building size={18} />,
-                    label: "Apartment"
-                };
-
-            case "SHOP":
-                return {
-                    icon: <Store size={18} />,
-                    label: "Shop"
-                };
-
-            default:
-                return {
-                    icon: <MapPin size={18} />,
-                    label: "Other"
-                };
-        }
-    };
-
-    // ================= FETCH ORDER =================
     const fetchOrder = async () => {
         try {
             const res = await API.get(`/user/orders/${orderId}`);
             setOrder(res.data.data);
         } catch (err) {
             console.log(err.response?.data || err);
-            alert("Order not found");
             navigate("/");
         } finally {
             setLoading(false);
         }
     };
 
-    // ================= PAYMENT =================
     const handlePayment = async () => {
         try {
-            const res = await API.post("/payments/pay", null, {
-                params: { orderId }
-            });
-
+            setPaying(true);
+            const res = await API.post("/payments/pay", null, { params: { orderId } });
             const payment = res.data.data;
 
-            setPaymentSuccess({
-                transactionId: payment.transactionId,
-                time: payment.paidAt
-            });
+            setPaymentSuccess({ transactionId: payment.transactionId, time: payment.paidAt });
 
             setTimeout(() => {
                 navigate("/orders");
             }, 2500);
-
         } catch (err) {
             console.log(err);
-            alert("Payment failed");
+        } finally {
+            setPaying(false);
         }
     };
 
-    if (loading) {
-        return <p className="text-center mt-10">Loading...</p>;
-    }
-
+    if (loading) return <PageLoader label="Loading order" />;
     if (!order) return null;
 
+    const addressInfo = getAddressTypeInfo(order.address?.addressType);
+
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-
-            <div className="max-w-5xl mx-auto">
-
-                {/* HEADER */}
-                <div className="flex items-center gap-4 mb-8">
-
+        <div className="container-app py-6 sm:py-8">
+            <div className="mx-auto max-w-5xl">
+                <div className="mb-8 flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="
-                    w-10
-                    h-10
-                    border
-                    rounded-xl
-                    flex
-                    items-center
-                    justify-center
-                    hover:bg-gray-100
-                    "
+                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-ink-200 bg-white shadow-xs transition-colors hover:bg-ink-100"
                     >
                         <ArrowLeft size={18} />
                     </button>
-
                     <div>
-
-                        <h1 className="text-3xl font-bold">
-                            Secure Checkout
-                        </h1>
-
-                        <p className="text-gray-500">
-                            Complete your payment securely
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {/* CARD */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* ORDER INFO */}
-                    <div className="grid lg:grid-cols-3 gap-6">
-                        {/* LEFT */}
-                        <div className="lg:col-span-2 space-y-6">
-
-                            <div className="bg-white rounded-2xl shadow border p-6">
-
-                                <div className="flex items-center gap-2 mb-4">
-
-                                    <Receipt size={20} />
-
-                                    <h2 className="font-bold text-xl">
-                                        Order Summary
-                                    </h2>
-
-                                </div>
-
-                                <div className="space-y-3">
-
-                                    <div className="flex justify-between">
-
-                                        <span>Order ID</span>
-
-                                        <span>
-                                            #{order.orderId}
-                                        </span>
-
-                                    </div>
-
-                                    <div className="flex justify-between">
-
-                                        <span>Status</span>
-
-                                        <span className="text-orange-600">
-                                            {order.status}
-                                        </span>
-
-                                    </div>
-
-                                    <div className="flex justify-between font-bold text-xl">
-
-                                        <span>Total Amount</span>
-
-                                        <span>
-                                            ₹ {Number(order.totalPrice).toLocaleString("en-IN")}
-                                        </span>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                            {/* ADDRESS */}
-
-                            <div className="bg-white rounded-2xl shadow border p-6">
-
-                                {(() => {
-
-                                    const addressInfo =
-                                        getAddressType(
-                                            order.address?.addressType
-                                        );
-
-                                    return (
-
-                                        <>
-
-                                            <div className="flex items-center gap-2 mb-4">
-
-                                                {addressInfo.icon}
-
-                                                <h2 className="font-semibold">
-                                                    {addressInfo.label} Address
-                                                </h2>
-
-                                            </div>
-
-                                            <div className="space-y-2">
-
-                                                <p className="font-semibold text-gray-900">
-                                                    {order.address?.street}
-                                                </p>
-
-                                                <p className="text-gray-600">
-                                                    {order.address?.city},
-                                                    {" "}
-                                                    {order.address?.state}
-                                                </p>
-
-                                                <p className="text-gray-600">
-                                                    {order.address?.country}
-                                                    {" "}
-                                                    -
-                                                    {" "}
-                                                    {order.address?.zipCode}
-                                                </p>
-
-                                                <div className="flex items-center gap-2 pt-2">
-
-                                                    <Phone size={16} />
-
-                                                    <span className="text-gray-700">
-                                                        {order.address?.phoneNumber}
-                                                    </span>
-
-                                                </div>
-
-                                            </div>
-
-                                        </>
-
-                                    );
-
-                                })()}
-
-                            </div>
-                        </div>
-
-                        {/* PAYMENT BUTTON */}
-
-                        <div className="bg-white rounded-2xl shadow border p-6 h-fit sticky top-24">
-
-                            <div className="flex items-center gap-2 mb-4">
-
-                                <CreditCard size={20} />
-
-                                <h2 className="font-bold text-xl">
-                                    Payment
-                                </h2>
-
-                            </div>
-
-                            <div
-                                className="
-                            bg-green-50
-                            border
-                            border-green-200
-                            rounded-xl
-                            p-4
-                            mb-5
-                            "
-                            >
-
-                                <div className="flex items-center gap-2">
-
-                                    <ShieldCheck
-                                        size={18}
-                                        className="text-green-600"
-                                    />
-
-                                    <span className="font-medium text-green-700">
-                                        Secure Payment
-                                    </span>
-
-                                </div>
-
-                            </div>
-                            <div className="text-center mb-5">
-
-                                <p className="text-gray-500 text-sm">
-                                    Amount Payable
-                                </p>
-
-                                <h2 className="text-3xl font-bold text-green-600 mt-1">
-                                    ₹ {
-                                        Number(order.totalPrice)
-                                            .toLocaleString("en-IN")
-                                    }
-                                </h2>
-
-                            </div>
-
-                            {
-                                !paymentSuccess && (
-
-                                    <div className="flex justify-center">
-
-                                        <button
-                                            onClick={handlePayment}
-                                            className="
-                                        bg-green-600
-                                        hover:bg-green-700
-                                        text-white
-                                        px-10
-                                        py-3
-                                        rounded-xl
-                                        font-semibold
-                                        text-lg
-                                        shadow-md
-                                        hover:shadow-lg
-                                        transition
-                                        "
-                                        >
-
-                                            Pay ₹ {
-                                                Number(order.totalPrice)
-                                                    .toLocaleString("en-IN")
-                                            }
-
-                                        </button>
-
-                                    </div>
-
-                                )
-                            }
-
-                        </div>
-
-                        {/* SUCCESS */}
-                        {
-                            paymentSuccess && (
-
-                                <div className="bg-green-50 border border-green-200 rounded-2xl p-5 mt-5">
-
-                                    <div className="flex items-center gap-3">
-
-                                        <CheckCircle2
-                                            size={28}
-                                            className="text-green-600"
-                                        />
-
-                                        <div>
-
-                                            <h3 className="font-bold text-green-700">
-                                                Payment Successful
-                                            </h3>
-
-                                            <p className="text-sm text-gray-600">
-                                                Your order has been confirmed
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div className="mt-4 text-sm space-y-2">
-
-                                        <p>
-                                            Transaction ID:
-                                            <span className="font-semibold ml-2">
-                                                {paymentSuccess.transactionId}
-                                            </span>
-                                        </p>
-
-                                        <p>
-                                            Paid At:
-                                            <span className="font-semibold ml-2">
-
-                                                new Date{paymentSuccess.time}
-                                                .toLocaleString("en-IN")
-                                            </span>
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            )
-                        }
+                        <h1 className="text-2xl font-bold text-ink-950 sm:text-3xl">Secure Checkout</h1>
+                        <p className="text-sm text-ink-500">Complete your payment securely</p>
                     </div>
                 </div>
 
+                <div className="grid gap-6 lg:grid-cols-3">
+                    {/* LEFT */}
+                    <div className="space-y-6 lg:col-span-2">
+                        <Card>
+                            <div className="mb-4 flex items-center gap-2">
+                                <Receipt size={20} className="text-brand-600" />
+                                <h2 className="text-lg font-bold text-ink-900">Order summary</h2>
+                            </div>
+
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between text-ink-600">
+                                    <span>Order ID</span>
+                                    <span className="font-medium text-ink-900">#{order.orderId}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-ink-600">
+                                    <span>Status</span>
+                                    <Badge variant="warning">{order.status}</Badge>
+                                </div>
+                                <div className="flex justify-between border-t border-ink-100 pt-3 text-lg font-bold text-ink-950">
+                                    <span>Total amount</span>
+                                    <span>₹{Number(order.totalPrice).toLocaleString("en-IN")}</span>
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card>
+                            <div className="mb-4 flex items-center gap-2">
+                                <addressInfo.Icon size={18} />
+                                <h2 className="text-lg font-semibold text-ink-900">{addressInfo.label} address</h2>
+                            </div>
+
+                            <div className="space-y-1.5 text-sm">
+                                <p className="font-semibold text-ink-900">{order.address?.street}</p>
+                                <p className="text-ink-600">{order.address?.city}, {order.address?.state}</p>
+                                <p className="text-ink-600">{order.address?.country} - {order.address?.zipCode}</p>
+                                <div className="flex items-center gap-2 pt-2 text-ink-700">
+                                    <Phone size={15} />
+                                    {order.address?.phoneNumber}
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* RIGHT */}
+                    <div className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
+                        <Card>
+                            <div className="mb-4 flex items-center gap-2">
+                                <CreditCard size={20} className="text-brand-600" />
+                                <h2 className="text-lg font-bold text-ink-900">Payment</h2>
+                            </div>
+
+                            <div className="mb-5 flex items-center gap-2 rounded-xl border border-success-200 bg-success-50 p-4">
+                                <ShieldCheck size={18} className="text-success-600" />
+                                <span className="text-sm font-medium text-success-700">Secure payment</span>
+                            </div>
+
+                            <div className="mb-5 text-center">
+                                <p className="text-sm text-ink-500">Amount payable</p>
+                                <h2 className="mt-1 text-3xl font-bold text-success-600">
+                                    ₹{Number(order.totalPrice).toLocaleString("en-IN")}
+                                </h2>
+                            </div>
+
+                            {!paymentSuccess && (
+                                <Button variant="success" size="lg" fullWidth loading={paying} onClick={handlePayment}>
+                                    Pay ₹{Number(order.totalPrice).toLocaleString("en-IN")}
+                                </Button>
+                            )}
+                        </Card>
+
+                        {paymentSuccess && (
+                            <div className="animate-scale-in rounded-2xl border border-success-200 bg-success-50 p-5">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle2 size={28} className="text-success-600" />
+                                    <div>
+                                        <h3 className="font-bold text-success-700">Payment successful</h3>
+                                        <p className="text-sm text-ink-600">Your order has been confirmed</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 space-y-2 text-sm">
+                                    <p>
+                                        Transaction ID:
+                                        <span className="ml-2 font-semibold">{paymentSuccess.transactionId}</span>
+                                    </p>
+                                    <p>
+                                        Paid at:
+                                        <span className="ml-2 font-semibold">
+                                            {new Date(paymentSuccess.time).toLocaleString("en-IN")}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
-
     );
 }
 

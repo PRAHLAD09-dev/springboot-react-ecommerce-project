@@ -1,32 +1,26 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
-import {
-    Home,
-    Building2,
-    Building,
-    Store,
-    MapPin
-} from "lucide-react";
+import { MapPin, Pencil, Trash2, Plus } from "lucide-react";
+import { Input, Select, Button, EmptyState } from "../../components/ui";
+import { getAddressTypeInfo } from "../../utils/addressType";
+
+const EMPTY_FORM = {
+    addressType: "HOME",
+    phoneNumber: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "",
+    zipCode: ""
+};
 
 function Address() {
-
     const [addresses, setAddresses] = useState([]);
-
-    const [form, setForm] = useState({
-        addressType: "HOME",
-        phoneNumber: "",
-        street: "",
-        city: "",
-        state: "",
-        country: "",
-        zipCode: ""
-    });
-
+    const [form, setForm] = useState(EMPTY_FORM);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
-    // ================= FETCH =================
     const fetchAddresses = async () => {
         try {
             const res = await API.get("/user/address");
@@ -40,16 +34,24 @@ function Address() {
         fetchAddresses();
     }, []);
 
-    // ================= INPUT =================
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    // ================= SUBMIT =================
-    const handleSubmit = async () => {
+    const onlyDigits = (name, maxLength) => (e) => {
+        const value = e.target.value.replace(/\D/g, "").slice(0, maxLength);
+        setForm({ ...form, [name]: value });
+    };
 
+    const onlyLetters = (name) => (e) => {
+        const value = e.target.value.replace(/[^a-zA-Z ]/g, "");
+        setForm({ ...form, [name]: value });
+    };
+
+    const handleSubmit = async () => {
+        setErrors({});
         if (!form.phoneNumber || !form.street) {
-            alert("Please fill required fields");
+            setErrors({ form: "Please fill required fields" });
             return;
         }
 
@@ -62,88 +64,26 @@ function Address() {
                 await API.post("/user/address", form);
             }
 
-            setForm({
-                addressType: "HOME",
-                phoneNumber: "",
-                street: "",
-                city: "",
-                state: "",
-                country: "",
-                zipCode: ""
-            });
-
+            setForm(EMPTY_FORM);
             setEditingId(null);
             fetchAddresses();
-
         } catch (err) {
-
             console.log(err.response?.data);
-
             if (err.response?.data?.errors) {
-
-                setErrors(
-                    err.response.data.errors
-                );
-
+                setErrors(err.response.data.errors);
             }
-
+        } finally {
+            setLoading(false);
         }
     };
 
-
-    const getAddressType = (type) => {
-
-        switch (type) {
-
-            case "HOME":
-                return {
-                    icon: <Home size={16} />,
-                    label: "Home",
-                    style: "bg-green-100 text-green-700"
-                };
-
-            case "OFFICE":
-                return {
-                    icon: <Building2 size={16} />,
-                    label: "Office",
-                    style: "bg-blue-100 text-blue-700"
-                };
-
-            case "APARTMENT":
-                return {
-                    icon: <Building size={16} />,
-                    label: "Apartment",
-                    style: "bg-purple-100 text-purple-700"
-                };
-
-            case "SHOP":
-                return {
-                    icon: <Store size={16} />,
-                    label: "Shop",
-                    style: "bg-orange-100 text-orange-700"
-                };
-
-            default:
-                return {
-                    icon: <MapPin size={16} />,
-                    label: "Other",
-                    style: "bg-gray-100 text-gray-700"
-                };
-        }
-
-    };
-
-    // ================= DELETE =================
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this address?")) return;
-
         await API.delete(`/user/address/${id}`);
         fetchAddresses();
     };
 
-    // ================= EDIT =================
     const handleEdit = (addr) => {
-
         setForm({
             addressType: addr.addressType || "HOME",
             phoneNumber: addr.phoneNumber || "",
@@ -153,389 +93,138 @@ function Address() {
             country: addr.country || "",
             zipCode: addr.zipCode || ""
         });
-
         setEditingId(addr.id);
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 p-6">
-
-
-
-            {/* ================= FORM ================= */}
-            <div className="bg-white border rounded-2xl p-6 mb-6">
-
-                <h2 className="font-semibold mb-4 text-lg">
-                    {editingId ? "Update Address" : "Add New Address"}
+        <div className="mt-6">
+            {/* FORM */}
+            <div className="card-surface mb-6 p-5 sm:p-6">
+                <h2 className="mb-4 text-lg font-semibold text-ink-900">
+                    {editingId ? "Update address" : "Add new address"}
                 </h2>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                {errors.form && (
+                    <div className="mb-4 rounded-xl bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700">{errors.form}</div>
+                )}
 
-                    <select
-                        name="addressType"
-                        value={form.addressType}
-                        onChange={handleChange}
-                        className="
-                                border
-                                p-3
-                                rounded-xl
-                                focus:ring-2
-                                focus:ring-blue-500
-                                outline-none
-                                "
-                    >
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Select label="Address type" name="addressType" value={form.addressType} onChange={handleChange}>
                         <option value="HOME">Home</option>
                         <option value="OFFICE">Office</option>
                         <option value="APARTMENT">Apartment</option>
                         <option value="SHOP">Shop</option>
                         <option value="OTHER">Other</option>
-                    </select>
+                    </Select>
 
-                    <input
+                    <Input
+                        label="Phone number"
                         name="phoneNumber"
                         maxLength={10}
                         value={form.phoneNumber}
-                        onChange={(e) => {
-
-                            const value =
-                                e.target.value.replace(/\D/g, "");
-
-                            setForm({
-                                ...form,
-                                phoneNumber: value
-                            });
-
-                        }}
-                        placeholder="Phone Number"
-                        className="
-                                w-full
-                                border
-                                border-gray-300
-                                rounded-xl
-                                px-4
-                                py-3
-                                focus:ring-2
-                                focus:ring-blue-500
-                                focus:border-blue-500
-                                outline-none
-                                "
+                        onChange={onlyDigits("phoneNumber", 10)}
+                        placeholder="10-digit phone number"
+                        error={errors.phoneNumber}
                     />
-                    <input name="street" value={form.street} onChange={handleChange} placeholder="Street"
-                        className="
-                        w-full
-                        border
-                        border-gray-300
-                        rounded-xl
-                        px-4
-                        py-3
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        outline-none
-                        " />
 
-                    <input
+                    <Input
+                        label="Street"
+                        name="street"
+                        value={form.street}
+                        onChange={handleChange}
+                        placeholder="House no, street"
+                        error={errors.street}
+                        className="md:col-span-2"
+                    />
+
+                    <Input
+                        label="City"
                         name="city"
                         value={form.city}
-                        onChange={(e) => {
-
-                            const value =
-                                e.target.value.replace(
-                                    /[^a-zA-Z ]/g,
-                                    ""
-                                );
-
-                            setForm({
-                                ...form,
-                                city: value
-                            });
-
-                        }}
+                        onChange={onlyLetters("city")}
                         placeholder="City"
-                        className="
-                        w-full
-                        border
-                        border-gray-300
-                        rounded-xl
-                        px-4
-                        py-3
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        outline-none
-                        "
                     />
-                    <input
+
+                    <Input
+                        label="State"
                         name="state"
                         value={form.state}
-                        onChange={(e) => {
-
-                            const value =
-                                e.target.value.replace(
-                                    /[^a-zA-Z ]/g,
-                                    ""
-                                );
-
-                            setForm({
-                                ...form,
-                                state: value
-                            });
-
-                        }}
+                        onChange={onlyLetters("state")}
                         placeholder="State"
-                        className="
-                        w-full
-                        border
-                        border-gray-300
-                        rounded-xl
-                        px-4
-                        py-3
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        outline-none
-                        "
                     />
 
-                    <input
+                    <Input
+                        label="Country"
                         name="country"
                         value={form.country}
-                        onChange={(e) => {
-
-                            const value =
-                                e.target.value.replace(
-                                    /[^a-zA-Z ]/g,
-                                    ""
-                                );
-
-                            setForm({
-                                ...form,
-                                country: value
-                            });
-
-                        }}
+                        onChange={onlyLetters("country")}
                         placeholder="Country"
-                        className="
-                        w-full
-                        border
-                        border-gray-300
-                        rounded-xl
-                        px-4
-                        py-3
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        outline-none
-                        "
                     />
 
-                    <input
+                    <Input
+                        label="Zip code"
                         name="zipCode"
                         maxLength={6}
                         value={form.zipCode}
-                        onChange={(e) => {
-
-                            const value =
-                                e.target.value.replace(/\D/g, "");
-
-                            setForm({
-                                ...form,
-                                zipCode: value
-                            });
-
-                        }}
-                        placeholder="Zip Code"
-                        className="
-                        w-full
-                        border
-                        border-gray-300
-                        rounded-xl
-                        px-4
-                        py-3
-                        focus:ring-2
-                        focus:ring-blue-500
-                        focus:border-blue-500
-                        outline-none
-                        "
+                        onChange={onlyDigits("zipCode", 6)}
+                        placeholder="Zip / postal code"
                     />
-
                 </div>
 
-                <div className="flex justify-end gap-3 mt-5">
-
-                    {
-                        editingId && (
-
-                            <button
-                                onClick={() => {
-                                    setEditingId(null);
-
-                                    setForm({
-                                        addressType: "HOME",
-                                        phoneNumber: "",
-                                        street: "",
-                                        city: "",
-                                        state: "",
-                                        country: "",
-                                        zipCode: ""
-                                    });
-                                }}
-                                className="
-                px-4
-                py-2
-                border
-                rounded-xl
-                "
-                            >
-                                Cancel
-                            </button>
-
-                        )
-                    }
-
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="
-        px-5
-        py-2
-        bg-blue-600
-        text-white
-        rounded-xl
-        "
-                    >
-                        {
-                            loading
-                                ? "Saving..."
-                                : editingId
-                                    ? "Update Address"
-                                    : "Add Address"
-                        }
-                    </button>
-
-                </div>
-
-            </div>
-
-            {/* ================= LIST ================= */}
-            <div className="grid md:grid-cols-2 gap-4">
-
-                {addresses.length === 0 && (
-                    <p className="text-gray-500">
-                        No address added
-                    </p>
-                )}
-
-                {addresses.map((addr) => {
-
-                    const addressInfo =
-                        getAddressType(
-                            addr.addressType
-                        );
-
-                    return (
-
-                        <div
-                            key={addr.id}
-                            className="
-                bg-white
-                border
-                rounded-2xl
-                p-5
-                "
+                <div className="mt-5 flex justify-end gap-3">
+                    {editingId && (
+                        <Button
+                            variant="secondary"
+                            onClick={() => {
+                                setEditingId(null);
+                                setForm(EMPTY_FORM);
+                            }}
                         >
+                            Cancel
+                        </Button>
+                    )}
 
-                            <div className="flex justify-between items-start">
-
-                                <div>
-
-                                    <span
-                                        className={`
-                            flex
-                            items-center
-                            gap-2
-                            px-3
-                            py-1
-                            rounded-full
-                            text-xs
-                            font-medium
-                            w-fit
-                            ${addressInfo.style}
-                            `}
-                                    >
-
-                                        {addressInfo.icon}
-
-                                        {addressInfo.label}
-
-                                    </span>
-
-                                    <p className="mt-3 text-gray-700">
-                                        {addr.street}
-                                    </p>
-
-                                    <p className="text-gray-600">
-                                        {addr.city}, {addr.state}
-                                    </p>
-
-                                    <p className="text-gray-500">
-                                        {addr.country} - {addr.zipCode}
-                                    </p>
-
-                                    <p className="text-gray-500 mt-2">
-                                        {addr.phoneNumber}
-                                    </p>
-
-                                </div>
-
-                                <div className="flex gap-2">
-
-                                    <button
-                                        onClick={() =>
-                                            handleEdit(addr)
-                                        }
-                                        className="
-                            px-4
-                            py-2
-                            bg-yellow-500
-                            text-white
-                            rounded-xl
-                            "
-                                    >
-                                        Edit
-                                    </button>
-
-                                    <button
-                                        onClick={() =>
-                                            handleDelete(addr.id)
-                                        }
-                                        className="
-                            px-4
-                            py-2
-                            bg-red-500
-                            text-white
-                            rounded-xl
-                            "
-                                    >
-                                        Delete
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    );
-
-                })}
-
+                    <Button icon={Plus} loading={loading} onClick={handleSubmit}>
+                        {editingId ? "Update address" : "Add address"}
+                    </Button>
+                </div>
             </div>
 
+            {/* LIST */}
+            {addresses.length === 0 ? (
+                <EmptyState icon={MapPin} title="No addresses added" description="Add a delivery address using the form above." />
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                    {addresses.map((addr) => {
+                        const addressInfo = getAddressTypeInfo(addr.addressType);
+
+                        return (
+                            <div key={addr.id} className="card-surface p-5">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <span className={`flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${addressInfo.style}`}>
+                                            <addressInfo.Icon size={16} />
+                                            {addressInfo.label}
+                                        </span>
+
+                                        <p className="mt-3 text-ink-700">{addr.street}</p>
+                                        <p className="text-ink-600">{addr.city}, {addr.state}</p>
+                                        <p className="text-ink-500">{addr.country} - {addr.zipCode}</p>
+                                        <p className="mt-2 text-ink-500">{addr.phoneNumber}</p>
+                                    </div>
+
+                                    <div className="flex shrink-0 gap-2">
+                                        <Button variant="secondary" size="sm" icon={Pencil} onClick={() => handleEdit(addr)} />
+                                        <Button variant="danger" size="sm" icon={Trash2} onClick={() => handleDelete(addr.id)} />
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
-
     );
-
 }
 
 export default Address;

@@ -1,201 +1,131 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { Mail, Lock, ShoppingBag } from "lucide-react";
 import API from "../../services/api";
+import { Input, Button } from "../../components/ui";
 
 function Login() {
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [formError, setFormError] = useState("");
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            alert("Enter email and password");
-            return;
-        }
+    const validate = () => {
+        const next = {};
+        if (!email) next.email = "Email is required";
+        if (!password) next.password = "Password is required";
+        setErrors(next);
+        return Object.keys(next).length === 0;
+    };
 
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setFormError("");
+        if (!validate()) return;
+
+        setLoading(true);
         try {
-            const res = await API.post("/auth/login", {
-                email,
-                password
-            });
-
-            console.log("Login Response:", res.data);
-
+            const res = await API.post("/auth/login", { email, password });
             const userData = res.data.data;
 
             localStorage.setItem("token", userData.token);
             localStorage.setItem("role", userData.role.toLowerCase());
             localStorage.setItem("isLoggedIn", "true");
-
             localStorage.setItem("email", userData.email);
 
-            window.dispatchEvent(
-                new Event("authChanged")
-            );
-
-            alert("Login successful");
+            window.dispatchEvent(new Event("authChanged"));
 
             if (userData.role.toLowerCase() === "admin") {
                 navigate("/admin/dashboard");
             } else {
                 navigate("/profile");
             }
-
         } catch (err) {
-            console.log(err);
-
             if (err.response?.status === 401) {
-                alert("Invalid credentials");
+                setFormError("Invalid email or password.");
             } else {
-                alert("Server error");
+                setFormError("Something went wrong. Please try again.");
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="
-                    min-h-screen
-                    flex
-                    justify-center
-                    items-center
-                    bg-gray-50
-                    px-4
-                ">
-            <div className="
-                w-full
-                max-w-md
-                bg-white
-                shadow-xl
-                rounded-2xl
-                p-8
-                    ">
-
-                <h1 className="text-3xl font-bold text-center mb-2">
-                    Welcome Back
-                </h1>
-
-                <p className="text-center text-gray-500 mb-6">
-                    Sign in to continue shopping
-                </p>
-
-                <input
-                    type="email"
-                    placeholder="Enter Email"
-                    className="
-                            w-full
-                            border
-                            rounded-xl
-                            p-3
-                            mb-4
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-blue-500
-                        "
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <input
-                    type="password"
-                    placeholder="Enter Password"
-                    className="
-                            w-full
-                            border
-                            rounded-xl
-                            p-3
-                            mb-4
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-blue-500
-                        "
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button
-                    onClick={handleLogin}
-                    className="
-                            w-full
-                            bg-blue-600
-                            hover:bg-blue-700
-                            text-white
-                            py-3
-                            rounded-xl
-                            font-medium
-                            transition
-                        "
-                >
-                    Login
-                </button>
-
-                <p
-                    onClick={() => navigate("/forgot-password")}
-                    className="text-center text-sm mt-3 text-blue-500 cursor-pointer"
-                >
-                    Forgot Password?
-                </p>
-
-                <div className="flex items-center my-5">
-
-                    <div className="flex-1 border-t"></div>
-
-                    <span className="px-3 text-gray-500 text-sm">
-                        OR
-                    </span>
-
-                    <div className="flex-1 border-t"></div>
-
+        <div className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-ink-50 px-4 py-12">
+            <div className="w-full max-w-md animate-slide-up">
+                <div className="mb-7 text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-md">
+                        <ShoppingBag size={22} />
+                    </div>
+                    <h1 className="text-2xl font-bold text-ink-950">Welcome back</h1>
+                    <p className="mt-1.5 text-sm text-ink-500">Sign in to continue shopping</p>
                 </div>
-                <a
-                    href="https://ecommerce-backend-o9vh.onrender.com/oauth2/authorization/google"
-                    className="
-                        flex
-                        items-center
-                        justify-center
-                        gap-3
-                        border
-                        rounded-xl
-                        py-3
-                        px-4
-                        hover:bg-gray-50
-                        transition
-                        w-full
-                    "
-                >
 
-                    <img
-                        src="https://www.svgrepo.com/show/475656/google-color.svg"
-                        alt="Google"
-                        className="w-5 h-5"
+                <form onSubmit={handleLogin} className="card-surface space-y-4 p-6 sm:p-8">
+                    {formError && (
+                        <div className="rounded-xl bg-danger-50 px-4 py-3 text-sm font-medium text-danger-700">
+                            {formError}
+                        </div>
+                    )}
+
+                    <Input
+                        id="email"
+                        label="Email"
+                        type="email"
+                        icon={Mail}
+                        placeholder="you@example.com"
+                        value={email}
+                        error={errors.email}
+                        onChange={(e) => setEmail(e.target.value)}
                     />
 
-                    Continue with Google
+                    <Input
+                        id="password"
+                        label="Password"
+                        type="password"
+                        icon={Lock}
+                        placeholder="Enter your password"
+                        value={password}
+                        error={errors.password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
 
-                </a>
-                <div className="text-center mt-5">
+                    <div className="flex justify-end">
+                        <Link to="/forgot-password" className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+                            Forgot password?
+                        </Link>
+                    </div>
 
-                    <p className="text-gray-600">
+                    <Button type="submit" fullWidth size="lg" loading={loading}>
+                        Log in
+                    </Button>
 
-                        Don't have an account?
+                    <div className="flex items-center gap-3 py-1">
+                        <div className="h-px flex-1 bg-ink-200" />
+                        <span className="text-xs font-medium text-ink-400">OR</span>
+                        <div className="h-px flex-1 bg-ink-200" />
+                    </div>
 
-                        <span
-                            onClick={() => navigate("/signup")}
-                            className="
-                                text-blue-600
-                                cursor-pointer
-                                ml-1
-                                font-medium
-                            "
-                        >
-                            Sign Up
-                        </span>
+                    <a
+                        href="https://ecommerce-backend-o9vh.onrender.com/oauth2/authorization/google"
+                        className="flex w-full items-center justify-center gap-3 rounded-xl border border-ink-200 py-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-ink-50"
+                    >
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="h-5 w-5" />
+                        Continue with Google
+                    </a>
 
+                    <p className="pt-1 text-center text-sm text-ink-500">
+                        Don't have an account?{" "}
+                        <Link to="/signup" className="font-semibold text-brand-600 hover:text-brand-700">
+                            Sign up
+                        </Link>
                     </p>
-
-                </div>
+                </form>
             </div>
-
         </div>
     );
 }
