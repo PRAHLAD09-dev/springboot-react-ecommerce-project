@@ -1,500 +1,295 @@
 <div align="center">
 
-# 🛒 CommerceHub
+# CommerceHub
 
-![GitHub stars](https://img.shields.io/github/stars/PRAHLAD09-dev/springboot-react-ecommerce-project?style=for-the-badge)
+### AI-Powered Full Stack Multi-Role E-Commerce Platform
 
-![GitHub forks](https://img.shields.io/github/forks/PRAHLAD09-dev/springboot-react-ecommerce-project?style=for-the-badge)
+Production-inspired e-commerce platform built with **Spring Boot**, **React**, **PostgreSQL**, and **Google Gemini AI**, featuring secure authentication, AI-assisted product management, responsive dashboards, and cloud deployment.
 
-![GitHub last commit](https://img.shields.io/github/last-commit/PRAHLAD09-dev/springboot-react-ecommerce-project?style=for-the-badge)
-
-![GitHub repo size](https://img.shields.io/github/repo-size/PRAHLAD09-dev/springboot-react-ecommerce-project?style=for-the-badge)
-
-![GitHub issues](https://img.shields.io/github/issues/PRAHLAD09-dev/springboot-react-ecommerce-project?style=for-the-badge)
-
-### AI Powered Multi-Role E-Commerce Platform
-
-A modern full-stack e-commerce platform built using **Spring Boot**, **React**, and **Artificial Intelligence (Google Gemini)** that provides a complete online shopping experience for **Customers, Merchants, and Administrators**.
-
-<img src="./screenshots/banner.png" width="100%" alt="CommerceHub Banner"/>
+<img src="./frontend/assets/banner.png" width="100%" alt="CommerceHub Banner"/>
 
 <br>
 
 ![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
-![Vite](https://img.shields.io/badge/Vite-Frontend-646CFF?style=for-the-badge&logo=vite)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=for-the-badge&logo=postgresql)
-![Render](https://img.shields.io/badge/Render-Backend-46E3B7?style=for-the-badge&logo=render)
-![Vercel](https://img.shields.io/badge/Vercel-Frontend-000000?style=for-the-badge&logo=vercel)
-![Cloudinary](https://img.shields.io/badge/Cloudinary-Images-3448C5?style=for-the-badge&logo=cloudinary)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql)
+
+![JWT](https://img.shields.io/badge/JWT-Authentication-red?style=flat-square)
+![OAuth2](https://img.shields.io/badge/Google-OAuth2-blue?style=flat-square)
+![Gemini_AI](https://img.shields.io/badge/Google-Gemini-purple?style=flat-square)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-Images-3448C5?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square)
 
 </div>
 
 ---
 
-# 📖 Overview
+# Overview
 
-CommerceHub is a production-inspired AI-powered multi-role e-commerce platform that enables customers to browse and purchase products, merchants to manage their online stores, and administrators to control the overall marketplace from a centralized dashboard.
+CommerceHub is a production-inspired AI-powered multi-role e-commerce platform built to simulate a real-world online marketplace.
 
-Unlike traditional CRUD-based e-commerce projects, CommerceHub integrates **Google Gemini AI** to automatically generate product descriptions, specifications, feature highlights, and SEO-friendly information directly from uploaded product images, significantly reducing manual effort for merchants.
+The platform enables customers to shop seamlessly, merchants to manage products with AI assistance, and administrators to monitor the entire marketplace through dedicated dashboards.
 
-The application follows a clean client-server architecture where the React frontend communicates with a secure Spring Boot REST API protected using JWT authentication and role-based authorization.
-
----
-
-# ✨ Key Highlights
-
-- 🤖 AI Powered Product Generation using Google Gemini
-- 🔐 Secure JWT Authentication & Authorization
-- 👥 Multi-Role System (User • Merchant • Admin)
-- 📧 Email OTP Verification using Brevo
-- ☁ Cloud Image Storage using Cloudinary
-- 🛒 Complete Shopping Experience
-- ⭐ Product Reviews & Ratings
-- 📦 Merchant Product Management
-- 🔍 Smart Search, Filtering & Pagination
-- 📱 Fully Responsive User Interface
-- 📄 Swagger API Documentation
-- 🌐 Deployed using Vercel + Render + Neon PostgreSQL
+Key capabilities include secure JWT authentication, Google OAuth2 login, AI-powered product generation using Google Gemini, Cloudinary image management, Email OTP verification, responsive UI, and scalable REST APIs.
 
 ---
 
-# 🚀 Live Demo
+# Live Demo
 
-| Service | Link |
-|----------|------|
-| 🌍 Frontend | https://springboot-react-ecommerce-project-alpha.vercel.app |
-| ⚙ Backend API | https://ecommerce-backend-o9vh.onrender.com/|
-| 📄 Swagger Documentation | https://ecommerce-backend-o9vh.onrender.com/swagger-ui/index.html#/ |
-| Health Check | https://ecommerce-backend-o9vh.onrender.com/actuator/health | 
-
-
+| Service | URL |
+|---------|-----|
+| Frontend | https://springboot-react-ecommerce-project-alpha.vercel.app |
+| Backend API | https://ecommerce-backend-o9vh.onrender.com |
+| Swagger | https://ecommerce-backend-o9vh.onrender.com/swagger-ui/index.html#/ |
+| Health Check | https://ecommerce-backend-o9vh.onrender.com/actuator/health |
 
 ---
 
-# 🏗 System Architecture
+# System Architecture
 
-```text
-                React + Vite
-                      │
-                      ▼
-             Spring Boot REST API
-                      │
-      ┌───────────────┼────────────────┐
-      ▼               ▼                ▼
- PostgreSQL      Cloudinary      Google Gemini
-   (Neon)          Images            AI
-      │
-      ▼
-  Brevo Email Service
+CommerceHub follows a **Layered Monolithic Architecture** with a clear separation of concerns. The React frontend communicates with a secure Spring Boot REST API protected by Spring Security and JWT authentication. Business logic is organized into controllers, services, and repositories, while external services such as **Google Gemini AI**, **Cloudinary**, and **Brevo SMTP** are integrated to provide AI-powered content generation, cloud image storage, and email notifications.
+
+```mermaid
+graph LR
+
+Client["React + Vite Frontend"]
+
+Client --> Security["Spring Security + JWT"]
+
+Security --> Controller["REST Controllers"]
+
+Controller --> Service["Service Layer"]
+
+Service --> Repository["Spring Data JPA"]
+
+Repository --> Database["PostgreSQL"]
+
+Service --> AI["Google Gemini AI"]
+
+Service --> Cloudinary["Cloudinary"]
+
+Service --> Email["Brevo SMTP"]
+
+Controller --> Swagger["Swagger / OpenAPI"]
 ```
-
 ---
 
-# 👥 User Roles
+# Features
 
-## 👤 Customer
+## User
 
-- User Registration & Login
-- Google OAuth Login
-- Browse Products
-- Search Products
-- Filter Products
-- View Product Details
-- Add to Cart
-- Place Orders
-- Review Purchased Products
-- Manage Profile
-
----
-
-## 🛍 Merchant
-
-- Merchant Dashboard
-- AI Product Generation
-- Product CRUD Operations
-- Multiple Image Upload
-- Inventory Management
+- JWT Authentication & Google OAuth2
+- Email OTP Verification
+- Product Search & Smart Filters
+- Product Details & Reviews
+- Shopping Cart & Checkout
 - Order Management
-- Product Analytics
+- Profile Management
+- Responsive User Interface
 
 ---
 
-## 🛠 Administrator
+## Merchant
 
-- Admin Dashboard
+- Analytics Dashboard
+- AI Product Generation
+- Product Management
+- Inventory Management
+- Image Upload (Cloudinary)
+- Order Management
+- Sales Analytics
+- Merchant Profile & Settings
+
+---
+
+## Administrator
+
+- Dashboard Analytics
 - User Management
-- Merchant Management
+- Merchant Approval
 - Category Management
-- Product Monitoring
 - Order Monitoring
 - Platform Administration
 
 ---
 
-# 🤖 Artificial Intelligence Features
+# AI Integration
 
-CommerceHub integrates **Google Gemini AI** to automate product creation and improve merchant productivity.
+Google Gemini AI automates product creation by generating high-quality product content directly from uploaded images.
 
-### AI Capabilities
+### AI Features
 
-- 🖼 Product Identification from Images
-- 📝 AI Generated Product Description
-- 📋 AI Generated Product Specifications
-- ⭐ AI Generated Feature Highlights
-- 🔍 AI Assisted Product Understanding
-- 📈 SEO Friendly Product Information
-- ⚡ Automatic Product Data Generation
+- Product Recognition
+- Product Description Generation
+- Feature Highlights
+- Technical Specifications
+- SEO Keywords
+- AI-Assisted Product Creation
 
 ### AI Workflow
 
-
-Merchant Uploads Images
-            │
-            ▼
-     Google Gemini AI
-            │
-            ▼
- Product Recognition
-            │
-            ▼
- Description Generation
-            │
-            ▼
- Specifications Generation
-            │
-            ▼
- Feature Highlights
-            │
-            ▼
- Product Saved to Database
-
----
-
-# 🛠 Technology Stack
-
-## Backend
-
-| Technology | Purpose |
-|------------|----------|
-| Java 21 | Programming Language |
-| Spring Boot | Backend Framework |
-| Spring Security | Authentication & Authorization |
-| Spring Data JPA | Database ORM |
-| Hibernate | Persistence Layer |
-| Maven | Dependency Management |
-| JWT | Secure Authentication |
-| Google OAuth2 | Social Login |
-| Google Gemini API | AI Product Generation |
-| Cloudinary | Image Storage |
-| Brevo | Email OTP Service |
-| Swagger / OpenAPI | API Documentation |
-
----
-
-## Frontend
-
-| Technology | Purpose |
-|------------|----------|
-| React | UI Library |
-| Vite | Build Tool |
-| Tailwind CSS | Styling |
-| React Router | Routing |
-| Axios | API Communication |
-| Lucide React | Icons |
-
----
-
-## Database
-
-| Technology | Purpose |
-|------------|----------|
-| PostgreSQL | Primary Database |
-| Neon | Cloud Database |
-
----
-
-## Deployment
-
-| Service | Purpose |
-|----------|----------|
-| Vercel | Frontend Hosting |
-| Render | Backend Hosting |
-| Neon | Cloud Database |
-| Cloudinary | Image Hosting |
-
----
-
-# 📂 Project Structure
-
+```text
+Product Images
+      │
+      ▼
+Google Gemini AI
+      │
+      ▼
+Product Recognition
+      │
+      ▼
+AI Content Generation
+      │
+      ▼
+Description • Specifications • Highlights • SEO
+      │
+      ▼
+Saved to Database
 ```
+
+---
+
+# Technology Stack
+
+| Layer | Technologies |
+|--------|--------------|
+| Frontend | React, Vite, Tailwind CSS, Axios |
+| Backend | Java 21, Spring Boot, Spring Security, Spring Data JPA, Hibernate |
+| Database | PostgreSQL (Neon) |
+| Authentication | JWT, Google OAuth2 |
+| AI | Google Gemini API |
+| Cloud Services | Cloudinary, Brevo SMTP |
+| Documentation | Swagger / OpenAPI |
+| DevOps | Maven, Docker |
+| Deployment | Vercel, Render |
+
+---
+
+# Project Structure
+
+```text
 springboot-react-ecommerce-project
-│
 │
 ├── backend/
 │   ├── README.md
-│   └── assets/        ✅ Backend screenshots
+│   └── assets/
 │
 ├── frontend/
-|   ├── README.md
-|   └── assets/        ✅ Frontend screenshots
-│   
+│   ├── README.md
+│   └── assets/
+│
 └── README.md
 ```
 
 ---
 
-# 📚 Project Documentation
+# Documentation
 
-For detailed implementation and architecture please refer to the module specific documentation.
-
-### 📦 Backend Documentation
-
-backend/README.md
-
-Contains:
-
-- Spring Boot Architecture
-- REST APIs
-- Security
-- JWT
-- OAuth2
-- Database Design
-- Entity Relationship
-- AI Integration
-- Cloudinary
-- Swagger APIs
-- Deployment
+| Module | Description |
+|--------|-------------|
+| backend/README.md | Backend architecture, APIs, Security, Database, AI Integration, Deployment |
+| frontend/README.md | React architecture, Components, Routing, State Management, Responsive UI |
 
 ---
 
-### 🎨 Frontend Documentation
+# Core Features
 
-frontend/README.md
-
-Contains:
-
-- React Architecture
-- Routing
-- Components
-- State Management
-- API Integration
-- Responsive UI
-- Dashboard Pages
-- Folder Structure
-
----
-
-# 🌟 Major Features
-
-| Module | Status |
-|---------|--------|
-| User Authentication | ✅ |
-| Google OAuth Login | ✅ |
+| Feature | Status |
+|---------|:------:|
+| JWT Authentication | ✅ |
+| Google OAuth2 | ✅ |
 | Email OTP Verification | ✅ |
-| JWT Security | ✅ |
-| Role Based Authorization | ✅ |
+| Multi-Role Access | ✅ |
 | AI Product Generation | ✅ |
 | Merchant Dashboard | ✅ |
 | Admin Dashboard | ✅ |
 | Product Management | ✅ |
-| Category Management | ✅ |
-| Image Upload | ✅ |
-| Cloudinary Integration | ✅ |
-| Product Search | ✅ |
-| Filtering | ✅ |
-| Pagination | ✅ |
 | Shopping Cart | ✅ |
-| Orders | ✅ |
-| Product Reviews | ✅ |
+| Orders & Reviews | ✅ |
+| Search & Filters | ✅ |
+| Pagination | ✅ |
+| Cloudinary Integration | ✅ |
 | Responsive Design | ✅ |
 | Swagger Documentation | ✅ |
 
 ---
 
-# 📊 Project Statistics
+# Project Summary
 
-- 👨‍💻 Architecture: Full Stack
-- 🏗 Backend: Spring Boot
-- 🎨 Frontend: React
-- 🤖 AI Powered: Yes
-- 👥 Multi Role Platform
-- 📦 REST APIs
-- ☁ Cloud Deployment
-- 🔐 Secure Authentication
-- 📱 Responsive Design
-- 🌍 Production Inspired Project
+- Full Stack Architecture
+- Multi-Role Platform
+- RESTful APIs
+- AI-Powered Product Generation
+- Secure Authentication
+- Cloud-Based Deployment
+- Responsive User Experience
+- Production-Inspired Design
 
 ---
 
-# ⚡ Quick Start
-
-## 1️⃣ Clone the Repository
+# Quick Start
 
 ```bash
 git clone https://github.com/PRAHLAD09-dev/springboot-react-ecommerce-project.git
-
 cd springboot-react-ecommerce-project
 ```
 
----
+| Module | Documentation |
+|--------|---------------|
+| Backend | `backend/README.md` |
+| Frontend | `frontend/README.md` |
 
-## 2️⃣ Backend Setup
-
-```bash
-cd backend
-```
-
-Follow the backend setup guide:
-
-📄 **backend/README.md**
-
----
-
-## 3️⃣ Frontend Setup
+Run the frontend locally:
 
 ```bash
 cd frontend
-
 npm install
-
 npm run dev
 ```
 
-Runs on:
-
-```
-http://localhost:5173
-```
-
-Complete frontend documentation is available here:
-
-📄 **frontend/README.md**
+Default URL: **http://localhost:5173**
 
 ---
 
-# 🌐 Deployment
+# Deployment
 
-| Platform | Service |
-|----------|----------|
-| Frontend | Vercel |
-| Backend | Render |
-| Database | Neon PostgreSQL |
-| Image Storage | Cloudinary |
-| Email Service | Brevo |
-| AI Provider | Google Gemini |
+| Frontend | Backend | Database | Images | Email | AI |
+|----------|---------|----------|--------|-------|----|
+| Vercel | Render | Neon PostgreSQL | Cloudinary | Brevo | Google Gemini |
 
 ---
 
-# 🔒 Security Features
+# Security
 
-- JWT Authentication
-- Role Based Authorization
-- Password Encryption (BCrypt)
-- Google OAuth2 Login
-- Email OTP Verification
-- Protected REST APIs
-- CORS Configuration
-- Secure Cloud Image Storage
+JWT Authentication • Google OAuth2 • Role-Based Authorization • BCrypt Password Encryption • Email OTP Verification • Protected REST APIs • CORS Configuration
 
 ---
 
-# 🚀 Upcoming Features
+# Roadmap
 
-- 💳 Stripe Payment Gateway
-- ❤️ Wishlist
-- 📱 Progressive Web App (PWA)
-- 💬 Live Chat Support
-- 📊 Sales Analytics Dashboard
-- 📈 Merchant Reports
-- 🎟 Coupon & Discount System
-- 🌙 Dark Mode
-- 🌎 Multi Language Support
+Payment Gateway • Wishlist • PWA • Live Chat • Sales Analytics • Merchant Reports • Coupon System • Dark Mode • Multi-Language Support
 
 ---
 
-# 🤝 Contributing
+# Developer
 
-Contributions are welcome.
+**Prahlad Bhakat**
 
-If you would like to improve this project:
+Java Backend & Full Stack Developer
 
-1. Fork the repository
-2. Create a feature branch
+GitHub: https://github.com/PRAHLAD09-dev
 
-```bash
-git checkout -b feature-name
-```
+LinkedIn: https://www.linkedin.com/in/prahlad-bhakat/
 
-3. Commit your changes
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push to GitHub
-
-```bash
-git push origin feature-name
-```
-
-5. Open a Pull Request
-
----
-
-# 📄 License
-
-This project is developed for learning, portfolio, and educational purposes.
-
----
-
-# 👨‍💻 Developer
-
-## Prahlad Bhakat
-
-Backend Developer | Java | Spring Boot | React
-
-Passionate about building scalable backend systems, secure REST APIs, and AI-powered web applications.
-
----
-
-# 📬 Connect With Me
-
-GitHub
-
-```
-https://github.com/PRAHLAD09-dev
-```
-
-LinkedIn
-
-```
-https://www.linkedin.com/in/prahlad-bhakat/
-```
-
-Email
-
-```
-prahladbhakat05@gmail.com
-```
-
----
-
-# ⭐ Support
-
-If you found this project useful, please consider giving it a ⭐ on GitHub.
-
-It helps motivate further improvements and supports my open-source journey.
+Email: prahladbhakat05@gmail.com
 
 ---
 
 <div align="center">
 
-## ⭐ Thank You for Visiting ⭐
+**If you found this project helpful, consider giving it a ⭐**
 
-Made with ❤️ using
-
-**Java • Spring Boot • React • PostgreSQL • Gemini AI**
+Built with **Java • Spring Boot • React • PostgreSQL • Google Gemini AI**
 
 </div>
