@@ -1,492 +1,402 @@
 <div align="center">
 
-# 🎨 CommerceHub Frontend
+# 🛒 AI-Powered Full Stack E-Commerce Platform
 
-### Modern React Frontend for an AI-Powered Multi-Role E-Commerce Platform
+### Production-Inspired Multi-Role E-Commerce Application Built with Spring Boot, React & AI
 
-A responsive and production-inspired e-commerce frontend built with **React**, **Vite**, **Tailwind CSS**, **React Router**, and **Axios**, designed to work seamlessly with the CommerceHub Spring Boot Backend.
+A modern full stack e-commerce platform featuring **AI-powered product generation, secure authentication, role-based access control, responsive UI, and production-ready architecture.**
 
 <p align="center">
-<img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react"/>
-<img src="https://img.shields.io/badge/Vite-Fast_Development-646CFF?style=for-the-badge&logo=vite"/>
-<img src="https://img.shields.io/badge/Tailwind_CSS-UI-38BDF8?style=for-the-badge&logo=tailwindcss"/>
-<img src="https://img.shields.io/badge/React_Router-Routing-CA4245?style=for-the-badge&logo=reactrouter"/>
-<img src="https://img.shields.io/badge/Axios-API_Integration-5A29E4?style=for-the-badge"/>
-<img src="https://img.shields.io/badge/Responsive-Desktop_&_Mobile-success?style=for-the-badge"/>
+<img src="./assets/banner.png" width="100%" alt="Project Banner"/>
+</p>
+
+<p align="center">
+
+![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql)
+![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-4-38BDF8?style=for-the-badge&logo=tailwindcss)
+
+</p>
+
+<p align="center">
+
+![JWT](https://img.shields.io/badge/JWT-Authentication-red?style=flat-square)
+![OAuth2](https://img.shields.io/badge/Google-OAuth2-blue?style=flat-square)
+![Gemini AI](https://img.shields.io/badge/Google-Gemini_AI-purple?style=flat-square)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-Image_Storage-3448C5?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square)
+
 </p>
 
 </div>
 
 ---
 
-# 📖 Overview
+## 🌐 Live Demo
 
-CommerceHub Frontend is a modern React application that provides a complete shopping experience for **Users**, **Merchants**, and **Administrators**.
-
-The frontend communicates with the Spring Boot backend through REST APIs and offers a responsive, clean, and user-friendly interface for managing products, orders, authentication, AI-powered product creation, and administrative operations.
+| Platform | Link |
+|----------|------|
+| 🚀 Frontend | https://springboot-react-ecommerce-project-alpha.vercel.app |
+| ⚙ Backend API | https://springboot-react-ecommerce-project.onrender.com |
+| 📘 Swagger | *(Add Backend Swagger URL)* |
 
 ---
 
-# ✨ Key Features
+## 📂 GitHub Repository
+
+https://github.com/PRAHLAD09-dev/springboot-react-ecommerce-project
+
+---
+
+# 📖 Overview
+
+This project is a **production-inspired AI-powered full stack e-commerce platform** that simulates the architecture of modern online marketplaces.
+
+Instead of focusing only on CRUD operations, it demonstrates secure authentication, AI integration, responsive UI, cloud-based media management, reusable components, scalable architecture, and real-world development practices.
+
+The application supports three different roles:
+
+- 👤 Customer
+- 🛍 Merchant
+- 👑 Administrator
+
+Each role has its own dashboard, permissions, and workflow.
+
+---
+
+# ✨ Highlights
+
+- 🤖 Google Gemini AI Integration
+- 🔐 JWT Authentication + Google OAuth2
+- 👥 Multi-Role Architecture
+- ☁ Cloudinary Image Management
+- 📧 Email OTP Verification
+- 📱 Fully Responsive UI
+- 🎨 Modern Design System
+- ⚡ Smooth Animations
+- 📄 Swagger API Documentation
+- 🐳 Docker Ready
+- 🚀 Production-Inspired Codebase
+
+---
+
+# 🚀 Core Features
 
 ### 👤 User
 
-- Secure Authentication
-- Product Browsing
-- Advanced Search & Filters
+- Authentication
+- Smart Product Search
+- Filters & Pagination
 - Shopping Cart
 - Checkout
-- Order Tracking
-- Product Reviews
-- Profile & Address Management
+- Orders
+- Notifications
+- Profile Management
 
 ### 🛍 Merchant
 
-- AI Product Creation
+- Analytics Dashboard
 - Product Management
-- Image Upload
-- Inventory Management
-- Merchant Dashboard
+- AI Product Generator
+- Multi-Step Product Wizard
+- Order Management
+- Business Profile
 
-### 👨‍💼 Admin
+### 👑 Admin
 
+- Dashboard Analytics
+- Merchant Approval
+- User Management
 - Category Management
 - Hero Banner Management
 - Platform Monitoring
-- Order Management
 
 ---
 
-# 🎨 UI Highlights
+# 🛠 Technology Stack
 
-- Responsive Design
-- Modern Product Cards
-- Horizontal Category Sections
-- Hero Banner Carousel
-- Search & Filtering
-- Pagination
-- Loading States
-- Toast Notifications
-- Clean Dashboard Layout
-- Mobile-Friendly Navigation
-
----
-
-# 🛠 Tech Stack
-
-| Category | Technology |
-|----------|------------|
-| Framework | React 19 |
-| Build Tool | Vite |
-| Styling | Tailwind CSS |
-| Routing | React Router DOM |
-| API Client | Axios |
-| Icons | Lucide React |
-| Notifications | React Toastify |
+| Category | Technologies |
+|----------|--------------|
+| Frontend | React 19, Vite, Tailwind CSS, Axios |
+| Backend | Java 21, Spring Boot 3, Spring Security |
+| Database | PostgreSQL, Hibernate, Spring Data JPA |
+| Authentication | JWT, Google OAuth2 |
+| AI | Google Gemini AI |
+| Cloud | Cloudinary, Brevo SMTP |
+| Tools | Docker, Maven, GitHub, Postman |
+| Deployment | Vercel, Render |
 
 ---
 
-# 📸 Screenshots
+# 🏗 System Architecture
 
-### 🏠 Home Page
+<p align="center">
+<img src="./assets/architecture.png" width="95%" alt="Architecture Diagram"/>
+</p>
 
-![Home](./assets/home.png)
-
----
-
-### 🤖 AI Product Generation
-
-![AI Product](./assets/ai-product.png)
-
----
-
-### 👨‍💼 Admin Dashboard
-
-![User](./assets/user-profile.png)
-
----
-
-### 🛍 Merchant Dashboard
-
-![Merchant](./assets/merchant-dashboard.png)
-
----
-
-### 👨‍💼 Admin Dashboard
-
-![Admin](./assets/admin-dashboard.png)
+```text
+React Frontend
+       │
+ REST APIs (Axios)
+       │
+Spring Security
+       │
+ JWT Authentication
+       │
+ REST Controllers
+       │
+ Service Layer
+       │
+ Repository Layer
+       │
+ PostgreSQL Database
+```
 
 ---
 
 # 📂 Project Structure
 
 ```text
-frontend
+springboot-react-ecommerce-project
 │
-├── public
-├── src
-│   ├── assets
+├── backend
+│   ├── config
+│   ├── controller
+│   ├── dto
+│   ├── entity
+│   ├── repository
+│   ├── security
+│   ├── service
+│   └── util
+│
+├── frontend
 │   ├── components
 │   ├── layouts
 │   ├── pages
-│   │   ├── admin
-│   │   ├── auth
-│   │   ├── merchant
-│   │   └── user
+│   ├── context
 │   ├── services
-│   ├── App.jsx
-│   └── main.jsx
+│   ├── hooks
+│   ├── utils
+│   └── assets
 │
-├── package.json
-├── vite.config.js
 └── README.md
 ```
----
-
-# 🏗 Frontend Architecture
-
-CommerceHub Frontend follows a modular React architecture where components, pages, services, and layouts are organized independently. This structure improves code reusability, maintainability, and scalability.
 
 ---
 
-# ⚛ Application Structure
+# 🎯 Design Principles
 
-The application is divided into multiple reusable modules.
-
-```text
-src
-│
-├── assets
-├── components
-├── layouts
-├── pages
-├── services
-├── App.jsx
-└── main.jsx
-```
-
-Each folder has a dedicated responsibility, making the codebase easier to maintain as new features are added.
-
----
-
-# 📄 Pages
-
-Pages are organized according to user roles.
-
-### 👤 User
-
-- Home
-- Products
-- Product Details
-- Cart
-- Checkout
-- Orders
-- Profile
-
-### 🛍 Merchant
-
-- Dashboard
-- Products
-- Add Product
-- Edit Product
-- Orders
-
-### 👨‍💼 Admin
-
-- Dashboard
-- Categories
-- Hero Banner
-- Products
-- Orders
-
-### 🔐 Authentication
-
-- Login
-- Register
-- Forgot Password
-
----
-
-# 🧩 Reusable Components
-
-The UI is built using reusable React components.
-
-Major components include:
-
-- Navbar
-- Footer
-- Hero Banner
-- Product Card
-- Category Section
-- Search Bar
-- Filters
-- Pagination
-- Loading Spinner
-- Empty State
-- Modal Components
-
-Using reusable components reduces duplicate code and keeps the interface consistent.
-
----
-
-# 🧭 Routing
-
-Navigation is handled using **React Router DOM**.
-
-Routing provides:
-
-- Public Routes
-- Protected Routes
-- Role-Based Navigation
-- Dynamic URL Parameters
-- Nested Layouts
-
-This ensures users only access pages relevant to their role.
-
----
-
-# 🔄 API Integration
-
-Frontend communicates with the backend using **Axios**.
-
-Responsibilities include:
-
-- Authentication Requests
-- Product APIs
-- Category APIs
-- Cart APIs
-- Order APIs
-- Review APIs
-- Merchant APIs
-- Admin APIs
-
-All API calls are managed from the **services** layer, keeping components clean and focused on UI rendering.
-
----
-
-# 📊 State Management
-
-The application primarily uses React Hooks for state management.
-
-Common hooks include:
-
-- useState
-- useEffect
-- useRef
-- useNavigate
-- useParams
-
-Local component state is used for forms, UI interactions, filters, and API responses, keeping the architecture lightweight.
-
----
-
-# 🔄 Frontend Workflow
-
-Every user action follows a simple execution flow.
-
-```text
-User Action
-     │
-     ▼
-React Component
-     │
-     ▼
-Axios API Request
-     │
-     ▼
-Spring Boot Backend
-     │
-     ▼
-JSON Response
-     │
-     ▼
-React State Update
-     │
-     ▼
-UI Re-render
-```
-
-This predictable flow keeps the application responsive and easy to debug.
-
----
-
-# 🎯 Frontend Highlights
-
-CommerceHub Frontend provides:
-
-- Responsive Layout
-- Modular Architecture
+- Layered Architecture
+- Clean Code
 - Reusable Components
-- Role-Based Navigation
-- REST API Integration
-- Dynamic Product Rendering
-- Optimized User Experience
-- Clean & Modern UI
+- DTO-Based Communication
+- Role-Based Authorization
+- Mobile-First Responsive Design
+- Accessibility Focused
+- Performance Optimized
+- Scalable Folder Structure
+- Production-Ready Development Practices
 
-These design principles ensure the frontend remains scalable, maintainable, and easy to extend as new features are introduced.
-
----
-
-# 🚀 Getting Started
-
-## Prerequisites
-
-Before running the project, ensure the following are installed:
-
-- Node.js (v18+)
-- npm
-- Git
-- Backend API (CommerceHub Backend)
+> 📌 The project is designed to replicate a real-world e-commerce platform by combining secure backend architecture, modern frontend engineering, AI-powered features, and responsive user experience.
 
 ---
 
-# ⚙ Environment Variables
+# 🚀 Features
 
-Create a `.env` file in the project root.
+## 👤 User Module
 
-```env
-VITE_API_BASE_URL=http://localhost:8080/api
-```
+- JWT Authentication & Google OAuth2 Login
+- Email OTP Verification
+- Forgot / Reset Password
+- Hero Carousel
+- Smart Product Search
+- Search Suggestions
+- Category Filters
+- Product Sorting & Pagination
+- Product Gallery & Image Zoom
+- AI Generated Product Information
+- Shopping Cart & Checkout
+- Order Tracking
+- Notifications
+- Profile & Address Management
+- Fully Responsive Experience
 
-For production:
-
-```env
-VITE_API_BASE_URL=https://ecommerce-backend-o9vh.onrender.com/api
-```
+<p align="center">
+<img src="./assets/home.png" width="90%" alt="User Module"/>
+</p>
 
 ---
 
-# ▶ Run Locally
+## 🛍 Merchant Module
 
-Clone the repository
+Designed as a production-inspired seller dashboard.
+
+### Includes
+
+- Analytics Dashboard
+- Revenue & Sales Charts
+- Product Management
+- Multi-Step Product Wizard
+- AI Product Generator
+- Drag & Drop Image Upload
+- Product Preview
+- Bulk Product Actions
+- Order Management
+- Merchant Profile
+- Store Settings
+- Responsive Dashboard
+
+<p align="center">
+<img src="./assets/merchant-dashboard.png" width="90%" alt="Merchant Dashboard"/>
+</p>
+
+---
+
+## 👑 Admin Module
+
+Complete platform management dashboard.
+
+### Includes
+
+- Dashboard Analytics
+- User Management
+- Merchant Approval
+- Order Management
+- Category Management
+- Hero Banner Management
+- Charts & Statistics
+- Search & Filters
+- Pagination
+- Responsive Admin Panel
+
+<p align="center">
+<img src="./assets/admin-dashboard.png" width="90%" alt="Admin Dashboard"/>
+</p>
+
+---
+
+# 🤖 AI Features
+
+Google Gemini AI is integrated to generate high-quality product content.
+
+- AI Product Description
+- AI Feature Highlights
+- AI Product Specifications
+- AI SEO Keywords
+- ChatGPT-style AI Generator Interface
+- One-click Content Generation
+- Regenerate & Copy Support
+
+<p align="center">
+<img src="./assets/ai-generator.png" width="90%" alt="AI Generator"/>
+</p>
+
+---
+
+# 🔒 Security Features
+
+- Spring Security
+- JWT Authentication
+- Google OAuth2 Login
+- Role-Based Authorization
+- Password Encryption (BCrypt)
+- Email OTP Verification
+- Protected REST APIs
+- Input Validation
+- Global Exception Handling
+- Secure Route Protection
+
+---
+
+# 📱 Responsive UI
+
+Designed with a **Mobile-First** approach.
+
+✔ Mobile
+
+✔ Tablet
+
+✔ Laptop
+
+✔ Desktop
+
+<p align="center">
+<img src="./assets/mobile-view.png" width="75%" alt="Responsive Design"/>
+</p>
+
+---
+
+# ⚙️ Getting Started
+
+## Clone Repository
 
 ```bash
 git clone https://github.com/PRAHLAD09-dev/springboot-react-ecommerce-project.git
 ```
 
-Move to frontend
+## Backend
+
+```bash
+cd backend
+mvn clean install
+mvn spring-boot:run
+```
+
+## Frontend
 
 ```bash
 cd frontend
-```
-
-Install dependencies
-
-```bash
 npm install
-```
-
-Start development server
-
-```bash
 npm run dev
 ```
 
-Application URL
-
-```text
-http://localhost:5173
-```
-
 ---
 
-# 📦 Production Build
+# 🌍 Deployment
 
-Generate an optimized production build.
-
-```bash
-npm run build
-```
-
-Preview production build locally.
-
-```bash
-npm run preview
-```
-
----
-
-# ☁ Deployment
-
-The frontend is deployment-ready and can be hosted on:
-
-- Vercel
-- Netlify
-- GitHub Pages
-- Firebase Hosting
-
-Recommended Deployment:
-
-| Service | Purpose |
+| Service | Platform |
 |----------|----------|
-| Vercel | Frontend Hosting |
-| Render | Backend Hosting |
-| Neon | PostgreSQL Database |
-| Cloudinary | Image Storage |
+| Frontend | Vercel |
+| Backend | Render |
+| Database | PostgreSQL |
+| Images | Cloudinary |
 
 ---
 
-# 📈 Future Improvements
+# 📌 Future Enhancements
 
-Planned features include:
-
+- Microservices Architecture
+- Payment Gateway Integration
+- Recommendation Engine
+- Real-Time Notifications
+- Analytics APIs
 - Dark Mode
-- Wishlist
-- Product Comparison
-- AI Search
 - PWA Support
-- Multi-language Support
-- Real-time Notifications
-- Performance Optimization
+- Elasticsearch
+- Redis Caching
 
 ---
 
-# 🤝 Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Open a Pull Request
-
-Please follow the existing project structure and coding standards.
-
----
-
-# 👨‍💻 Author
+# 👨‍💻 Developer
 
 **Prahlad Bhakat**
 
-Full Stack Developer
+Java Backend & Full Stack Developer
 
-### Tech Stack
+📧 **Email:** prahladbhakat05@gmail.com
 
-- Java
-- Spring Boot
-- React
-- PostgreSQL
+🔗 **GitHub:** https://github.com/PRAHLAD09-dev
 
-GitHub
-
-```text
-https://github.com/PRAHLAD09-dev
-```
-
----
-
-# 📜 License
-
-This project is created for **learning, portfolio, and educational purposes**.
-
-Feel free to explore the codebase, learn from it, and use it as a reference for your own projects.
+💼 **LinkedIn:** https://www.linkedin.com/in/prahlad-bhakat
 
 ---
 
 <div align="center">
 
-## ⭐ If you like this project, consider giving it a Star ⭐
+### ⭐ If you found this project helpful, please consider giving it a Star.
 
-**Built with ❤️ using React, Vite, Tailwind CSS & Spring Boot**
+**Built with ❤️ using Java, Spring Boot, React, PostgreSQL, Tailwind CSS, Cloudinary & Google Gemini AI**
 
 </div>
